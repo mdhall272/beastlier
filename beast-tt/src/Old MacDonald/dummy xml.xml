@@ -1,0 +1,41 @@
+<cottam2008Farms id="cottam2008Farms">
+	<incubationPeriod>
+		<parameter id="overallIncubationPeriod" value="5.0" lower="0.0"/>
+	</incubationPeriod>
+	<minInfectionToExam>
+		<parameter id="overallMinInfectionToExam" value="2.0" lower="0.0"/>
+	</minInfectionToExam>
+	<dayOne>
+		<parameter id="dayOne" value="2001.0"/>
+	</dayOne>
+	<cottam2008FarmSet>
+		<cottam2008Farm id="1">
+			<incubationPeriod>
+				<parameter idref="overallIncubationPeriod"/>
+			</incubationPeriod>
+			<minInfectionToExam>
+				<parameter idref="overallMinInfectionToExam"/>
+			</minInfectionToExam>
+			<examinationDay>
+				<integer>
+					55
+				</integer>
+			</examinationDay>
+			<cullDay>
+				<integer>
+					56
+				</integer>
+			</cullDay>
+			<oldestLesionAge>
+				<integer>
+					10
+				</integer>
+			</oldestLesionAge>
+			<taxa>
+				<taxon idref="gi|89213458|gb|DQ404177.1|Northumberland|22_02_01 Foot-and-mouth disease virus - type O strain UKG/128/2001, complete genome"/>
+				<taxon idref="gi|89213460|gb|DQ404178.1|Northumberland|22_02_01 Foot-and-mouth disease virus - type O strain UKG/127/2001, complete genome"/>
+				<taxon idref="gi|89213462|gb|DQ404179.1|Northumberland|22_02_01 Foot-and-mouth disease virus - type O strain UKG/126/2001, complete genome"/>
+			</taxa>
+		</cottam2008Farm>
+	</cottam2008FarmSet>
+</cottam2008Farms>		

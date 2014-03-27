@@ -14,23 +14,38 @@ overallEstInfVar = 0.5
 specificSims = True
 
 kernelLookup = {'e': 'exponential', 'p': 'powerLaw', 'g': 'gaussian'}
-outbreakLookup = {'s': 'simpleCategory', 'j': 'jeffreysCategory', 'w': 'withinCaseCategory', 'g': 'generalCategory'}
-modelLookup = {'s': 'simpleCaseToCase', 'j': 'jeffreysCaseToCase', 'w': 'withinCaseCoalescent', 'g': 'generalCaseToCase'}
+outbreakLookup = {'s': 'simple', 'j': 'category', 'w': 'category', 'g': 'generalCategory'}
+modelLookup = {'s': 'simpleCaseToCase', 'j': 'jeffreysCaseToCase', 'w': 'withinCaseCoalescent',
+               'g': 'generalCaseToCase'}
 fixedKeep = {'taxa', 'treeModel', 'categoryOutbreak', 'simpleOutbreak', 'operators', 'mcmc', 'report'}
 startingTrees = {'coalescentSimulator', 'coalescentTree', 'upgmaTree'}
 coalescentNames = {'gmrfSkyrideLikelihood', 'coalescentLikelihood'}
+hyperpriorLookup = {'n' : 'normalPeriodPriorDistribution',
+                    'v' : 'oneOverVariancePeriodPriorDistribution',
+                    's' : 'oneOverStDevPeriodPriorDistribution',
+                    'e' : 'exponentiallyDistributedStDevPeriodPriorDistribution'}
 
 
 # Main method
 
-def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, fileNameRoot, startingNewick, model, kernel, fixed, latentPeriods):
-    
-    # TO DO: don't write infectious period elements if you're not modelling them. At present this should be considered a hack.
-        
+def modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName, fileNameRoot, startingNewick, model,
+              kernel, fixed, infHyperprior, latHyperprior, chainLength, sampleEvery):
+
+    latentPeriods = latHyperprior is not 'z'
+
+    modelString = modelLookup[model]
+
+    infHyperpriorLog = infHyperprior.startswith('l')
+    infHyperpriorType = hyperpriorLookup[infHyperprior[-1:]]
+
+    if latentPeriods:
+        latHyperpriorLog = latHyperprior.startswith('l')
+        latHyperpriorType = hyperpriorLookup[latHyperprior[-1:]]
+
     outbreakString = outbreakLookup[model]+'Outbreak'
     caseString = outbreakLookup[model]+'Case'
     
-    modelString = modelLookup[model]
+
     
     parser = etree.XMLParser(remove_blank_text=True)
     
@@ -38,7 +53,8 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     
     beastElement = fullTree.getroot()
     
-    beastElement.addprevious(etree.Comment(" BEAUTi output modified for transmission tree reconstruction by OldMacDonald 4"))
+    beastElement.addprevious(etree.Comment(" BEAUTi output modified for transmission tree reconstruction by "
+                                           "OldMacDonald 4"))
     beastElement.addprevious(etree.Comment("        by Matthew Hall, University of Edinburgh"))
     
     # if running on a fixed tree, strip out all the irrelevent elements
@@ -51,17 +67,19 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         for element in beastElement.iterchildren():
             if element.tag in coalescentNames:
                 beastElement.remove(element)
-        
+
+    treeModelElement = beastElement.find('treeModel')
+    treeModelElement.tag = 'partitionedTreeModel'
     
     # replace the old starting tree if told to do so            
     if startingNewick!=None:
         for element in beastElement.iterchildren():
             if element.tag in startingTrees:
-                beastElement.remove(element) 
-        treeModelElement = beastElement.find('treeModel')
+                beastElement.remove(element)
         for element in treeModelElement.iterchildren():
             if element.tag in startingTrees:
-                treeModelElement.insert(treeModelElement.index(element), createReferenceBlock(etree, 'newick', 'startingTree'))
+                treeModelElement.insert(treeModelElement.index(element), createReferenceBlock(etree, 'newick',
+                                                                                              'startingTree'))
                 treeModelElement.remove(element)
         newickElement = etree.Element('newick')
         newickElement.set('id', 'startingTree')
@@ -92,27 +110,42 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     
     infCategoryName = 'inf1'
     latCategoryName = 'lat1' if latentPeriods else None
+
+    # simple and general aren't getting much love right now
        
-    if model=='w':
+    if model is 'w' or model is 'j':
         # for now, let's stick with one category
-        infDistributionPriorElement = etree.SubElement(outbreakElement, 'infectiousPeriodPrior')
-        infDistributionPriorElement.set("categoryName", infCategoryName)
-        infDistributionPriorElement.set("mu", "1.0")
-        infDistributionPriorElement.set("lambda", "0.5")
-        infDistributionPriorElement.set("alpha", "1.0")
-        infDistributionPriorElement.set("beta", "0.1")
+
+        infWrapperElement = etree.SubElement(outbreakElement, 'infectiousPeriodPrior')
+
+        infDistributionPriorElement = etree.SubElement(infWrapperElement, infHyperpriorType)
+        infDistributionPriorElement.set("id", infCategoryName+'dist')
+        infDistributionPriorElement.set("log", str(infHyperpriorLog).lower())
+
+        if infHyperpriorType=='normalPeriodPriorDistribution':
+            infDistributionPriorElement.set("mu", "8")
+            infDistributionPriorElement.set("lambda", "0.5")
+            infDistributionPriorElement.set("alpha", "5")
+            infDistributionPriorElement.set("beta", "5")
+        elif infHyperpriorType=='exponentiallyDistributedStDevPeriodPriorDistribution':
+            infDistributionPriorElement.set('lambda', '1')
 
         if latentPeriods:
-            latDistributionPriorElement = etree.SubElement(outbreakElement, 'latentPeriodPrior')
-            latDistributionPriorElement.set("categoryName", latCategoryName)
-            latDistributionPriorElement.set("mu", "1.0")
-            latDistributionPriorElement.set("lambda", "0.5")
-            latDistributionPriorElement.set("alpha", "1.0")
-            latDistributionPriorElement.set("beta", "0.1")
-                
-            
-        
-    
+            latWrapperElement = etree.SubElement(outbreakElement, 'latentPeriodPrior')
+
+            latDistributionPriorElement = etree.SubElement(latWrapperElement, latHyperpriorType)
+            latDistributionPriorElement.set("id", latCategoryName+'dist')
+            latDistributionPriorElement.set("log", str(latHyperpriorLog).lower())
+
+            if latHyperpriorType=='normalPeriodPriorDistribution':
+                latDistributionPriorElement.set("mu", "1")
+                latDistributionPriorElement.set("lambda", "0.0001")
+                latDistributionPriorElement.set("alpha", "1")
+                latDistributionPriorElement.set("beta", "0.1")
+
+            elif latHyperpriorType=='exponentiallyDistributedStDevPeriodPriorDistribution':
+                latDistributionPriorElement.set('lambda', '1')
+
     outbreakElement.append(createReferenceBlock(etree, 'taxa', 'taxa'))
 
     
@@ -124,12 +157,13 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         infnessPositionsElement = etree.Element('compoundParameter')
         infnessPositionsElement.set('id','infectiousTimePositions')
         
-    # Individual farm data processing starts here; read from a CSV file. The file must have the column headings "Farm_ID", "Exam_date", "Cull_date", "Oldest_lesion" (for SimpleOutbreaks) and "Taxon".
-    # In future there will need to be an infectious category column
+    # Individual farm data processing starts here; read from a CSV file. The file must have the column headings
+    # "Farm_ID", "Exam_date", "Cull_date", "Oldest_lesion" (for SimpleOutbreaks) and "Taxon". In future there will
+    # need to be an infectious category column
     headerRow=csvreader.next()
     farmIDColumn=None
-    examDateColumn=None
-    cullDateColumn=None
+    examTimeColumn=None
+    cullTimeColumn=None
     oldestLesionColumn=None
     taxonColumn=None
     longColumn=None
@@ -138,10 +172,10 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     for i in range(0, len(headerRow)):
         if headerRow[i]=='Farm_ID':
             farmIDColumn=i
-        elif headerRow[i]=='Exam_date':
-            examDateColumn=i
-        elif headerRow[i]=='Cull_date':
-            cullDateColumn=i
+        elif headerRow[i]=='Exam_time':
+            examTimeColumn=i
+        elif headerRow[i]=='Cull_time':
+            cullTimeColumn=i
         elif headerRow[i]=='Clinical_guess':
             oldestLesionColumn=i
         elif headerRow[i]=='Taxon':
@@ -150,52 +184,57 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
             longColumn=i
         elif headerRow[i]=='Latitude' and kernel!='n':
             latColumn=i
-    if(farmIDColumn==None or examDateColumn==None or cullDateColumn==None or (model=='s' and oldestLesionColumn==None)
-       or taxonColumn==None or (kernel!='n' and (latColumn==None or longColumn==None))):
+    if(farmIDColumn is None or examTimeColumn is None or cullTimeColumn is None
+       or (model=='s' and oldestLesionColumn is None) or taxonColumn is None
+       or (kernel!='n' and (latColumn is None or longColumn is None))):
         raise Exception('Not all required columns are present')
     
         # Go through the rows of the CSV file and make a farm XML and a taxon block for each
+
+        # todo a version that uses dates is probably essential in the long run, so this is just commented out
     currentRow=csvreader.next()
     branchPositionNames = list()
     infnessPositionNames= list()
     while currentRow!=None:  
-        processedExamDate = datetime.strptime(currentRow[examDateColumn], '%d/%m/%Y')
-        processedCullDate = datetime.strptime(currentRow[cullDateColumn], '%d/%m/%Y')
-        intExamDate = (processedExamDate - dayOne).days
-        intCullDate = (processedCullDate - dayOne).days
+        #processedExamDate = datetime.strptime(currentRow[examDateColumn], '%d/%m/%Y')
+        #processedCullDate = datetime.strptime(currentRow[cullDateColumn], '%d/%m/%Y')
+        #intExamDate = (processedExamDate - dayOne).days
+        #intCullDate = (processedCullDate - dayOne).days
+        examTime = currentRow[examTimeColumn]
+        cullTime = currentRow[cullTimeColumn]
+
         taxa=currentRow[taxonColumn].split('$')
         taxonElement = etree.SubElement(taxaElement,'taxon')
         taxonElement.set('id', currentRow[taxonColumn])
         samplingDateElement = etree.SubElement(taxonElement,'date')
-        # Events (sample and cull) now happen at the _end_ of the day. Easier that way. Hopefully. Still need to add 1, since time 0 is the beginning
-        # of day 0, and thus if you subtract day 0's time value from another you get the number of days elapsed between the ends.
-        samplingDateElement.set('value', str(intExamDate+1))
+        samplingDateElement.set('value', str(examTime))
         samplingDateElement.set('direction','forwards')
         samplingDateElement.set('units','days')
-        samplingDateElement.set('origin', dayOne.strftime('%d/%m/%Y'))
         attributeElement = etree.SubElement(taxonElement,'attr')
         attributeElement.set('name', patternString)
         attributeElement.text = currentRow[farmIDColumn]
+
         latitude = None
         longitude = None
         if kernel!='n':
             latitude = currentRow[latColumn]
             longitude = currentRow[longColumn]
-        # Want to be adding +1 to dates here to get the end of the required days.
+        # Want to be adding +1 to dates here to get the end of the required days
+        latString = latCategoryName+'dist' if latCategoryName!=None else None
         if model=='s':
-            outbreakElement.append(createSimpleCaseElement(etree, caseString, currentRow[farmIDColumn], intExamDate+1,
-                                                           intCullDate+1, float(currentRow[oldestLesionColumn]), dayOne,
+            outbreakElement.append(createSimpleCaseElement(etree, caseString, currentRow[farmIDColumn], examTime,
+                                                           cullTime, float(currentRow[oldestLesionColumn]),
                                                            'sqrt_inf_scale', longitude, latitude, taxa))
         elif model=='j':
             outbreakElement.append(createJeffreysCategoryCaseElement(etree, caseString, currentRow[farmIDColumn],
-                                                                     intExamDate+1, intCullDate+1, dayOne, longitude,
+                                                                     examTime, cullTime, longitude,
                                                                      latitude, taxa, infCategoryName+'dist',
-                                                                     latCategoryName+'dist'))
+                                                                     latString))
         elif model=='w':
             outbreakElement.append(createWithinCaseCategoryCaseElement(etree, caseString, currentRow[farmIDColumn],
-                                                                       intExamDate+1, intCullDate+1, dayOne, longitude,
+                                                                       examTime, cullTime, longitude,
                                                                        latitude, taxa, infCategoryName+'dist',
-                                                                       latCategoryName+'dist'))
+                                                                       latString))
         branchPositionsElement.append(createReferenceBlock(etree,'parameter', currentRow[farmIDColumn]+'_bp'))
         branchPositionNames.append(currentRow[farmIDColumn]+'_bp')
         if latentPeriods:
@@ -218,10 +257,10 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     if kernel!='n':
         kernelElement = etree.SubElement(c2cTransElement, 'spatialKernelFunction')
         kernelElement.set('type', kernelLookup[kernel])
-        kernelElement.append(createParameterBlock(etree, 'a', 'kernel_a', 1, True, 1))
+        kernelElement.append(createMinMaxParameterBlock(etree, 'a', 'kernel_a', 1, 0, 10, 1))
         if kernel=='g':
             kernelElement.set('integratorSteps', str(riemannSteps)) 
-    trElement = createParameterBlock(etree, 'transmissionRate', 'transmission_rate', 0.05, True, 1)      
+    trElement = createMinMaxParameterBlock(etree, 'transmissionRate', 'transmission_rate', 0.05, 0, 0.1, 1)
     c2cTransElement.append(trElement)
      
     c2cTreeElement = etree.SubElement(c2cTransElement, modelString)
@@ -242,8 +281,11 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         logisticGrowthElement.set('units', 'days')
         logisticGrowthElement.append(createParameterBlock(etree, 'populationSize', 'logistic.startingNe', 1, True, 1))
         logisticGrowthElement.append(createParameterBlock(etree, 'growthRate', 'logistic.growthRate', 1, True, 1))
-        logisticGrowthElement.append(createParameterBlock(etree, 't50', 'logistic.t50', 0, False, 1))
+        logisticGrowthElement.append(createParameterBlock(etree, 't50', 'logistic.t50', -1, False, 1))
         c2cTreeElement.append(demoModelWrapper)
+        minusStatistic = etree.SubElement(c2cTreeElement, 'negativeStatistic')
+        minusStatistic.set('id', 'minusT50')
+        minusStatistic.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
         
     
     operatorsBlock = beastElement.find('operators')
@@ -255,6 +297,9 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         for operator in operatorsBlock.iterchildren():
             if operator.tag in treeOperatorsToRemove:
                 operatorsBlock.remove(operator)
+            if model=='w':
+                if operator.tag == 'gmrfBlockUpdateOperator':
+                    operatorsBlock.remove(operator)
         for operatorName in treeOperatorsToAdd:
             newOperatorElement = etree.SubElement(operatorsBlock, operatorName)
             newOperatorElement.set('weight', str(8))
@@ -274,10 +319,10 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     ftlElement = etree.SubElement(ibmElement, modelString)
     ftlElement.set('idref', modelString)
 
-    ibgElement = etree.SubElement(operatorsBlock,'infectionBranchGibbsOperator')
-    ibgElement.set('weight', str(5))
-    ftlElement = etree.SubElement(ibgElement, 'caseToCaseTransmissionLikelihood')
-    ftlElement.set('idref', 'c2cTransLikelihood')
+    # ibgElement = etree.SubElement(operatorsBlock,'infectionBranchGibbsOperator')
+    # ibgElement.set('weight', str(1))
+    # ftlElement = etree.SubElement(ibgElement, 'caseToCaseTransmissionLikelihood')
+    # ftlElement.set('idref', 'c2cTransLikelihood')
 
     bpUniformOpElement = etree.SubElement(operatorsBlock, 'uniformOperator')
     bpUniformOpElement.set('weight', str(5))
@@ -321,19 +366,22 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         growthRateScaleElement.set('scaleFactor', str(0.75))
         growthRateScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
 
-        startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
-        startingNeScaleElement.set('weight', str(5))
-        startingNeScaleElement.set('scaleFactor', str(0.75))
-        startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
+        # todo remember to put this back in for non-simulations!
 
-        t50randomWalkElement = etree.SubElement(operatorsBlock, 'randomWalkOperator')
+        # startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
+        # startingNeScaleElement.set('weight', str(5))
+        # startingNeScaleElement.set('scaleFactor', str(0.75))
+        # startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
+
+        t50randomWalkElement = etree.SubElement(operatorsBlock, 'scaleOperator')
         t50randomWalkElement.set('weight', str(5))
-        t50randomWalkElement.set('windowSize', str(1))
+        t50randomWalkElement.set('scaleFactor', str(0.75))
         t50randomWalkElement.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
                          
              
     mcmcBlock = beastElement.find('mcmc')
     mcmcBlock.set('operatorAnalysis', fileNameRoot+".ops.txt")
+    mcmcBlock.set('chainLength', str(chainLength))
     
     posteriorBlock = mcmcBlock.find('posterior')
     priorBlock = posteriorBlock.find('prior')
@@ -351,6 +399,19 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
         for element in priorBlock.iterchildren():
             if element.tag in coalescentNames:
                 priorBlock.remove(element)
+            if len(element) and element[0].get('idref').startswith('skyride'):
+                priorBlock.remove(element)
+        ratePriorBlock = etree.SubElement(priorBlock, 'exponentialPrior')
+        ratePriorBlock.set('mean', '3.333333')
+        ratePriorBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
+        # startingNePriorBlock = etree.SubElement(priorBlock, 'gammaPrior')
+        # startingNePriorBlock.set('shape', '5')
+        # startingNePriorBlock.set('scale', '0.2')
+        # startingNePriorBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
+        minusT50PriorBlock = etree.SubElement(priorBlock, 'gammaPrior')
+        minusT50PriorBlock.set('shape', '4')
+        minusT50PriorBlock.set('scale', '0.5')
+        minusT50PriorBlock.append(createReferenceBlock(etree, 'negativeStatistic', 'minusT50'))
                 
     priorBlock.append(createReferenceBlock(etree, 'caseToCaseTransmissionLikelihood', 'c2cTransLikelihood'))
                                           
@@ -363,7 +424,8 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     basics = {'prior', 'posterior', 'likelihood'}
     
     for logBlock in mcmcBlock.iterchildren('log'):
-        if logBlock.get('id')=='screenLog':   
+        if logBlock.get('id')=='screenLog':
+            logBlock.set('logEvery', str(sampleEvery))
             if fixed:
                 for child in logBlock.iterchildren():
                     columnContents = child[0]
@@ -377,11 +439,12 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
 
         elif logBlock.get('id')=='fileLog':
             logBlock.set('fileName',fileNameRoot+".log.txt")
-            logEvery = logBlock.get('logEvery')
+            logBlock.set('logEvery', str(sampleEvery))
             if fixed:
                 for child in logBlock.iterchildren():
                     if child.tag not in basics:  
-                        logBlock.remove(child)            
+                        logBlock.remove(child)
+
             if kernel!='n':
                 logBlock.append(createReferenceBlock(etree, 'parameter', 'kernel_a'))
             logBlock.append(createReferenceBlock(etree, 'parameter', 'transmission_rate'))
@@ -390,12 +453,15 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
                 logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
                 logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
                 logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
+                for child in logBlock.iterchildren():
+                    if child.get('idref').startswith('skyride'):
+                        logBlock.remove(child)
 
 #             if doGeography:
 #                 logBlock.append(createReferenceBlock(etree, 'parameter', 'kernelAlphas'))
     networkLogBlock = etree.Element('log')
     networkLogBlock.set('id', 'networkLog')
-    networkLogBlock.set('logEvery', logEvery)
+    networkLogBlock.set('logEvery', str(sampleEvery))
     networkLogBlock.set('fileName', fileNameRoot+".net.txt")
     networkLogBlock.set('overwrite', 'true')
     networkLogBlock.append(createReferenceBlock(etree, modelString, modelString))
@@ -403,6 +469,7 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     
     treeLogBlock = mcmcBlock.find('logTree')
     treeLogBlock.set('fileName', fileNameRoot+".trees.txt")
+    treeLogBlock.set('logEvery', str(sampleEvery))
     firstTrait = treeLogBlock.find('trait')
     paintingTrait = etree.Element('trait')
     paintingTrait.set('name', 'partition')
@@ -411,12 +478,12 @@ def modifyXML(csvreader, dayOne, riemannSteps, outputFileName, beautiFileName, f
     treeLogBlock.insert(treeLogBlock.index(firstTrait), paintingTrait)
     if fixed:
         for child in treeLogBlock.iterchildren('trait'):
-            if child[0].tag=='discretizedBranchRates':
+            if child[0].tag=='strictClockBranchRates':
                 treeLogBlock.remove(child)
 
     fancyTreeLogBlock = etree.Element('logPartitionedTree')
     fancyTreeLogBlock.set('id', 'partitionedTreeFileLog')
-    fancyTreeLogBlock.set('logEvery', logEvery)
+    fancyTreeLogBlock.set('logEvery', str(sampleEvery))
     fancyTreeLogBlock.set('fileName', fileNameRoot+".fancytrees.txt")
     fancyTreeLogBlock.set('nexusFormat', "true")
     fancyTreeLogBlock.set('sortTranslationTable', "true")
@@ -442,6 +509,17 @@ def createParameterBlock(tree, name, idstring, value, greaterThanZero, dim):
     parameterElement.set('id', idstring)
     if greaterThanZero:
         parameterElement.set('lower', '0.0')
+    if dim>1:
+        parameterElement.set('dimension', str(dim))
+    return enclosingElement
+
+def createMinMaxParameterBlock(tree, name, idstring, value, min, max, dim):
+    enclosingElement = tree.Element(name)
+    parameterElement = tree.SubElement(enclosingElement,'parameter')
+    parameterElement.set('value', str(value))
+    parameterElement.set('id', idstring)
+    parameterElement.set('lower', str(min))
+    parameterElement.set('upper', str(max))
     if dim>1:
         parameterElement.set('dimension', str(dim))
     return enclosingElement
@@ -622,12 +700,13 @@ def createNestedReferenceBlock(tree, parentName, childName, reference):
 
 # Create a farm element
 
-def createSimpleCaseElement(tree, name, caseID, examinationDay, cullDay, oldestLesionAge, dayOne, sqrtInfScaleName, longitude, latitude, taxa):
+def createSimpleCaseElement(tree, name, caseID, examinationTime, cullTime, oldestLesionAge, longitude, latitude,
+                            taxa):
     caseElement = tree.Element(name)
     caseElement.set('caseID', caseID)
     caseElement.set('id', 'Farm'+caseID)
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'examinationDay', examinationDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'cullDay', cullDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
+    caseElement.set('examTime', str(examinationTime))
+    caseElement.set('cullTime', str(cullTime))
     caseElement.append(createParameterBlockNoID(tree, 'estimatedInfectionDate', oldestLesionAge, True, 1))
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", 0.5, 1, True, 1))
     
@@ -642,15 +721,16 @@ def createSimpleCaseElement(tree, name, caseID, examinationDay, cullDay, oldestL
     return caseElement
 
 
-def createJeffreysCategoryCaseElement(tree, name, caseID, examinationDay, cullDay, dayOne, longitude, latitude, taxa, infCategoryName, latCategoryName):
+def createJeffreysCategoryCaseElement(tree, name, caseID, examinationTime, cullTime, longitude, latitude, taxa,
+                                      infCategoryName, latCategoryName):
     caseElement = tree.Element(name)
     caseElement.set('caseID', caseID)
     caseElement.set('id', 'Farm'+caseID)
-    caseElement.set('inf_category', infCategoryName)
+    caseElement.set('infectiousCategory', infCategoryName)
     if latCategoryName!=None:
-        caseElement.set('lat_category', latCategoryName)
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'examinationDay', examinationDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'cullDay', cullDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
+        caseElement.set('latentCategory', latCategoryName)
+    caseElement.set('examTime', str(examinationTime))
+    caseElement.set('cullTime', str(cullTime))
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", 0.5, 1, True, 1))
     if latCategoryName!=None:
         caseElement.append(createMaxValueParameterBlock(tree, 'infectiousTimePosition', caseID+"_lbp", 0.5, 1, True, 1))
@@ -664,14 +744,16 @@ def createJeffreysCategoryCaseElement(tree, name, caseID, examinationDay, cullDa
         caseElement.append(createReferenceBlock(tree, 'taxon', taxon))
     return caseElement
 
-def createWithinCaseCategoryCaseElement(tree, name, caseID, examinationDay, cullDay, dayOne, longitude, latitude, taxa, infCategoryName, latCategoryName):
+def createWithinCaseCategoryCaseElement(tree, name, caseID, examinationTime, cullTime, longitude, latitude, taxa,
+                                        infCategoryName, latCategoryName):
     caseElement = tree.Element(name)
     caseElement.set('caseID', caseID)
     caseElement.set('id', 'Farm'+caseID)
     caseElement.set('infectiousCategory', infCategoryName)
-    caseElement.set('latentCategroy', latCategoryName)
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'examinationDay', examinationDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
-    caseElement.append(createEnclosedDateBlockNoID(tree, 'cullDay', cullDay, 'forwards', 'days', dayOne.strftime('%d/%m/%Y')))
+    if latCategoryName!=None:
+        caseElement.set('latentCategory', latCategoryName)
+    caseElement.set('examTime', str(examinationTime))
+    caseElement.set('cullTime', str(cullTime))
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", 0.5, 1, True, 1))
     if latCategoryName!=None:
         caseElement.append(createMaxValueParameterBlock(tree, 'infectiousTimePosition', caseID+"_lbp", 0.5, 1, True, 1))
@@ -728,55 +810,65 @@ def argOrNone(argument):
 # Main method; command line entry for data that isn't in the CSV file. If the command has a second argument, it is the XML filename to be written to. Otherwise, it writes to "eieio.xml" ;-) 
 
 def main():
-    dayOne = None
     riemannSteps = None
     model = None
     fixed = False
     latentPeriods = False
     kernel = 'e'
     startingNewick = None
+    chainLength = 10000000
+    sampleEvery = 1000
     
     validKernels = {'e', 'p', 'g', 'n'}
     validModels = {'s', 'j', 'w', 'g'}
+    validInfHyperpriors = {'n', 'v', 's', 'e', 'ln', 'lv', 'ls', 'le'}
+    validLatHyperpriors = {'n', 'v', 's', 'e', 'ln', 'lv', 'ls', 'le', 'z'}
 
-    parser = argparse.ArgumentParser(description='Write XML for the CaseToCaseTransmissionLikelihood class in BEAST', prog="oldMacDonald")
-    parser.add_argument('beautiFile', help='The path of an existing XML file generated by BEAUTi or similar, ready to have the elements for transmission tree reconstruction added')
-    parser.add_argument('epiFile', help='The path of a CSV file of epidemiological information; the file must have columns "Farm_ID", "Taxon", "Exam_date", "Cull_date" and "Oldest_lesion"')
+    parser = argparse.ArgumentParser(description='Write XML for the CaseToCaseTransmissionLikelihood class in BEAST',
+                                     prog="oldMacDonald")
+    parser.add_argument('beautiFile', help='The path of an existing XML file generated by BEAUTi or similar, ready to '
+                                           'have the elements for transmission tree reconstruction added')
+    parser.add_argument('epiFile', help='The path of a CSV file of epidemiological information; the file must have '
+                                        'columns "Farm_ID", "Taxon", "Exam_date", "Cull_date" and "Oldest_lesion"')
     parser.add_argument('outputXMLFile', help='The name of the output XML file')
     parser.add_argument('fileNameRoot', help='The root of the file names that BEAST will write the output to')
-    parser.add_argument('-d', '--dayOne', help='A date to be used as day 1 of the model (before any plausible TMRCA, use dd/mm/yyyy format)')
-    parser.add_argument('-r', '--riemannSteps', help='The number of Riemann numerical integrator steps to use', type=int)
-    parser.add_argument('-m', '--model', help='Case model (s=SimpleOutbreak, j=JeffreysCategoryOutbreak, g=GeneralCategoryOutbreak, w-WithinCaseCoalescent)')
-    parser.add_argument('-k', '--kernel', help='The type of spatial kernel to use (e=exponential, p=power law, g=Gaussian, n=none (ignore geography)')
-    parser.add_argument('-l', '--latentPeriods', help='The model of time from infection to cull includes a latent period')
-    parser.add_argument('-s', '--startingTree', help='If a Newick filename is given here, use this as the starting tree')
+    parser.add_argument('-r', '--riemannSteps', help='The number of Riemann numerical integrator steps to use',
+                        type=int)
+    parser.add_argument('-m', '--model', help='Case model (s=SimpleOutbreak, j=JeffreysCategoryOutbreak, '
+                                              'g=GeneralCategoryOutbreak, w-WithinCaseCoalescent)')
+    parser.add_argument('-k', '--kernel', help='The type of spatial kernel to use (e=exponential, p=power law, '
+                                               'g=Gaussian, n=none (ignore geography)')
+    parser.add_argument('-i', '--infectiousPeriods', help='The hyperprior type for the distribution of infectious '
+                                                          'period (n=normal, v=1/variance, s=1/stdev')
+    parser.add_argument('-l', '--latentPeriods', help='The hyperprior type for the distribution of infectious period '
+                                                      '(n=normal, v=1/variance, s=1/stdev, z=no latent periods)')
+    parser.add_argument('-s', '--startingTree', help='If a Newick filename is given here, use this as the starting '
+                                                     'tree')
     parser.add_argument('-f', '--fixed', help='Run on a fixed tree (requires given starting tree)?')
+    parser.add_argument('-c', '--chainLength', help='Length of the MCMC chain')
+    parser.add_argument('-e', '--sampleEvery', help='Sampling frequency')
     
     arguments = parser.parse_args()
   
     rawName = arguments.epiFile
-    #    At some point you're going to have to make this check the CSV file for the correct column headings. But not now.       
+    #    At some point you're going to have to make this check the CSV file for the correct column headings. But not
+    #    now.
     csvreader = csv.reader(open(rawName, 'rU'))
     outputFileName = arguments.outputXMLFile
     fileNameRoot = arguments.fileNameRoot
     beautiFileName = arguments.beautiFile
     startingNewick = arguments.startingTree
+    chainLength = arguments.chainLength
+    sampleEvery = arguments.sampleEvery
     
     try:
         model = arguments.model
     except:
         pass
     while model not in validModels:
-        model = raw_input('Enter a type of model (s=SimpleOutbreak, j=JeffreysCategoryOutbreak, g=GeneralCategoryOutbreak, w-WithinCaseCoalescent): ')            
-    
-    try:
-        dayOne = arguments.dayOne  
-    except:
-        while dayOne==None:
-            try:
-                dayOne = raw_input('Enter a date to be used as day 1 of the model (before any plausible TMRCA, use dd/mm/yyyy format): ')
-            except:
-                print "Please enter a valid date (dd/mm/yy format)"
+        model = raw_input('Enter a type of model (s=SimpleOutbreak, j=JeffreysCategoryOutbreak, '
+                          'g=GeneralCategoryOutbreak, w-WithinCaseCoalescent): ')
+
     try:
         riemannSteps = arguments.riemannSteps
     except:
@@ -796,17 +888,16 @@ def main():
         fixedE = raw_input('Fix the tree?')
         if fixedE == "Y":
             fixed = True 
-            
-    try:
-        latentPeriods = bool(arguments.latentPeriods=="True") 
-    except:
-        latentE = raw_input('Model latent periods?')
-        if latentE == "Y":
-            latentPeriods = True 
-  
-           
-    
-    modifyXML(csvreader, datetime.strptime(dayOne, '%d/%m/%Y'), riemannSteps, outputFileName, beautiFileName, fileNameRoot, startingNewick, model, kernel, fixed, latentPeriods) 
+
+
+    infHyperprior = arguments.infectiousPeriods
+
+    latHyperprior = arguments.latentPeriods
+
+    modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName,
+              fileNameRoot, startingNewick, model, kernel, fixed, infHyperprior, latHyperprior, chainLength,
+              sampleEvery)
+
 
 if __name__ == '__main__':
     main()

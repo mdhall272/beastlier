@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beast>
+  <!--FarmTransmissionLikelihood block.-->
+  <farmTransmissionLikelihood id="cottam2008Farms">
+    <virusTree>
+      <newick idref="startingTree"/>
+    </virusTree>
+    <cottam2008FarmSet>
+      <averageIncubationPeriod>
+        <parameter id="overallAverageIncubationPeriod" lower="0.0" value="5.0"/>
+      </averageIncubationPeriod>
+      <minInfectionToExam>
+        <parameter id="overallMinInfectionToExam" lower="0.0" value="2.0"/>
+      </minInfectionToExam>
+      <standardDevInDays>
+        <parameter id="overallStandardDevInDays" lower="0.0" value="2.0"/>
+      </standardDevInDays>
+      <dayOne>
+        <date direction="forwards" id="dayOne" origin="01/01/2001" units="days" value="0"/>
+      </dayOne>
+      <earliestInfectionDate>
+        <date direction="forwards" id="overallEarliestInfectionDate" origin="01/01/2001" units="days" value="33"/>
+      </earliestInfectionDate>
+      <incubationPeriodDistribution>
+        <gammaDistributionModel id="overallIncubationPeriodDistribution">
+          <shape>
+            <parameter value="1.67"/>
+          </shape>
+          <scale>
+            <parameter value="3.0"/>
+          </scale>
+        </gammaDistributionModel>
+      </incubationPeriodDistribution>
+      <cottam2008Farm id="Farm1" name="1">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="54"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="55"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="10"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213462|gb|DQ404179.1|Northumberland|22_02_01"/>
+        <taxon idref="gi|89213460|gb|DQ404178.1|Northumberland|22_02_01"/>
+        <taxon idref="gi|89213458|gb|DQ404177.1|Northumberland|22_02_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="Farm2" name="2">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="55"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="55"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="7"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213456|gb|DQ404176.1|Northumberland|23_02_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="Farm3" name="3">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="54"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="57"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="4"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213454|gb|DQ404175.1|Devon|24_02_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="Farm4" name="4">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="56"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="58"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="3"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213450|gb|DQ404173.1|Northamptonshire|26_02_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="Farm5" name="5">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="59"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="61"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213448|gb|DQ404172.1|Staffordshire|01_03_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmA" name="A">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="89"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="91"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255826|gb|EF552688.1|Durham|31_03_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmB" name="B">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="91"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="92"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255828|gb|EF552689.1|Durham|02_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmC" name="C">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="109"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="109"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="3"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255830|gb|EF552690.1|Durham|20_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmD" name="D">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="130"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="130"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="1"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255832|gb|EF552691.1|Durham|11_05_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmE" name="E">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="111"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="113"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="7"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255834|gb|EF552692.1|Durham|22_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmF" name="F">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="112"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="113"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="4"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213442|gb|DQ404170.1|Durham|23_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmG" name="G">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="133"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="133"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="4"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213438|gb|DQ404167.1|Durham|14_05_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmI" name="I">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="147"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="147"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="3"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213436|gb|DQ404166.1|Durham|28_05_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmJ" name="J">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="153"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="154"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|89213434|gb|DQ404165.1|Durham|03_06_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmK" name="K">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="90"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="93"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="1"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255836|gb|EF552693.1|Durham|01_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmL" name="L">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="99"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="99"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255838|gb|EF552694.1|Durham|10_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmM" name="M">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="136"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="137"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="5"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255840|gb|EF552695.1|Durham|17_05_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmN" name="N">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="101"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="103"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="1"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255842|gb|EF552696.1|Durham|12_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmO" name="O">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="104"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="104"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="2"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|156255844|gb|EF552697.1|Durham|15_04_01"/>
+      </cottam2008Farm>
+      <cottam2008Farm id="FarmP" name="P">
+        <averageIncubationPeriod>
+          <parameter idref="overallAverageIncubationPeriod"/>
+        </averageIncubationPeriod>
+        <minInfectionToExam>
+          <parameter idref="overallMinInfectionToExam"/>
+        </minInfectionToExam>
+        <standardDevInDays>
+          <parameter idref="overallStandardDevInDays"/>
+        </standardDevInDays>
+        <earliestInfectionDate>
+          <date idref="overallEarliestInfectionDate"/>
+        </earliestInfectionDate>
+        <examinationDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="119"/>
+        </examinationDay>
+        <cullDay>
+          <date direction="forwards" origin="01/01/2001" units="days" value="120"/>
+        </cullDay>
+        <oldestLesionAge>
+          <parameter lower="0.0" value="4"/>
+        </oldestLesionAge>
+        <incubationPeriodDistribution>
+          <gammaDistributionModel idref="overallIncubationPeriodDistribution"/>
+        </incubationPeriodDistribution>
+        <taxon idref="gi|161334746|gb|EU214601.1|Durham|30_04_01"/>
+      </cottam2008Farm>
+    </cottam2008FarmSet>
+  </farmTransmissionLikelihood>
+  <!--BranchLocationSwitchOperator elmement; place with other operators-->
+  <operators id="operators">
+    <branchLocationSwitchOperator weight="1">
+      <farmTransmissionLikelihood idref="cottam2008Farms"/>
+    </branchLocationSwitchOperator>
+  </operators>
+  <log fileName="network.log.txt" id="networkLog" logEvery="1000" overwrite="true">
+    <farmTransmissionLikelihood idref="cottam2008Farms"/>
+  </log>
+</beast>

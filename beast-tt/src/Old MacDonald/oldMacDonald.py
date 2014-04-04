@@ -7,6 +7,7 @@ import time
 import math
 import argparse
 
+dayOne = datetime.strptime("01/01/2000", '%d/%m/%Y')
 
 patternString = 'caseID'
 overallEstInfVar = 0.5
@@ -29,7 +30,9 @@ hyperpriorLookup = {'n' : 'normalPeriodPriorDistribution',
 # Main method
 
 def modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName, fileNameRoot, startingNewick, model,
-              kernel, fixed, infHyperprior, latHyperprior, chainLength, sampleEvery):
+              kernel, fixed, infHyperprior, latHyperprior, chainLength, sampleEvery, dateFormat):
+
+    parseAsDates = sampleEvery != None
 
     latentPeriods = latHyperprior is not 'z'
 
@@ -184,24 +187,26 @@ def modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName, fileNameR
             longColumn=i
         elif headerRow[i]=='Latitude' and kernel!='n':
             latColumn=i
+
     if(farmIDColumn is None or examTimeColumn is None or cullTimeColumn is None
        or (model=='s' and oldestLesionColumn is None) or taxonColumn is None
        or (kernel!='n' and (latColumn is None or longColumn is None))):
         raise Exception('Not all required columns are present')
-    
-        # Go through the rows of the CSV file and make a farm XML and a taxon block for each
 
-        # todo a version that uses dates is probably essential in the long run, so this is just commented out
+    # Go through the rows of the CSV file and make a farm XML and a taxon block for each
+
     currentRow=csvreader.next()
     branchPositionNames = list()
     infnessPositionNames= list()
-    while currentRow!=None:  
-        #processedExamDate = datetime.strptime(currentRow[examDateColumn], '%d/%m/%Y')
-        #processedCullDate = datetime.strptime(currentRow[cullDateColumn], '%d/%m/%Y')
-        #intExamDate = (processedExamDate - dayOne).days
-        #intCullDate = (processedCullDate - dayOne).days
-        examTime = currentRow[examTimeColumn]
-        cullTime = currentRow[cullTimeColumn]
+    while currentRow!=None:
+        if(parseAsDates):
+            processedExamDate = datetime.strptime(currentRow[examTimeColumn], dateFormat)
+            processedCullDate = datetime.strptime(currentRow[cullTimeColumn], dateFormat)
+            examTime = (processedExamDate - dayOne).days
+            cullTime = (processedCullDate - dayOne).days
+        else:
+            examTime = currentRow[examTimeColumn]
+            cullTime = currentRow[cullTimeColumn]
 
         taxa=currentRow[taxonColumn].split('$')
         taxonElement = etree.SubElement(taxaElement,'taxon')
@@ -368,10 +373,10 @@ def modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName, fileNameR
 
         # todo remember to put this back in for non-simulations!
 
-        # startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
-        # startingNeScaleElement.set('weight', str(5))
-        # startingNeScaleElement.set('scaleFactor', str(0.75))
-        # startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
+        startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
+        startingNeScaleElement.set('weight', str(5))
+        startingNeScaleElement.set('scaleFactor', str(0.75))
+        startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
 
         t50randomWalkElement = etree.SubElement(operatorsBlock, 'scaleOperator')
         t50randomWalkElement.set('weight', str(5))
@@ -412,6 +417,9 @@ def modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName, fileNameR
         minusT50PriorBlock.set('shape', '4')
         minusT50PriorBlock.set('scale', '0.5')
         minusT50PriorBlock.append(createReferenceBlock(etree, 'negativeStatistic', 'minusT50'))
+
+    if kernel!='n':
+        priorBlock.append(createUniformPriorBlock(etree, 'parameter', 'kernel_a', 0, 10))
                 
     priorBlock.append(createReferenceBlock(etree, 'caseToCaseTransmissionLikelihood', 'c2cTransLikelihood'))
                                           
@@ -816,6 +824,7 @@ def main():
     latentPeriods = False
     kernel = 'e'
     startingNewick = None
+    dateFormat = None
     chainLength = 10000000
     sampleEvery = 1000
     
@@ -834,6 +843,10 @@ def main():
     parser.add_argument('fileNameRoot', help='The root of the file names that BEAST will write the output to')
     parser.add_argument('-r', '--riemannSteps', help='The number of Riemann numerical integrator steps to use',
                         type=int)
+    parser.add_argument('-d', '--dateFormat', help='The date format (see documentation for the datetime library for'
+                                                   ' formats) for the date entries in the data table. If absent, times'
+                                                   ' of sampling and noninfectiousness are parsed as floating point'
+                                                   ' numbers.')
     parser.add_argument('-m', '--model', help='Case model (s=SimpleOutbreak, j=JeffreysCategoryOutbreak, '
                                               'g=GeneralCategoryOutbreak, w-WithinCaseCoalescent)')
     parser.add_argument('-k', '--kernel', help='The type of spatial kernel to use (e=exponential, p=power law, '
@@ -860,6 +873,7 @@ def main():
     startingNewick = arguments.startingTree
     chainLength = arguments.chainLength
     sampleEvery = arguments.sampleEvery
+    dateFormat = arguments.dateFormat
     
     try:
         model = arguments.model
@@ -896,7 +910,7 @@ def main():
 
     modifyXML(csvreader, riemannSteps, outputFileName, beautiFileName,
               fileNameRoot, startingNewick, model, kernel, fixed, infHyperprior, latHyperprior, chainLength,
-              sampleEvery)
+              sampleEvery, dateFormat)
 
 
 if __name__ == '__main__':

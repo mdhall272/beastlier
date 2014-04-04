@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1a75d1ab-769a-4edd-8583-29376b4b439f" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/oldMacDonald.py" afterPath="$PROJECT_DIR$/oldMacDonald.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Old MacDonald.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,7 +29,7 @@
       <file leaf-file-name="oldMacDonald.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="427" column="54" selection-start="21448" selection-end="21448" vertical-scroll-proportion="0.24088398" vertical-offset="6187" max-vertical-offset="13650">
+            <state line="421" column="8" selection-start="20951" selection-end="20951" vertical-scroll-proportion="0.7255245" vertical-offset="5900" max-vertical-offset="13860">
               <folding>
                 <element signature="e#123#154#0" expanded="true" />
               </folding>
@@ -116,10 +117,6 @@
               <option name="myItemId" value="" />
               <option name="myItemType" value="" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="Old MacDonald">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
@@ -128,17 +125,39 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../Sampling scheme investigation" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../Netherlands H7N7/Actual Full Analysis" />
     <property name="FullScreen" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="recentsLimit" value="5" />
+    <property name="restartRequiresConfirmation" value="true" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings />
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.oldMacDonald">
+    <configuration default="false" name="oldMacDonald" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../../../../Netherlands H7N7/Actual Full Analysis" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="Old MacDonald" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/oldMacDonald.py" />
+      <option name="PARAMETERS" value="-c 20000000 -e 2000 -r 20 -m w -i n -l n -k e -d %d/%m/%Y HANAPB2_base.xml datatable_clusters_one6.csv HANAPB2_allSame_ptXX.xml HANAPB2_allSame_ptXX" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -260,7 +279,14 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
-    <list size="0" />
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="Python.oldMacDonald" />
+    </list>
+    <recent_temporary>
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Python.oldMacDonald" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
   <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="false" SSL_PROTOCOLS="sslv3">
@@ -295,17 +321,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1920" height="1002" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18229167" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18229167" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39978564" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3290461" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -334,10 +360,53 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/oldMacDonald.py</url>
+          <line>202</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="246" column="24" selection-start="11311" selection-end="11311" vertical-scroll-proportion="0.0" vertical-offset="2909" max-vertical-offset="13980">
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="250" column="40" selection-start="11869" selection-end="11869" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="13680">
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="250" column="40" selection-start="11854" selection-end="11869" vertical-scroll-proportion="0.0" vertical-offset="3660" max-vertical-offset="13680">
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="464" column="60" selection-start="23418" selection-end="23418" vertical-scroll-proportion="0.0" vertical-offset="6277" max-vertical-offset="13650">
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="427" column="54" selection-start="21448" selection-end="21448" vertical-scroll-proportion="0.0" vertical-offset="6187" max-vertical-offset="13650">
@@ -527,9 +596,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm30/python_stubs/-1698384448/__builtin__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="29" column="0" selection-start="1105" selection-end="1105" vertical-scroll-proportion="0.48066297" vertical-offset="0" max-vertical-offset="76080">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="427" column="54" selection-start="21448" selection-end="21448" vertical-scroll-proportion="0.24088398" vertical-offset="6187" max-vertical-offset="13650">
+        <state line="421" column="8" selection-start="20951" selection-end="20951" vertical-scroll-proportion="0.7255245" vertical-offset="5900" max-vertical-offset="13860">
           <folding>
             <element signature="e#123#154#0" expanded="true" />
           </folding>

@@ -29,9 +29,11 @@
       <file leaf-file-name="oldMacDonald.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="421" column="8" selection-start="20951" selection-end="20951" vertical-scroll-proportion="0.7255245" vertical-offset="5900" max-vertical-offset="13860">
+            <state vertical-scroll-proportion="1.0446736" vertical-offset="6262" max-vertical-offset="15480">
+              <caret line="458" column="0" selection-start-line="458" selection-start-column="0" selection-end-line="458" selection-end-column="0" />
               <folding>
                 <element signature="e#123#154#0" expanded="true" />
+                <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -55,6 +57,7 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
+        <option value="$PROJECT_DIR$/justTest" />
         <option value="$PROJECT_DIR$/oldMacDonald.py" />
       </list>
     </option>
@@ -78,7 +81,7 @@
     <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="Scope" currentSubView="Changed Files" proportions="" version="1" splitterProportion="0.5">
+    <navigator currentView="Scope" currentSubView="Changed Files" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -90,6 +93,16 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope">
+        <subPane subId="Changed Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -110,22 +123,12 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope">
-        <subPane subId="Changed Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../Netherlands H7N7/Actual Full Analysis" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../../../Python/GenBank Extractor" />
     <property name="FullScreen" value="false" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
@@ -145,13 +148,13 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../../../../Netherlands H7N7/Actual Full Analysis" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../../../../Network reconstruction/Home stretch/Third try" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="Old MacDonald" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/oldMacDonald.py" />
-      <option name="PARAMETERS" value="-c 20000000 -e 2000 -r 20 -m w -i n -l n -k e -d %d/%m/%Y HANAPB2_base.xml datatable_clusters_one6.csv HANAPB2_allSame_ptXX.xml HANAPB2_allSame_ptXX" />
+      <option name="PARAMETERS" value="-c 50000000 -e 5000 -r 8 -m w -i n -l z -k e simulation_K_1_skyride.xml data_K_1.csv wcc_K_1_full.xml wcc_K_1_full" />
       <RunnerSettings RunnerId="PyDebugRunner" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
@@ -289,22 +292,8 @@
     </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
-  <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="false" SSL_PROTOCOLS="sslv3">
-    <option name="USER" value="" />
-    <option name="PASSWORD" value="" />
-    <option name="mySSHConnectionTimeout" value="30000" />
-    <option name="mySSHReadTimeout" value="30000" />
-    <option name="LAST_MERGED_REVISION" />
-    <option name="MERGE_DRY_RUN" value="false" />
-    <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
-    <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
-    <option name="IGNORE_SPACES_IN_MERGE" value="false" />
-    <option name="CHECK_NESTED_FOR_QUICK_MERGE" value="false" />
-    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
-    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
-    <option name="FORCE_UPDATE" value="false" />
-    <option name="IGNORE_EXTERNALS" value="false" />
-    <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
+  <component name="SvnConfiguration" myUseAcceleration="nothing">
+    <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -323,15 +312,15 @@
     <frame x="0" y="22" width="1920" height="1002" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32967034" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18229167" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18430753" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39978564" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3290461" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290461" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -345,6 +334,9 @@
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
       <collection />
     </option>
   </component>
@@ -363,251 +355,568 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/oldMacDonald.py</url>
-          <line>202</line>
+          <line>243</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/oldMacDonald.py</url>
+          <line>1014</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="2" />
+      <option name="time" value="4" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="246" column="24" selection-start="11311" selection-end="11311" vertical-scroll-proportion="0.0" vertical-offset="2909" max-vertical-offset="13980">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4267" max-vertical-offset="15195">
+          <caret line="321" column="0" selection-start-line="321" selection-start-column="0" selection-end-line="329" selection-end-column="39" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="250" column="40" selection-start="11869" selection-end="11869" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="13680">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4267" max-vertical-offset="15195">
+          <caret line="321" column="0" selection-start-line="321" selection-start-column="0" selection-end-line="329" selection-end-column="39" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="250" column="40" selection-start="11854" selection-end="11869" vertical-scroll-proportion="0.0" vertical-offset="3660" max-vertical-offset="13680">
+        <state vertical-scroll-proportion="0.0" vertical-offset="13689" max-vertical-offset="15195">
+          <caret line="484" column="0" selection-start-line="484" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="464" column="60" selection-start="23418" selection-end="23418" vertical-scroll-proportion="0.0" vertical-offset="6277" max-vertical-offset="13650">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="15195">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="427" column="54" selection-start="21448" selection-end="21448" vertical-scroll-proportion="0.0" vertical-offset="6187" max-vertical-offset="13650">
+        <state vertical-scroll-proportion="0.0" vertical-offset="5488" max-vertical-offset="15195">
+          <caret line="438" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="26" selection-start="2392" selection-end="2396" vertical-scroll-proportion="0.0" vertical-offset="733" max-vertical-offset="13725">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="14685">
+          <caret line="131" column="59" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="62" column="26" selection-start="2392" selection-end="2396" vertical-scroll-proportion="0.0" vertical-offset="733" max-vertical-offset="13725">
+        <state vertical-scroll-proportion="0.0" vertical-offset="13090" max-vertical-offset="14685">
+          <caret line="912" column="4" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="476" column="41" selection-start="24240" selection-end="24240" vertical-scroll-proportion="0.0" vertical-offset="6787" max-vertical-offset="13710">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="14685">
+          <caret line="449" column="39" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="410" column="44" selection-start="20933" selection-end="20933" vertical-scroll-proportion="0.0" vertical-offset="5467" max-vertical-offset="13710">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6337" max-vertical-offset="14685">
+          <caret line="449" column="39" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="128" column="58" selection-start="5476" selection-end="5476" vertical-scroll-proportion="0.0" vertical-offset="12205" max-vertical-offset="13770">
+        <state vertical-scroll-proportion="0.0" vertical-offset="361" max-vertical-offset="14655">
+          <caret line="55" column="56" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="404" column="42" selection-start="20448" selection-end="20448" vertical-scroll-proportion="0.0" vertical-offset="5317" max-vertical-offset="13650">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="14655">
+          <caret line="39" column="36" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="43" selection-start="4448" selection-end="4448" vertical-scroll-proportion="0.0" vertical-offset="1342" max-vertical-offset="12780">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="14655">
+          <caret line="39" column="36" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="44" selection-start="1667" selection-end="1667" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12780">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6930" max-vertical-offset="14655">
+          <caret line="486" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="464" column="4" selection-start="23572" selection-end="23572" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="14655">
+          <caret line="305" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="464" column="4" selection-start="23572" selection-end="23572" vertical-scroll-proportion="0.0" vertical-offset="6766" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6157" max-vertical-offset="14565">
+          <caret line="443" column="41" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="250" column="89" selection-start="12849" selection-end="12849" vertical-scroll-proportion="0.0" vertical-offset="3646" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4432" max-vertical-offset="14475">
+          <caret line="307" column="103" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="250" column="89" selection-start="12849" selection-end="12849" vertical-scroll-proportion="0.0" vertical-offset="3556" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4342" max-vertical-offset="14475">
+          <caret line="307" column="103" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="254" column="81" selection-start="13117" selection-end="13117" vertical-scroll-proportion="0.0" vertical-offset="3706" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6217" max-vertical-offset="14460">
+          <caret line="323" column="37" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="254" column="81" selection-start="13117" selection-end="13117" vertical-scroll-proportion="0.0" vertical-offset="3616" max-vertical-offset="12750">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6217" max-vertical-offset="14460">
+          <caret line="323" column="37" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="28" selection-start="2340" selection-end="2340" vertical-scroll-proportion="0.0" vertical-offset="691" max-vertical-offset="12315">
+        <state vertical-scroll-proportion="0.0" vertical-offset="5637" max-vertical-offset="14445">
+          <caret line="381" column="41" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="354" column="105" selection-start="18285" selection-end="18285" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="12285">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6575" max-vertical-offset="14145">
+          <caret line="452" column="111" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="354" column="105" selection-start="18285" selection-end="18285" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12285">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6485" max-vertical-offset="14145">
+          <caret line="452" column="111" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="354" column="105" selection-start="18285" selection-end="18285" vertical-scroll-proportion="0.0" vertical-offset="4936" max-vertical-offset="12285">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="13860">
+          <caret line="421" column="8" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="430" column="49" selection-start="22379" selection-end="22379" vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="12360">
+        <state vertical-scroll-proportion="0.0" vertical-offset="2909" max-vertical-offset="13980">
+          <caret line="246" column="24" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="430" column="49" selection-start="22379" selection-end="22379" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12360">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="13680">
+          <caret line="250" column="40" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3660" max-vertical-offset="13680">
+          <caret line="250" column="40" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6277" max-vertical-offset="13650">
+          <caret line="464" column="60" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6187" max-vertical-offset="13650">
+          <caret line="427" column="54" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="733" max-vertical-offset="13725">
+          <caret line="62" column="26" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="733" max-vertical-offset="13725">
+          <caret line="62" column="26" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6787" max-vertical-offset="13710">
+          <caret line="476" column="41" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="5467" max-vertical-offset="13710">
+          <caret line="410" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="12205" max-vertical-offset="13770">
+          <caret line="128" column="58" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="5317" max-vertical-offset="13650">
+          <caret line="404" column="42" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1342" max-vertical-offset="12780">
+          <caret line="103" column="43" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12780">
+          <caret line="42" column="44" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12750">
+          <caret line="464" column="4" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6766" max-vertical-offset="12750">
+          <caret line="464" column="4" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3646" max-vertical-offset="12750">
+          <caret line="250" column="89" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3556" max-vertical-offset="12750">
+          <caret line="250" column="89" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3706" max-vertical-offset="12750">
+          <caret line="254" column="81" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3616" max-vertical-offset="12750">
+          <caret line="254" column="81" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="691" max-vertical-offset="12315">
+          <caret line="59" column="28" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="12285">
+          <caret line="354" column="105" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12285">
+          <caret line="354" column="105" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="4936" max-vertical-offset="12285">
+          <caret line="354" column="105" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="12360">
+          <caret line="430" column="49" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="12360">
+          <caret line="430" column="49" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharm30/python_stubs/-1698384448/__builtin__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="0" selection-start="1105" selection-end="1105" vertical-scroll-proportion="0.48066297" vertical-offset="0" max-vertical-offset="76080">
-          <folding />
+        <state vertical-scroll-proportion="0.48066297" vertical-offset="0" max-vertical-offset="76080">
+          <caret line="29" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/justTest">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="905">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/oldMacDonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="421" column="8" selection-start="20951" selection-end="20951" vertical-scroll-proportion="0.7255245" vertical-offset="5900" max-vertical-offset="13860">
+        <state vertical-scroll-proportion="1.0446736" vertical-offset="6262" max-vertical-offset="15480">
+          <caret line="458" column="0" selection-start-line="458" selection-start-column="0" selection-end-line="458" selection-end-column="0" />
           <folding>
             <element signature="e#123#154#0" expanded="true" />
+            <marker date="1406811520000" expanded="true" signature="22760:23651" placeholder="..." />
           </folding>
         </state>
       </provider>

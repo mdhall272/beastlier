@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/beast-tt/beast-tt.iml" filepath="$PROJECT_DIR$/beast-tt/beast-tt.iml" />
+      <module fileurl="file://$USER_HOME$/beast2/beast2.iml" filepath="$USER_HOME$/beast2/beast2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/beastlier/beastlier.iml" filepath="$PROJECT_DIR$/beastlier/beastlier.iml" />
     </modules>
   </component>
 </project>
-

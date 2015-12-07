@@ -1,4 +1,4 @@
-beast-tt
+beastlier (BEAST Link Inference for Epidemiological Reconstruction)
 ========
 
-Co-estimation of phylogenetic and transmission trees in BEAST 2
+A BEAST 2 module for transmission tree reconstruction

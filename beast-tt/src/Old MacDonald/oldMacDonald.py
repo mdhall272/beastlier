@@ -54,21 +54,21 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
     caseString = outbreakLookup[model]+'Case'
 
     parser = etree.XMLParser(remove_blank_text=True)
-    
-    fullTree = etree.parse(open(beautiFileName), parser)  
-    
+
+    fullTree = etree.parse(open(beautiFileName), parser)
+
     beastElement = fullTree.getroot()
-    
+
     beastElement.addprevious(etree.Comment(" BEAUTi output modified for transmission tree reconstruction by "
                                            "OldMacDonald 4"))
     beastElement.addprevious(etree.Comment("        by Matthew Hall, University of Edinburgh"))
-    
+
     # if running on a fixed tree, strip out all the irrelevent elements
     # if fixed:
     #     for element in beastElement.iterchildren():
     #         if element.tag not in fixedKeep:
     #             beastElement.remove(element)
-                
+
     if model == 'w' or model == 'n' or model=='l':
         for element in beastElement.iterchildren():
             if element.tag in coalescentNames:
@@ -76,8 +76,8 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
     treeModelElement = beastElement.find('treeModel')
     treeModelElement.tag = 'partitionedTreeModel'
-    
-    # replace the old starting tree if told to do so            
+
+    # replace the old starting tree if told to do so
     if startingNewick!=None:
         for element in beastElement.iterchildren():
             if element.tag in startingTrees:
@@ -93,7 +93,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         newickFile = open(startingNewick)
         newickString = newickFile.read()
         newickElement.text = newickString
-        
+
         beastElement.insert(beastElement.index(treeModelElement), newickElement)
 
 
@@ -103,16 +103,16 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         clockRateParameterElement = clockRateElement.find('parameter')
         clockRateParameterElement.set('value', '1E-5')
 
-    
+
     # Remove the old taxa elements
     taxaElement = beastElement.find('taxa')
     for taxon in taxaElement:
         taxaElement.remove(taxon)
-    
+
     operatorsElement = beastElement.find('operators')
-    
+
     # Add the outbreak block
-    
+
     outbreakElement = etree.Element(outbreakString)
     outbreakElement.set('id', 'outbreak')
     outbreakElement.set('hasLatentPeriods', str(latentPeriods).lower())
@@ -127,7 +127,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
     latCategoryName = 'lat1' if latentPeriods else None
 
     # simple and general aren't getting much love right now
-       
+
     if model == 'w' or model == 'j' or model =='n' or model =='l':
         # for now, let's stick with one category
 
@@ -139,7 +139,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
         if infHyperpriorType=='normalPeriodPriorDistribution':
             infDistributionPriorElement.set("mu", "10")
-            infDistributionPriorElement.set("lambda", "0.01")
+            infDistributionPriorElement.set("lambda", "100")
             infDistributionPriorElement.set("alpha", "1")
             infDistributionPriorElement.set("beta", "1")
         elif infHyperpriorType=='exponentiallyDistributedStDevPeriodPriorDistribution':
@@ -209,15 +209,15 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
     outbreakElement.append(createReferenceBlock(etree, 'taxa', 'taxa'))
 
-    
+
     # gather all the branch position elements together (to be added as a child of the tree likelihood element)
     branchPositionsElement = etree.Element('compoundParameter')
     branchPositionsElement.set('id','infectionTimeBranchPositions')
-    
+
     if latentPeriods:
         infnessPositionsElement = etree.Element('compoundParameter')
         infnessPositionsElement.set('id','infectiousTimePositions')
-        
+
     # Individual farm data processing starts here; read from a CSV file. The file must have the column headings
     # "Farm_ID", "Exam_date", "Cull_date", "Oldest_lesion" (for SimpleOutbreaks) and "Taxon". In future there will
     # need to be an infectious category column
@@ -356,7 +356,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
             currentRow=csvreader.next()
         except StopIteration:
             currentRow=None
-     
+
     # Add the C2CL block
     c2cTransElement = etree.Element('caseToCaseTransmissionLikelihood')
     c2cTransElement.set('id', 'c2cTransLikelihood')
@@ -364,14 +364,23 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
     beastElement.insert(beastElement.index(c2cTransElement), etree.Comment(" Probability of the transmission tree and "
                                                                            "epidemiological parameters given the "
                                                                            "phylogenetic tree"))
-    
+
     if kernel!='n':
         kernelElement = etree.SubElement(c2cTransElement, 'spatialKernelFunction')
         kernelElement.set('type', kernelLookup[kernel])
         kernelElement.append(createParameterBlock(etree, 'parameters', 'kernel.alpha', 1, True, 1))
         if kernel=='g':
             kernelElement.set('integratorSteps', str(20))
-    trElement = createMinMaxParameterBlock(etree, 'transmissionRate', 'transmission_rate', 0.05, 0, 0.75, 1)
+    trElement = createParameterBlock(etree, 'transmissionRate', 'transmission_rate', 0.05, True, 1)
+
+    indexPriorElement = etree.SubElement(c2cTransElement, 'initialInfectionTimePrior')
+    normalDistElement = etree.SubElement(indexPriorElement, 'normalDistributionModel')
+    meanElement = etree.SubElement(normalDistElement, 'mean')
+    sdElement = etree.SubElement(normalDistElement, 'stdev')
+    meanElement.text = "0"
+    sdElement.text = "2"
+
+
     c2cTransElement.append(trElement)
 
     # trPriorElement = etree.SubElement(c2cTransElement, 'transmissionRatePrior')
@@ -397,14 +406,14 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
     c2cTreeElement = etree.SubElement(c2cTransElement, modelString)
 
-    c2cTreeElement.set("transform", "true")
+    c2cTreeElement.set("truncate", "true")
 
     if startingTT is not None:
         startingTTElement = etree.SubElement(c2cTreeElement, 'startingNetwork')
         startingTTElement.text = startingTT
 
     c2cTreeElement.append(createReferenceBlock(etree, outbreakString, 'outbreak'))
-    c2cTreeElement.append(createReferenceBlock(etree,'treeModel','treeModel')) 
+    c2cTreeElement.append(createReferenceBlock(etree,'treeModel','treeModel'))
     c2cTreeElement.set('id', modelString)
     c2cTreeElement.append(createParameterBlock(etree, 'maxFirstInfToRoot', 'max_first_inf_to_root', 14, True, 1))
     infTimesWrapper = etree.Element('infectionTimeBranchPositions')
@@ -416,18 +425,18 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         infnessTimesWrapper.append(infnessPositionsElement)
     if model == 'w' or model == 'n' or model == 'l':
         demoModelWrapper = etree.Element('demographicModel')
-        constantElement = etree.SubElement(demoModelWrapper, 'constantSize')
-        constantElement.set('units', 'days')
-        constantElement.append(createParameterBlock(etree, 'populationSize', 'const.Ne', 1, True, 1))
-        # logisticElement = etree.SubElement(demoModelWrapper, 'logisticGrowthN0')
-        # logisticElement.set('units', 'days')
-        # logisticElement.append(createParameterBlock(etree, 'populationSize', 'logistic.startingNe', 0.1, True, 1))
-        # logisticElement.append(createParameterBlock(etree, 'growthRate', 'logistic.growthRate', 1, False, 1))
-        # logisticElement.append(createParameterBlock(etree, 't50', 'logistic.t50', -4, False, 1))
+        # constantElement = etree.SubElement(demoModelWrapper, 'linearGrowth')
+        # constantElement.set('units', 'days')
+        # constantElement.append(createParameterBlock(etree, 'slope', 'lin.slope', 1, True, 1))
+        logisticElement = etree.SubElement(demoModelWrapper, 'logisticGrowthN0')
+        logisticElement.set('units', 'days')
+        logisticElement.append(createParameterBlock(etree, 'populationSize', 'logistic.startingNe', 0.1, True, 1))
+        logisticElement.append(createParameterBlock(etree, 'growthRate', 'logistic.growthRate', 1, False, 1))
+        logisticElement.append(createParameterBlock(etree, 't50', 'logistic.t50', -4, False, 1))
         c2cTreeElement.append(demoModelWrapper)
-        # minusStatistic = etree.SubElement(c2cTreeElement, 'negativeStatistic')
-        # minusStatistic.set('id', 'minusT50')
-        # minusStatistic.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
+        minusStatistic = etree.SubElement(c2cTreeElement, 'negativeStatistic')
+        minusStatistic.set('id', 'minusT50')
+        minusStatistic.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
 
         if ratio:
             ratioStatistic = etree.SubElement(c2cTreeElement, 'sumStatistic')
@@ -443,7 +452,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
 
 
-        
+
     keepIDrefs = {'clock.rate', 'kappa'}
 
     operatorsBlock = beastElement.find('operators')
@@ -492,7 +501,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         bpUniformOpElement.set('lower', str(0))
         bpUniformOpElement.set('upper', str(1))
         bpUniformOpElement.append(createReferenceBlock(etree, 'parameter', 'infectionTimeBranchPositions'))
-    
+
         if latentPeriods and model != 'l':
             bpUniformOpElement = etree.SubElement(operatorsBlock, 'uniformOperator')
             bpUniformOpElement.set('weight', str(5))
@@ -500,16 +509,16 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
             bpUniformOpElement.set('upper', str(1))
             bpUniformOpElement.append(createReferenceBlock(etree, 'parameter', 'infectiousTimePositions'))
 
-    
+
     #===========================================================================
-    # 
+    #
     # for name in branchPositionNames:
     #     indibpScaleOpElement = etree.SubElement(operatorsBlock, 'uniformOperator')
     #     indibpScaleOpElement.set('weight', str(1))
     #     indibpScaleOpElement.set('lower', str(0))
     #     indibpScaleOpElement.set('upper', str(1))
     #     indibpScaleOpElement.append(createReferenceBlock(etree, 'parameter', name))
-    #      
+    #
     #===========================================================================
 
     transRateScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
@@ -535,17 +544,17 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
             if operator.tag == 'upDownOperator':
                 operatorsBlock.remove(operator)
 
-    if kernel!='n':    
+    if kernel!='n':
         kernelaScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
         kernelaScaleElement.set('weight', str(5))
         kernelaScaleElement.set('scaleFactor', str(0.75))
         kernelaScaleElement.append(createReferenceBlock(etree, 'parameter', 'kernel.alpha'))
 
-    if model == 'w' or model == 'n' or model == 'l':
+    # if model == 'w' or model == 'n' or model == 'l':
 
-        # growthRateScaleElement = etree.SubElement(operatorsBlock, 'randomWalkOperator')
+        # growthRateScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
         # growthRateScaleElement.set('weight', str(5))
-        # growthRateScaleElement.set('windowSize', str(0.75))
+        # growthRateScaleElement.set('scaleFactor', str(0.75))
         # growthRateScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
 
         # startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
@@ -553,17 +562,17 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         # startingNeScaleElement.set('scaleFactor', str(0.75))
         # startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
 
-        startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
-        startingNeScaleElement.set('weight', str(5))
-        startingNeScaleElement.set('scaleFactor', str(0.75))
-        startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'const.Ne'))
+        # startingNeScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
+        # startingNeScaleElement.set('weight', str(5))
+        # startingNeScaleElement.set('scaleFactor', str(0.75))
+        # startingNeScaleElement.append(createReferenceBlock(etree, 'parameter', 'lin.slope'))
 
 
-        # ttScaleElement = etree.SubElement(operatorsBlock, 'randomWalkOperator')
+        # ttScaleElement = etree.SubElement(operatorsBlock, 'scaleOperator')
         # ttScaleElement.set('weight', str(5))
-        # ttScaleElement.set('windowSize', str(0.75))
+        # ttScaleElement.set('scaleFactor', str(0.75))
         # ttScaleElement.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
-        #
+
 
 
     if latHyperpriorType == 'latentPeriod' and not fixedTT:
@@ -572,11 +581,11 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         latentPeriodScaleElement.set('scaleFactor', str(0.75))
         latentPeriodScaleElement.append(createReferenceBlock(etree, 'parameter', latCategoryName+".latPeriod"))
 
-             
+
     mcmcBlock = beastElement.find('mcmc')
     mcmcBlock.set('operatorAnalysis', fileNameRoot+".ops.txt")
     mcmcBlock.set('chainLength', str(chainLength))
-    
+
     posteriorBlock = mcmcBlock.find('posterior')
     priorBlock = posteriorBlock.find('prior')
     # if fixed:
@@ -588,30 +597,48 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
                 priorBlock.remove(element)
             if len(element) and element[0].get('idref').startswith('skyride'):
                 priorBlock.remove(element)
-        # ratePriorBlock = etree.SubElement(priorBlock, 'gammaPrior')
-        # ratePriorBlock.set('shape', '4')
-        # ratePriorBlock.set('scale', '0.25')
+        # ratePriorBlock = etree.SubElement(priorBlock, 'invGammaPrior')
+        # ratePriorBlock.set('shape', '1')
+        # ratePriorBlock.set('scale', '5')
+        # ratePriorBlock.set('offset', '0')
         # ratePriorBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
-
-
-        # minusTTPriorBlock = etree.SubElement(priorBlock, 'gammaPrior')
-        # minusTTPriorBlock.set('shape', '10')
-        # minusTTPriorBlock.set('scale', '0.5')
-        # minusTTPriorBlock.append(createReferenceBlock(etree, 'negativeStatistic', 'minusT50'))
         #
-        # if ratio:
-        #     ratioPriorBlock = etree.SubElement(priorBlock, 'logNormalPrior')
-        #     ratioPriorBlock.set('mean', '4')
-        #     ratioPriorBlock.set('stdev', '0.5')
-        #     ratioPriorBlock.set('meanInRealSpace', 'false')
-        #     ratioPriorBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.ratio'))
+        #
+        # minusTTPriorBlock = etree.SubElement(priorBlock, 'invGammaPrior')
+        # minusTTPriorBlock.set('shape', '2')
+        # minusTTPriorBlock.set('scale', '10')
+        # minusTTPriorBlock.set('offset', '0')
+        # minusTTPriorBlock.append(createReferenceBlock(etree, 'negativeStatistic', 'minusT50'))
 
 
-        ratioPriorBlock = etree.SubElement(priorBlock, 'logNormalPrior')
-        ratioPriorBlock.set('mean', '5')
-        ratioPriorBlock.set('stdev', '1')
-        ratioPriorBlock.set('meanInRealSpace', 'false')
-        ratioPriorBlock.append(createReferenceBlock(etree, 'parameter', 'const.Ne'))
+        minusTTPriorBlock = etree.SubElement(priorBlock, 'gammaPrior')
+        minusTTPriorBlock.set('shape', '10')
+        minusTTPriorBlock.set('scale', '0.5')
+        minusTTPriorBlock.append(createReferenceBlock(etree, 'negativeStatistic', 'minusT50'))
+
+
+        if ratio:
+            ratioPriorBlock = etree.SubElement(priorBlock, 'logNormalPrior')
+            ratioPriorBlock.set('mean', '4')
+            ratioPriorBlock.set('stdev', '0.5')
+            ratioPriorBlock.set('offset', '0')
+            ratioPriorBlock.set('meanInRealSpace', 'false')
+            ratioPriorBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.ratio'))
+
+        trPriorBlock = etree.SubElement(priorBlock, 'exponentialPrior')
+        trPriorBlock.set('mean', '0.5')
+        trPriorBlock.append(createReferenceBlock(etree, 'parameter', 'transmission_rate'))
+
+        kaPriorBlock = etree.SubElement(priorBlock, 'exponentialPrior')
+        kaPriorBlock.set('mean', '1')
+        kaPriorBlock.append(createReferenceBlock(etree, 'parameter', 'kernel.alpha'))
+
+
+
+
+        # ratioPriorBlock = etree.SubElement(priorBlock, 'exponentialPrior')
+        # ratioPriorBlock.set('mean', '1')
+        # ratioPriorBlock.append(createReferenceBlock(etree, 'parameter', 'lin.slope'))
 
 
 
@@ -628,11 +655,11 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
         latentPeriodPriorBlock.append(createReferenceBlock(etree, 'parameter', latCategoryName+".latPeriod"))
 
     priorBlock.append(createReferenceBlock(etree, 'caseToCaseTransmissionLikelihood', 'c2cTransLikelihood'))
-                                          
+
     likelihoodBlock = posteriorBlock.find('likelihood')
-        
+
     basics = {'prior', 'posterior', 'likelihood'}
-    
+
     for logBlock in mcmcBlock.iterchildren('log'):
         if logBlock.get('id')=='screenLog':
             logBlock.set('logEvery', str(sampleEvery))
@@ -642,8 +669,8 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
             #         if columnContents.tag not in basics:
             #             logBlock.remove(child)
             logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'trans_rate', 'transmission_rate', 6, 12))
-            
-            
+
+
             if kernel!='n':
                 logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'kernel.alpha', 'kernel.alpha', 4, 12))
 
@@ -651,17 +678,17 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
                 logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lat.period', 'lat1.latPeriod', 4, 12))
 
             if model == 'w' or model == 'n' or model =='l':
-                # if ratio:
-                #
-                #     logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.ratio', 'logistic.ratio', 4, 12))
-                #     logBlock.append(createScreenLogColumnBlock(etree, 'productStatistic', 'lg.t50', 'logistic.t50', 4, 12))
-                # else:
-                #     logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.t50', 'logistic.t50', 4, 12))
+                if ratio:
 
-                # logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.gr', 'logistic.growthRate', 4, 12))
+                    logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.ratio', 'logistic.ratio', 4, 12))
+                    logBlock.append(createScreenLogColumnBlock(etree, 'productStatistic', 'lg.t50', 'logistic.t50', 4, 12))
+
+                # logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.t50', 'logistic.t50', 4, 12))
+
+                logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.gr', 'logistic.growthRate', 4, 12))
                 # logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lg.Ne', 'logistic.startingNe', 4, 12))
 
-                logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'const.Ne', 'const.Ne', 4, 12))
+                # logBlock.append(createScreenLogColumnBlock(etree, 'parameter', 'lin.slope', 'lin.slope', 4, 12))
 
         elif logBlock.get('id')=='fileLog':
             logBlock.set('fileName',fileNameRoot+".log.txt")
@@ -680,15 +707,15 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 
 
             if model == 'w' or model =='n' or model =='l':
-                # if ratio:
-                #     logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.ratio'))
-                #     logBlock.append(createReferenceBlock(etree, 'productStatistic', 'logistic.t50'))
+                if ratio:
+                    logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.ratio'))
+                    logBlock.append(createReferenceBlock(etree, 'productStatistic', 'logistic.t50'))
                 # else:
-                #     logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
-                # logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
+                # logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.t50'))
+                logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.growthRate'))
                 # logBlock.append(createReferenceBlock(etree, 'parameter', 'logistic.startingNe'))
 
-                logBlock.append(createReferenceBlock(etree, 'parameter', 'const.Ne'))
+                # logBlock.append(createReferenceBlock(etree, 'parameter', 'lin.slope'))
 
                 for child in logBlock.iterchildren():
                     if child.get('idref').startswith('skyride') or child.get('idref')=='coalescent':
@@ -703,7 +730,7 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
     networkLogBlock.set('overwrite', 'true')
     networkLogBlock.append(createReferenceBlock(etree, modelString, modelString))
     mcmcBlock.insert(mcmcBlock.index(posteriorBlock)+4, networkLogBlock)
-    
+
     treeLogBlock = mcmcBlock.find('logTree')
 
     # if fixedPT and fixedTT:
@@ -722,26 +749,26 @@ def modifyXML(csvreader, outputFileName, beautiFileName, fileNameRoot, startingN
 #         if child[0].tag=='strictClockBranchRates':
 #             treeLogBlock.remove(child)
 
-    fancyTreeLogBlock = etree.Element('logPartitionedTree')
-    fancyTreeLogBlock.set('id', 'partitionedTreeFileLog')
-    fancyTreeLogBlock.set('logEvery', str(sampleEvery))
-    fancyTreeLogBlock.set('fileName', fileNameRoot+".fancytrees.txt")
-    fancyTreeLogBlock.set('nexusFormat', "true")
-    fancyTreeLogBlock.set('sortTranslationTable', "true")
-    fancyTreeLogBlock.append(createReferenceBlock(etree, 'treeModel', 'treeModel'))
-    fancyTreeLogBlock.append(createReferenceBlock(etree, modelString, modelString))
-    fancyTreeLogBlock.append(createNestedReferenceBlock(etree, 'trait', modelString, modelString))
-    mcmcBlock.insert(mcmcBlock.index(treeLogBlock)+1, fancyTreeLogBlock)
+    # fancyTreeLogBlock = etree.Element('logPartitionedTree')
+    # fancyTreeLogBlock.set('id', 'partitionedTreeFileLog')
+    # fancyTreeLogBlock.set('logEvery', str(sampleEvery))
+    # fancyTreeLogBlock.set('fileName', fileNameRoot+".fancytrees.txt")
+    # fancyTreeLogBlock.set('nexusFormat', "true")
+    # fancyTreeLogBlock.set('sortTranslationTable', "true")
+    # fancyTreeLogBlock.append(createReferenceBlock(etree, 'treeModel', 'treeModel'))
+    # fancyTreeLogBlock.append(createReferenceBlock(etree, modelString, modelString))
+    # fancyTreeLogBlock.append(createNestedReferenceBlock(etree, 'trait', modelString, modelString))
+    # mcmcBlock.insert(mcmcBlock.index(treeLogBlock)+1, fancyTreeLogBlock)
 
-                  
+
     # Write to file
 
     et = etree.ElementTree(beastElement)
 
     et.write(outputFileName, pretty_print=True)
-    
+
 # Create a block with an enclosing element with name "name", and a parameter element within it with id "id". If greaterThanZero then it has a lower bound of zero.
-    
+
 def createParameterBlock(tree, name, idstring, value, greaterThanZero, dim):
     enclosingElement = tree.Element(name)
     parameterElement = tree.SubElement(enclosingElement,'parameter')
@@ -779,12 +806,12 @@ def createGammaPriorBlock(tree, parameterTag, parameterID, shape, scale, offset)
     enclosingElement.set('shape', str(shape))
     enclosingElement.set('scale', str(scale))
     if offset!=0:
-        enclosingElement.set('offset', str(offset))       
+        enclosingElement.set('offset', str(offset))
     return enclosingElement
-    
 
-# Create a block with an enclosing element with name "name", and a parameter element within it with id "id". If greaterThanZero then it has a lower bound of zero. 
-    
+
+# Create a block with an enclosing element with name "name", and a parameter element within it with id "id". If greaterThanZero then it has a lower bound of zero.
+
 def createMaxValueParameterBlock(tree, name, idstring, value, maxVal, greaterThanZero, dim):
     enclosingElement = tree.Element(name)
     parameterElement = tree.SubElement(enclosingElement,'parameter')
@@ -854,13 +881,13 @@ def createLogNormalBlock(xmlBlock, name, idstring, mean, stdev, meanID, sdID):
     enclosingElement = xmlBlock.createElement(name)
     logNormalElement = xmlBlock.createElement('logNormalDistributionModel')
     logNormalElement.setAttribute('meanInRealSpace','true')
-    logNormalElement.setAttribute('stdevInRealSpace','true')   
+    logNormalElement.setAttribute('stdevInRealSpace','true')
     logNormalElement.appendChild(createParameterBlock(xmlBlock, 'mean', meanID, mean, False, 1))
     logNormalElement.appendChild(createParameterBlock(xmlBlock, 'stdev', sdID, stdev, True, 1))
     logNormalElement.setAttribute('id', idstring)
     enclosingElement.appendChild(logNormalElement)
     return enclosingElement
-    
+
 # Create a block with an enclosing element with name "name", and a parameter element within it. If greaterThanZero then it has a lower bound of zero.
 
 def createParameterBlockNoID(tree, name, value, greaterThanZero, dim):
@@ -873,7 +900,7 @@ def createParameterBlockNoID(tree, name, value, greaterThanZero, dim):
         parameterElement.set('dimension', str(dim))
     return enclosingElement
 
-# Create a block with an enclosing element with name "name", and a date element within it with id "id". 
+# Create a block with an enclosing element with name "name", and a date element within it with id "id".
 
 def createEnclosedDateBlock(xmlBlock, name, idstring, value, direction, units, origin):
     enclosingElement = xmlBlock.Element(name)
@@ -886,7 +913,7 @@ def createEnclosedDateBlock(xmlBlock, name, idstring, value, direction, units, o
     enclosingElement.append(dateElement)
     return enclosingElement
 
-# Create a block with an enclosing element with name "name", and a date element within it. 
+# Create a block with an enclosing element with name "name", and a date element within it.
 
 def createEnclosedDateBlockNoID(tree, name, value, direction, units, origin):
     enclosingElement = tree.Element(name)
@@ -935,7 +962,7 @@ def createReferenceBlock(tree, name, reference):
 
 def createNestedReferenceBlock(tree, parentName, childName, reference):
     parentBlock = tree.Element(parentName)
-    parentBlock.append(createReferenceBlock(tree, childName, reference)) 
+    parentBlock.append(createReferenceBlock(tree, childName, reference))
     return parentBlock
 
 # Create a farm element
@@ -949,12 +976,12 @@ def createSimpleCaseElement(tree, name, caseID, examinationTime, cullTime, oldes
     caseElement.set('cullTime', str(cullTime))
     caseElement.append(createParameterBlockNoID(tree, 'estimatedInfectionDate', oldestLesionAge, True, 1))
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", 0.5, 1, True, 1))
-    
+
     if longitude!=None and latitude!=None:
         coordsString = str(longitude)+" "+str(latitude)
         caseElement.append(createParameterBlockNoID(tree, 'spatialCoordinates', coordsString, False, 2))
-        
-                                                   
+
+
     # examinationDay-oldestLesionAge is the best guess for the time of infectiousness
     for taxon in taxa:
         caseElement.append(createReferenceBlock(tree, 'taxon', taxon))
@@ -974,11 +1001,11 @@ def createJeffreysCategoryCaseElement(tree, name, caseID, examinationTime, cullT
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", 0.5, 1, True, 1))
     if latCategoryName!=None:
         caseElement.append(createMaxValueParameterBlock(tree, 'infectiousTimePosition', caseID+"_lbp", 0.5, 1, True, 1))
-    
+
     if longitude!=None and latitude!=None:
         coordsString = str(longitude)+" "+str(latitude)
         caseElement.append(createParameterBlockNoID(tree, 'spatialCoordinates', coordsString, False, 2))
-                                                   
+
     # examinationDay-oldestLesionAge is the best guess for the time of infectiousness
     for taxon in taxa:
         caseElement.append(createReferenceBlock(tree, 'taxon', taxon))
@@ -998,11 +1025,11 @@ def createWithinCaseCategoryCaseElement(tree, name, caseID, examinationTime, cul
     caseElement.append(createMaxValueParameterBlock(tree, 'infectionTimeBranchPosition', caseID+"_bp", bp, 1, True, 1))
     if latCategoryName!=None and not fixedLP:
         caseElement.append(createMaxValueParameterBlock(tree, 'infectiousTimePosition', caseID+"_lbp", itp, 1, True, 1))
-    
+
     if longitude!=None and latitude!=None:
         coordsString = str(longitude)+" "+str(latitude)
         caseElement.append(createParameterBlockNoID(tree, 'spatialCoordinates', coordsString, False, 2))
-                                                   
+
     # examinationDay-oldestLesionAge is the best guess for the time of infectiousness
     for taxon in taxa:
         caseElement.append(createReferenceBlock(tree, 'taxon', taxon))
@@ -1028,19 +1055,19 @@ def convertOperatorElement(tree, operatorsElement, operatorElement, c2cReference
     ttoElement = tree.SubElement(operatorsElement, 'transmissionTreeOperator')
     ttoElement.append(operatorElement)
     ttoElement.append(createReferenceBlock(tree, 'caseToCaseTransmissionLikelihood', c2cReference))
-    
+
 
 def pickGammaParameters(mode, variance):
     scale = (-mode+math.sqrt(math.pow(mode,2)+(4*variance)))/2
-    shape = variance/math.pow(scale,2)    
+    shape = variance/math.pow(scale,2)
     return [shape,scale]
-    
+
 # Turn a date to a fractional year. Probably deprecated at this point.
-    
+
 def toYearFraction(date):
     def sinceEpoch(date): # returns seconds since epoch
         return time.mktime(date.timetuple())
-    
+
     s = sinceEpoch
 
     year = date.year
@@ -1062,7 +1089,7 @@ def argOrNone(argument):
 
 
 
-# Main method; command line entry for data that isn't in the CSV file. If the command has a second argument, it is the XML filename to be written to. Otherwise, it writes to "eieio.xml" ;-) 
+# Main method; command line entry for data that isn't in the CSV file. If the command has a second argument, it is the XML filename to be written to. Otherwise, it writes to "eieio.xml" ;-)
 
 def main():
     model = None
@@ -1078,7 +1105,7 @@ def main():
     chainLength = 10000000
     sampleEvery = 1000
     ratio = False
-    
+
     validKernels = {'e', 'p', 'g', 'n'}
     validModels = {'s', 'j', 'w', 'g', 'n', 'l'}
     validInfHyperpriors = {'n', 'v', 's', 'e', 'i', 'ln', 'lv', 'ls', 'le'}
@@ -1123,9 +1150,9 @@ def main():
     parser.add_argument('-c', '--chainLength', help='Length of the MCMC chain')
     parser.add_argument('-e', '--sampleEvery', help='Sampling frequency')
     parser.add_argument('-R', '--ratio', help='Use ratio prior on coalescent parameters')
-    
+
     arguments = parser.parse_args()
-  
+
     rawName = arguments.epiFile
     #    At some point you're going to have to make this check the CSV file for the correct column headings. But not
     #    now.
@@ -1141,7 +1168,7 @@ def main():
     distanceMatrixPath = arguments.distanceMatrixPath
     fixedClockRate = arguments.fixedClockRate
     getBPs = bool(arguments.startingBranchPositions=="True")
-    
+
     try:
         model = arguments.model
     except:
@@ -1153,7 +1180,7 @@ def main():
 
     if arguments.kernel in validKernels:
         kernel = arguments.kernel
-            
+
     try:
         fixedPT = bool(arguments.fixedPT=="True")
     except:

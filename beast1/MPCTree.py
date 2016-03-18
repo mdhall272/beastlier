@@ -1,100 +1,104 @@
 from __future__ import division
 import csv
-import sys
 import math
+import argparse
 
-def mpcTree(guessFileName, data, burnin, mpcTreeName, farms):
+def mpcTree(guessFileName, data, burnin, mpcTreeName, farms, burninInLines):
+
     readData = csv.reader(open(guessFileName), dialect=csv.excel_tab)
-    readData.next()
-    readData.next()
-    readData.next()
+
+    currentLine = readData.next()
+
+    while currentLine[0].startswith("#"):
+        currentLine = readData.next()
+
+    # no header line
+
+    currentLine = readData.next()
+
     farms.insert(0, 'state')
     stateData = list()
-    currentLine = readData.next()
     totalStates = 0
-    while currentLine!=None:
-        if int(currentLine[0])>burnin:
+    totalCountedStates = 0
+    while currentLine is not None:
+        totalStates += 1
+        if burninInLines:
+            burningIn = totalStates < burnin
+        else:
+            burningIn = int(currentLine[0]) < burnin
+
+        if not burningIn:
+            totalCountedStates += 1
             referenceDict = dict()
             for i in range(len(farms)):
                 referenceDict[farms[i]] = currentLine[i]
             stateData.append(referenceDict)
-            totalStates = totalStates+1
+
         try:
             currentLine = readData.next()
         except StopIteration:
-            currentLine=None
+            currentLine = None
     for network in stateData:
-        totalParentCredibility = 0
         totalLogParentCredibility = 0
         for i in range(1,len(farms)):
             currentFarm = farms[i]
-            parentCredibility = 0
             logParentCredibility = 0
             for guessDict in data:
-                if guessDict["name"]==currentFarm:
-                    parentCredibility = (guessDict[network[currentFarm]])/totalStates
-                    if parentCredibility == 0:
-                        print "zero credibility"
+                if guessDict["name"] == currentFarm:
                     logParentCredibility = math.log((guessDict[network[currentFarm]])/totalStates)
-            totalParentCredibility = totalParentCredibility + parentCredibility
             totalLogParentCredibility = totalLogParentCredibility + logParentCredibility
-        network['TPC']=totalParentCredibility
         network['TLPC']=totalLogParentCredibility
-    currentHighestTPC = 0
     currentHighestTLPC = float('-inf')
     currentBestNetworkMPC = None
-    currentBestNetworkMSPC = None
     for network in stateData:
-        if network['TPC']>currentHighestTPC:
-            print 'State '+network['state']+": new highest additive credibility, " + str(network['TPC'])
-            currentHighestTPC = network['TPC']
-            currentBestNetworkMSPC = network
         if network['TLPC']>currentHighestTLPC:
-            print 'State '+network['state']+": new highest multiplicative credibility, exp(" + str(network['TLPC']) + ")"
+            print 'State '+network['state']+": new highest credibility, exp(" + str(network['TLPC']) + ")"
             currentHighestTLPC = network['TLPC']
             currentBestNetworkMPC = network
     print
     writeData = csv.writer(open(mpcTreeName, 'w'))
     mpcBestGuessLine = list()
     mpcBestGuessLine.append('MPC tree')
-    mspcBestGuessLine = list()
-    mspcBestGuessLine.append('MSPC tree')
     for i in range(1,len(farms)):
         mpcBestGuessLine.append(currentBestNetworkMPC[farms[i]])
-        mspcBestGuessLine.append(currentBestNetworkMSPC[farms[i]]) 
     individualMultCredLine = list()
     individualMultCredLine.append('MPC credibility')
-    individualAddCredLine = list()
-    individualAddCredLine.append('MSPC credibility')
     for i in range(1,len(farms)):
         for guessDict in data:
             if guessDict["name"]==farms[i]:
                 individualMultCredLine.append(str(guessDict[currentBestNetworkMPC[farms[i]]]/totalStates))
-                individualAddCredLine.append(str(guessDict[currentBestNetworkMSPC[farms[i]]]/totalStates))
     for case in range(len(farms)):
         line = [farms[case], mpcBestGuessLine[case], individualMultCredLine[case]]    
         writeData.writerow(line)
     print
-    
-def getFarmList(guessFileName, includeStart):
+
+
+def getHostList(guessFileName):
     readData = csv.reader(open(guessFileName), dialect=csv.excel_tab)
-    readData.next()
-    readData.next()
-    headers = readData.next()
+
+    currentLine = readData.next()
+
+    while currentLine[0].startswith("#"):
+        currentLine = readData.next()
+
+    headers = currentLine
     headers.remove("state")
     for index, item in enumerate(headers):
         if item.endswith('_infector'):
             headers[index] = item[:-9]
-    if includeStart:
-        headers.append("Start")
     return headers
 
-def getGuesses(guessFileName, headers, burnin):
+
+def getGuesses(guessFileName, headers, burnin, burninInLines):
     readData = csv.reader(open(guessFileName), dialect=csv.excel_tab)
+
+    currentLine = readData.next()
+
+    while currentLine[0].startswith("#"):
+        currentLine = readData.next()
+
     data = list()
-    readData.next()
-    readData.next()
-    readData.next()
+
     for farmName in headers:
         currentDict = dict()
         currentDict['name']=farmName
@@ -103,9 +107,22 @@ def getGuesses(guessFileName, headers, burnin):
         for farmName in headers:
             currentDict[farmName]=0
         currentDict['Start']=0
+
+    # no header line
+
     currentLine = readData.next()
+
+    totalStates = 0
+
     while currentLine!=None:
-        if int(currentLine[0])>burnin:           
+        totalStates += 1
+
+        if burninInLines:
+            burningIn = totalStates < burnin
+        else:
+            burningIn = int(currentLine[0]) < burnin
+
+        if not burningIn:
             for i in range(1, len(currentLine)):
                 for currentDict in data:
                     if currentDict['name']==headers[i-1]:
@@ -117,12 +134,23 @@ def getGuesses(guessFileName, headers, burnin):
     return data
 
 def main():
-    print "Reading list of child farms"
-    childFarmList = getFarmList(sys.argv[1], False)
+    parser = argparse.ArgumentParser("Processes a BEAST transmission tree output file to obtain the maximum parent"
+                                     " credibility transmisstion tree")
+    parser.add_argument("beastOutput", help="Name of a BEAST transmission tree output file")
+    parser.add_argument("outputName", help="CSV file to which the MPC tree is to be written")
+    parser.add_argument("-b", "--burnin", default=1000, help="Integer: burnin (default=1000 lines)")
+    parser.add_argument("-t", "--burninInLines", default=True, help="Boolean: whether the burnin refers to the number "
+                                                                    "of lines in the input file. If false, it refers "
+                                                                    "to the number of MCMC states instead")
+
+    args = parser.parse_args()
+
+    print "Reading list of child hosts"
+    childFarmList = getHostList(args.beastOutput)
     print "Reading BEAST output"
-    guesses = getGuesses(sys.argv[1], childFarmList, 1000000)
-    print "Finding maximum parent credibility network (output to "+sys.argv[2]+")"
-    mpcTree(sys.argv[1], guesses, 1000000, sys.argv[2], childFarmList)
+    guesses = getGuesses(args.beastOutput, childFarmList, args.burnin, args.burninInLines)
+    print "Finding maximum parent credibility network (output to "+args.outputName+")"
+    mpcTree(args.beastOutput, guesses, args.burnin, args.outputName, childFarmList, args.burninInLines)
 
 if __name__ == '__main__':
     main()

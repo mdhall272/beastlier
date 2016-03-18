@@ -748,8 +748,8 @@ def main():
     parser.add_argument('-k', '--kernel', default="n", help='The type of spatial kernel to use (e=exponential, p=power'
                                                             ' law, g=Gaussian, l=logistic, x=none (no geography))')
     parser.add_argument('-i', '--infectiousPeriods', help='The prior distribution on the length of infectious periods.'
-                                                          'Accepts variable arguments; the first is the type of'
-                                                          'distribution and the following are its parameters.'
+                                                          ' Accepts variable arguments; the first is the type of'
+                                                          ' distribution and the following are its parameters.'
                                                           ' Choices: Normal-Gamma ("ng", four arguments: mu, lambda,'
                                                           ' alpha, beta), Normal ("n", two arguments: mean, variance),'
                                                           ' Lognormal ("l", two arguments, mean, variance (on log '

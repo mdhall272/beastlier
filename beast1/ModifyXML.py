@@ -361,7 +361,11 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
     if not fixedPT:
         treeOperatorsToRemove = {'narrowExchange', 'wideExchange', 'wilsonBalding', 'subtreeSlide',
                                                                                     'gmrfBlockUpdateOperator'}
-        treeOperatorsToAdd = {'transmissionExchangeOperatorA', 'transmissionExchangeOperatorB',
+        if fixedTT:
+            treeOperatorsToAdd = {'transmissionExchangeOperatorA', 'transmissionWilsonBaldingA',
+                                  'transmissionSubtreeSlideA'}
+        else:
+            treeOperatorsToAdd = {'transmissionExchangeOperatorA', 'transmissionExchangeOperatorB',
                               'transmissionWilsonBaldingA', 'transmissionWilsonBaldingB', 'transmissionSubtreeSlideA',
                               'transmissionSubtreeSlideB'}
 
@@ -768,9 +772,10 @@ def main():
     parser.add_argument('-t', '--startingTTree', help='If a CSV filename is given here, use this as the starting'
                                                       ' transmission tree (WARNING: this may not be compatible'
                                                       ' with the starting phylogeny).')
-    parser.add_argument('-f', '--fixedPT', default=False, help='Run on a fixed phylogenetic tree (requires given '
-                                                               'starting tree).')
-    parser.add_argument('-g', '--fixedTT', default=False, help='Run on a fixed transmission tree (requires -fixedPT)')
+    parser.add_argument('-f', '--fixedPT', default=False, help='Run on a fixed phylogenetic tree (requires specified '
+                                                               '-startingPTree).')
+    parser.add_argument('-g', '--fixedTT', default=False, help='Run on a fixed transmission tree (requires specified '
+                                                               '-startingTTree)')
     parser.add_argument('-c', '--chainLength', help="Length of the MCMC chain (if unspecified, will keep what's in the"
                                                     " original XML file).")
     parser.add_argument('-e', '--sampleEvery', help="Sampling frequency (if unspecified, will keep what's in the"
@@ -837,8 +842,6 @@ def main():
     if fixTT:
         if startingTT is None:
             raise Exception("You asked for a fixed transmission tree but did not specify it.")
-        if not fixPT:
-            raise Exception("Fixing the transmission tree requires a fixed phylogeny")
         print "Fixing the transmission tree"
 
     if chainLength is None:

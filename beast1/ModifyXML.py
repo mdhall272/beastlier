@@ -425,7 +425,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
         kernelaScaleElement.set('scaleFactor', str(0.75))
         kernelaScaleElement.append(createReferenceBlock(ET, 'parameter', 'kernel.alpha'))
 
-        if kernel != 'l':
+        if kernel == 'l':
             kernelaScaleElement = ET.SubElement(operatorsBlock, 'scaleOperator')
             kernelaScaleElement.set('weight', str(5))
             kernelaScaleElement.set('scaleFactor', str(0.75))

@@ -12,4 +12,4 @@ A full [BEAST 2](http://beast2.org/) package is planned. For the present, this r
 
 At present, unfortunately, ModifyXML.py works only with the development version of BEAST, which can be downloaded from [https://github.com/beast-dev/beast-mcmc](https://github.com/beast-dev/beast-mcmc). It is not compatible with version 1.8.3. Future BEAST 1 releases will be compatible.
 
-Detailed documentation is available [here]{https://github.com/twoseventwo/beastlier/blob/master/guide.pdf}.
+Detailed documentation is available [here](https://github.com/twoseventwo/beastlier/blob/master/guide.pdf).

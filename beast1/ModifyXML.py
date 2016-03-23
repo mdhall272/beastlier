@@ -726,7 +726,7 @@ def createScreenLogColumnBlock(tree, name, label, reference, sf, width):
 
 def main():
 
-    validKernels = {'e', 'p', 'g', 'x'}
+    validKernels = {'e', 'p', 'g', 'l', 'x'}
     validInfHyperpriors = {'ng', 'n', 'g', 'l', 'e'}
     infArgumentCounts = {'ng' : 4, 'n' : 2, 'g' : 2, 'l' : 2, 'e' : 1}
     infArgumentStrings = {'ng' : ["mu", "lambda", "alpha", "beta"],
@@ -812,8 +812,8 @@ def main():
         if necessaryHeader not in headers:
             raise Exception("File "+epiFileName+" does not have required column named "+necessaryHeader)
 
-    hasLongitude = "longitude" in headers
-    hasLatitude = "latitude" in headers
+    hasLongitude = "Longitude" in headers
+    hasLatitude = "Latitude" in headers
 
     if hasLatitude != hasLongitude:
         raise Exception("File "+epiFileName+" has a column for only one spatial dimension")
@@ -877,7 +877,7 @@ def main():
     if indexPrior is None:
         print "Using a noninformative prior on the date of the index infection"
 
-    elif arguments.kernel != 'x':
+    if arguments.kernel != 'x':
         if arguments.kernel not in validKernels:
             raise Exception("Invalid spatial transmission kernel")
         if not hasLongitude:

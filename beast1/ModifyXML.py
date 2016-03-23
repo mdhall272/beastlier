@@ -877,9 +877,11 @@ def main():
     if indexPrior is None:
         print "Using a noninformative prior on the date of the index infection"
 
-    if arguments.kernel != 'x':
+    elif arguments.kernel != 'x':
         if arguments.kernel not in validKernels:
             raise Exception("Invalid spatial transmission kernel")
+        if not hasLongitude:
+            raise Exception("Spatial transmission kernel specified but host data lists no coordinates")
         else:
             kernelType = arguments.kernel
     else:
@@ -927,10 +929,6 @@ def main():
                 while not input.replace('.','',1).isdigit():
                     input = raw_input("Enter "+latArgumentStrings.get(latType)[i]+" parameter of prior distribution: ")
                 latArguments.append(float(input))
-
-
-
-
 
     modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNameRoot, startingNewick, startingTT,
               kernelType, fixPT, fixTT, infType, infArguments, latType, latArguments, indexPrior, chainLength,

@@ -18,8 +18,11 @@ import argparse
 
 dayOne = datetime.strptime("01/01/1900", '%d/%m/%Y')
 
-coalescentNames = {'gmrfSkyrideLikelihood', 'coalescentLikelihood',
-                   'generalizedSkyLineLikelihood', 'gmrfSkyGridLikelihood'}
+coalescentLikelihoodNames = {'gmrfSkyrideLikelihood', 'coalescentLikelihood', 'generalizedSkyLineLikelihood',
+                   'gmrfSkyGridLikelihood'}
+
+coalescentModelNames = {'constantSize', 'exponentialGrowth', 'logisticGrowth', 'expansion'}
+
 startingTrees = {'coalescentSimulator', 'coalescentTree', 'upgmaTree'}
 kernelLookup = {'e': 'exponential', 'p': 'powerLaw', 'g': 'gaussian', 'l': "logistic", 'x': 'none'}
 
@@ -48,10 +51,18 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
 
     beastElement = fullTree.getroot()
 
+    oldCoalescentParameters = list()
+
     # Remove the old tree prior
     for element in list(beastElement):
-        if element.tag in coalescentNames:
-             beastElement.remove(element)
+        if element.tag in coalescentLikelihoodNames:
+            for parameterElement in element.iter("parameter"):
+                oldCoalescentParameters.append(parameterElement.get("id"))
+            beastElement.remove(element)
+        # Non sky- models also generate the initial tree and should be kept for this purpose only
+        if element.tag in coalescentModelNames:
+            for parameterElement in element.iter("parameter"):
+                oldCoalescentParameters.append(parameterElement.get("id"))
 
     # Remove the old taxa elements
     taxaElement = beastElement.find('taxa')
@@ -355,12 +366,18 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
 
     # Operators
 
-    keepIDrefs = {'clock.rate', 'kappa'}
-
     operatorsBlock = beastElement.find('operators')
+
+    # First get rid of the old coalescent model
+
+    for operator in list(operatorsBlock.getchildren()):
+        if operator.tag == "gmrfBlockUpdateOperator":
+            operatorsBlock.remove(operator)
+        if operator[0].get("idref") is not None and operator[0].get("idref") in oldCoalescentParameters:
+            operatorsBlock.remove(operator)
+
     if not fixedPT:
-        treeOperatorsToRemove = {'narrowExchange', 'wideExchange', 'wilsonBalding', 'subtreeSlide',
-                                                                                    'gmrfBlockUpdateOperator'}
+        treeOperatorsToRemove = {'narrowExchange', 'wideExchange', 'wilsonBalding', 'subtreeSlide'}
         if fixedTT:
             treeOperatorsToAdd = {'transmissionExchangeOperatorA', 'transmissionWilsonBaldingA',
                                   'transmissionSubtreeSlideA'}
@@ -369,7 +386,6 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                               'transmissionWilsonBaldingA', 'transmissionWilsonBaldingB', 'transmissionSubtreeSlideA',
                               'transmissionSubtreeSlideB'}
 
-        test = list(operatorsBlock.getchildren())
         for operator in list(operatorsBlock.getchildren()):
             if operator.tag in treeOperatorsToRemove:
                 operatorsBlock.remove(operator)
@@ -382,9 +398,9 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
             if operatorName.startswith('transmissionSubtreeSlide'):
                 newOperatorElement.set('gaussian', 'true')
     else:
+        # anything that's left at this point has to do with the tree
         for operator in list(operatorsBlock):
-            if operator[0].get("idref") not in keepIDrefs:
-                operatorsBlock.remove(operator)
+            operatorsBlock.remove(operator)
 
     if not fixedTT:
         ibmElement = ET.SubElement(operatorsBlock,'infectionBranchMovementOperator')
@@ -402,15 +418,6 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
     transRateScaleElement.set('weight', str(5))
     transRateScaleElement.set('scaleFactor', str(0.75))
     transRateScaleElement.append(createReferenceBlock(ET, 'parameter', 'transmission_rate'))
-
-    if fixedPT:
-        for operator in list(operatorsBlock):
-            if operator[0].get("idref")=='clock.rate':
-                operatorsBlock.remove(operator)
-            if operator[0].get("idref")=='kappa':
-                operatorsBlock.remove(operator)
-            if operator.tag == 'upDownOperator':
-                operatorsBlock.remove(operator)
 
     if kernel != 'x':
         kernelaScaleElement = ET.SubElement(operatorsBlock, 'scaleOperator')
@@ -455,10 +462,11 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
 
     priorBlock = posteriorBlock.find('prior')
     for element in list(priorBlock):
-        if element.tag in coalescentNames:
+        if element.tag in coalescentLikelihoodNames:
             priorBlock.remove(element)
-        if len(element) and (element[0].get('idref').startswith('skyride')
-                             or element[0].get('idref').startswith('skygrid')):
+        if len(element)>0 \
+                and element[0].get('idref') is not None \
+                and element[0].get('idref') in oldCoalescentParameters:
             priorBlock.remove(element)
 
     minusTTPriorBlock = ET.SubElement(priorBlock, 'gammaPrior')
@@ -508,6 +516,12 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
 
     priorBlock.append(createReferenceBlock(ET, 'caseToCaseTransmissionLikelihood', 'c2cTransLikelihood'))
 
+    if fixedPT:
+        likelihoodBlock = posteriorBlock.find('prior')
+        for irrelevant in list(likelihoodBlock):
+            likelihoodBlock.remove(irrelevant)
+
+
     # Logs
 
     for block in mcmcBlock:
@@ -527,14 +541,17 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                 if latentPeriods:
                     block.append(createScreenLogColumnBlock(ET, 'parameter', 'lat.period', 'lat1.latPeriod', 4, 12))
 
-
                 block.append(createScreenLogColumnBlock(ET, 'parameter', 'lg.ratio', 'logistic.ratio', 4, 12))
                 block.append(createScreenLogColumnBlock(ET, 'productStatistic', 'lg.t50', 'logistic.t50', 4, 12))
                 block.append(createScreenLogColumnBlock(ET, 'parameter', 'lg.gr', 'logistic.growthRate', 4, 12))
 
-
-
             elif block.get('id')=='fileLog':
+
+                for child in list(block):
+                    if child.get('idref') in oldCoalescentParameters \
+                            or child.tag in coalescentLikelihoodNames:
+                        block.remove(child)
+
                 block.set('fileName',fileNameRoot+".log.txt")
 
                 if sampleEvery is not None:
@@ -558,9 +575,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                 block.append(createReferenceBlock(ET, 'productStatistic', 'logistic.t50'))
                 block.append(createReferenceBlock(ET, 'parameter', 'logistic.growthRate'))
 
-                for child in list(block):
-                    if child.get('idref').startswith('skyride') or child.get('idref')=='coalescent':
-                        block.remove(child)
+
 
 
     networkLogBlock = ET.Element('log')

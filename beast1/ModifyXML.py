@@ -877,7 +877,7 @@ def main():
     if indexPrior is None:
         print "Using a noninformative prior on the date of the index infection"
 
-    if arguments.kernel != 'n':
+    if arguments.kernel != 'x':
         if arguments.kernel not in validKernels:
             raise Exception("Invalid spatial transmission kernel")
         else:

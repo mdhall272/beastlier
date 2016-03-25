@@ -16,7 +16,7 @@ def mpcTree(guessFileName, data, burnin, mpcTreeName, hosts, burninInLines):
 
     currentLine = readData.next()
 
-    hosts.insert(0, 'state')
+    hosts.insert(0, 'Child')
     stateData = list()
     totalStates = 0
     totalCountedStates = 0
@@ -52,13 +52,14 @@ def mpcTree(guessFileName, data, burnin, mpcTreeName, hosts, burninInLines):
     currentBestNetworkMPC = None
     for network in stateData:
         if network['TLPC']>currentHighestTLPC:
-            print 'State '+network['state']+": new highest credibility, exp(" + str(network['TLPC']) + ")"
+            print 'State '+network['Child']+": new highest credibility, exp(" + str(network['TLPC']) + ")"
             currentHighestTLPC = network['TLPC']
             currentBestNetworkMPC = network
     print
     writeData = csv.writer(open(mpcTreeName, 'w'))
+
     mpcBestGuessLine = list()
-    mpcBestGuessLine.append('MPC tree')
+    mpcBestGuessLine.append('Parent')
     for i in range(1, len(hosts)):
         mpcBestGuessLine.append(currentBestNetworkMPC[hosts[i]])
     individualMultCredLine = list()

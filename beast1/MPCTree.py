@@ -16,7 +16,7 @@ def mpcTree(guessFileName, data, burnin, mpcTreeName, hosts, burninInLines):
 
     currentLine = readData.next()
 
-    hosts.insert(0, 'Child')
+    hosts.insert(0, 'state')
     stateData = list()
     totalStates = 0
     totalCountedStates = 0
@@ -45,14 +45,14 @@ def mpcTree(guessFileName, data, burnin, mpcTreeName, hosts, burninInLines):
             logParentCredibility = 0
             for guessDict in data:
                 if guessDict["name"] == currentHost:
-                    logParentCredibility = math.log((guessDict[network[currentHost]])/totalStates)
+                    logParentCredibility = math.log((guessDict[network[currentHost]])/totalCountedStates)
             totalLogParentCredibility = totalLogParentCredibility + logParentCredibility
         network['TLPC']=totalLogParentCredibility
     currentHighestTLPC = float('-inf')
     currentBestNetworkMPC = None
     for network in stateData:
         if network['TLPC']>currentHighestTLPC:
-            print 'State '+network['Child']+": new highest credibility, exp(" + str(network['TLPC']) + ")"
+            print 'State '+network['state']+": new highest credibility, exp(" + str(network['TLPC']) + ")"
             currentHighestTLPC = network['TLPC']
             currentBestNetworkMPC = network
     print
@@ -64,10 +64,14 @@ def mpcTree(guessFileName, data, burnin, mpcTreeName, hosts, burninInLines):
         mpcBestGuessLine.append(currentBestNetworkMPC[hosts[i]])
     individualMultCredLine = list()
     individualMultCredLine.append('MPC credibility')
+
+
     for i in range(1, len(hosts)):
         for guessDict in data:
             if guessDict["name"]==hosts[i]:
-                individualMultCredLine.append(str(guessDict[currentBestNetworkMPC[hosts[i]]] / totalStates))
+                individualMultCredLine.append(str(guessDict[currentBestNetworkMPC[hosts[i]]] / totalCountedStates))
+
+    hosts[0] = "Child"
     for case in range(len(hosts)):
         line = [hosts[case], mpcBestGuessLine[case], individualMultCredLine[case]]
         writeData.writerow(line)
@@ -135,23 +139,26 @@ def getGuesses(guessFileName, headers, burnin, burninInLines):
     return data
 
 def main():
+    burninInLines = True
+
     parser = argparse.ArgumentParser("Processes a BEAST transmission tree output file to obtain the maximum parent"
                                      " credibility transmisstion tree")
     parser.add_argument("beastOutput", help="Name of a BEAST transmission tree output file")
     parser.add_argument("outputName", help="CSV file to which the MPC tree is to be written")
     parser.add_argument("-b", "--burnin", default=1000, help="Integer: burnin (default=1000 lines)")
-    parser.add_argument("-t", "--burninInLines", default=True, help="Boolean: whether the burnin refers to the number "
-                                                                    "of lines in the input file. If false, it refers "
-                                                                    "to the number of MCMC states instead")
+    parser.add_argument("-t", "--burninInStates", dest='burninInLines', action='store_false',
+                        help="If present, the burnin refers to the number of MCMC states. Otherwise, it refers to "
+                             "the number of lines in the log file.")
+    parser.set_defaults(burninInLines=True)
 
     args = parser.parse_args()
 
     print "Reading list of child hosts"
     childHostList = getHostList(args.beastOutput)
     print "Reading BEAST output"
-    guesses = getGuesses(args.beastOutput, childHostList, args.burnin, args.burninInLines)
+    guesses = getGuesses(args.beastOutput, childHostList, int(args.burnin), args.burninInLines)
     print "Finding maximum parent credibility network (output to "+args.outputName+")"
-    mpcTree(args.beastOutput, guesses, args.burnin, args.outputName, childHostList, args.burninInLines)
+    mpcTree(args.beastOutput, guesses, int(args.burnin), args.outputName, childHostList, args.burninInLines)
 
 if __name__ == '__main__':
     main()

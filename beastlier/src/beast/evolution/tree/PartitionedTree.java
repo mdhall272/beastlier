@@ -27,6 +27,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
+import beast.evolution.operators.TreeOperator;
 import beast.util.TreeParser;
 import com.google.common.collect.Lists;
 
@@ -745,7 +746,6 @@ public class PartitionedTree extends Tree {
 
     // here begin the partition utility functions
 
-
     public PartitionedTreeNode getElementMRCA(int elementNo){
         HashSet<String> elementTips = new HashSet<>();
 
@@ -784,7 +784,7 @@ public class PartitionedTree extends Tree {
 
     }
 
-    protected boolean isAncestral(PartitionedTreeNode node){
+    public boolean isAncestral(PartitionedTreeNode node){
 
         int elementNo = node.getPartitionElementNumber();
 
@@ -831,7 +831,93 @@ public class PartitionedTree extends Tree {
         return getNodesInElement(elementNo);
     }
 
+    public PartitionedTreeNode getEarliestNodeInPartition(int elementNo){
 
+        PartitionedTreeNode tipMRCA = getElementMRCA(elementNo);
+
+        if(tipMRCA.getPartitionElementNumber() != elementNo){
+            throw new RuntimeException("Node partition disconnected");
+        }
+
+        PartitionedTreeNode child = tipMRCA;
+        PartitionedTreeNode parent = (PartitionedTreeNode)child.getParent();
+        boolean transmissionFound = parent == null;
+        while (!transmissionFound) {
+
+            if (child.getPartitionElementNumber() != parent.getPartitionElementNumber()) {
+                transmissionFound = true;
+            } else {
+                child = parent;
+                parent = (PartitionedTreeNode)child.getParent();
+                if (parent == null) {
+                    transmissionFound = true;
+                }
+            }
+        }
+        return child;
+
+    }
+
+    public HashSet<PartitionedTreeNode> samePartitionElementUpTree(PartitionedTreeNode node){
+        HashSet<PartitionedTreeNode> out = new HashSet<>();
+        int elementNo = node.getPartitionElementNumber();
+        PartitionedTreeNode currentNode = node;
+        PartitionedTreeNode parentNode = (PartitionedTreeNode)node.getParent();
+        while(parentNode!=null && parentNode.getPartitionElementNumber() == elementNo){
+            out.add(parentNode);
+            if(countChildrenInSamePartition(parentNode)==2){
+                PartitionedTreeNode otherChild = (PartitionedTreeNode)sibling(currentNode);
+                out.add(otherChild);
+                out.addAll(samePartitionElementDownTree(otherChild));
+            }
+            currentNode = parentNode;
+            parentNode = (PartitionedTreeNode)currentNode.getParent();
+        }
+        return out;
+    }
+
+    public HashSet<PartitionedTreeNode> samePartitionElementDownTree(PartitionedTreeNode node){
+        HashSet<PartitionedTreeNode> out = new HashSet<>();
+        int elementCase = node.getPartitionElementNumber();
+        for(Node child : node.getChildren()){
+            PartitionedTreeNode castChild = (PartitionedTreeNode)child;
+
+            if(castChild.getPartitionElementNumber() == elementCase){
+                out.add(castChild);
+                out.addAll(samePartitionElementDownTree(castChild));
+            }
+        }
+        return out;
+    }
+
+    private int countChildrenInSamePartition(PartitionedTreeNode node){
+        if(node.isLeaf()){
+            return -1;
+        } else {
+            int count = 0;
+            int parentCase = node.getPartitionElementNumber();
+            for(Node child : node.getChildren()){
+                if(((PartitionedTreeNode)child).getPartitionElementNumber()  == parentCase){
+                    count++;
+                }
+            }
+            return count;
+        }
+    }
+
+    public static Node sibling(Node node){
+        if(node.isRoot()){
+            return null;
+        } else {
+            Node parent = node.getParent();
+            for(Node child : parent.getChildren()){
+                if(child != node){
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
 
 
     /////////////////////////////////////////////////

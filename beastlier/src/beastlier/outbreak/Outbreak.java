@@ -24,12 +24,8 @@
 package beastlier.outbreak;
 
 import beast.core.BEASTObject;
-import beast.core.Input;
-import beast.core.parameter.BooleanParameter;
-import beast.evolution.alignment.TaxonSet;
 import beast.evolution.datatype.StandardData;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,13 +33,10 @@ import java.util.List;
  */
 public abstract class Outbreak extends BEASTObject {
 
-    // todo check you actually still need the taxa here; might not
-
-    public Input<StandardData> caseDataType;
-    public Input<TaxonSet> taxa;
-    public Input<BooleanParameter> hasLatentPeriods;
-    public Input<BooleanParameter> hasGeography;
-    public Input<List<ClinicalCase>> cases;
+    public StandardData caseDataType;
+    public Boolean hasLatentPeriods;
+    public Boolean hasGeography;
+    public List<ClinicalCase> cases;
 
 
 }

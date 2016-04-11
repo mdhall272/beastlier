@@ -24,8 +24,6 @@
 package beastlier.outbreak;
 
 import beast.core.BEASTObject;
-import beast.core.Input;
-import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.TaxonSet;
 
@@ -35,8 +33,8 @@ import beast.evolution.alignment.TaxonSet;
 
 public abstract class ClinicalCase extends BEASTObject {
 
-    public Input<TaxonSet> associatedTaxa;
-    public Input<RealParameter> endOfInfectiousTime;
-    public Input<BooleanParameter> wasEverInfected;
+    private TaxonSet taxa;
+    private RealParameter endOfInfectiousTime;
+    private Boolean wasEverInfected;
 
 }

@@ -26,9 +26,9 @@ package beastlier.outbreak;
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.evolution.datatype.DataType;
-import beast.evolution.datatype.StandardData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -69,29 +69,55 @@ public class Outbreak extends BEASTObject implements DataType {
         return everInfectedCases.size();
     }
 
+    // I assume that nobody in their right mind would want to overlay two or more partition models. A "sequence"
+    // has just one position
+
     @Override
     public List<Integer> string2state(String sequence) {
-        return null;
+        ArrayList<Integer> out = new ArrayList<>();
+        for(ClinicalCase aCase : cases){
+            if(aCase.getID().equals(sequence)){
+                out.add(cases.indexOf(aCase));
+            }
+        }
+
+        if(out.size() == 0){
+            throw new RuntimeException("String "+sequence+" not found amongst case IDs");
+        }
+
+        return out;
     }
 
     @Override
     public String state2string(List<Integer> states) {
-        return null;
+        if(states.size() > 1){
+            throw new RuntimeException("Outbreak is a one position per tip DataType");
+        }
+
+        return cases.get(states.get(0)).getID();
     }
 
     @Override
     public String state2string(int[] states) {
-        return null;
+        if(states.length > 1){
+            throw new RuntimeException("Outbreak is a one position per tip DataType");
+        }
+
+        return cases.get(states[0]).getID();
     }
 
     @Override
     public boolean[] getStateSet(int state) {
-        return new boolean[0];
+        boolean[] out = new boolean[everInfectedCases.size()];
+        Arrays.fill(out, true);
+        return out;
     }
 
     @Override
     public int[] getStatesForCode(int state) {
-        return new int[0];
+        int[] out = new int[1];
+        out[0] = state;
+        return out;
     }
 
     @Override
@@ -108,16 +134,19 @@ public class Outbreak extends BEASTObject implements DataType {
 
     @Override
     public String getTypeDescription() {
-        return null;
+        return "This DataType consists of all hosts/clinical cases in a known outbreak";
     }
+
+    //These don't seem important
 
     @Override
     public char getChar(int state) {
-        return 0;
+        throw new RuntimeException("Not implemented");
     }
 
     @Override
     public String getCode(int state) {
-        return null;
+        throw new RuntimeException("Not implemented");
     }
+
 }

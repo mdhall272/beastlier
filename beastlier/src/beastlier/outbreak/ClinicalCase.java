@@ -24,6 +24,7 @@
 package beastlier.outbreak;
 
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.TaxonSet;
@@ -32,6 +33,7 @@ import beast.evolution.alignment.TaxonSet;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("Base class for epidemiological information about a case in an outbreak")
 public class ClinicalCase extends BEASTObject {
 
     public Input<TaxonSet> taxaInput = new Input<>("taxa", "The taxa taken from this host");

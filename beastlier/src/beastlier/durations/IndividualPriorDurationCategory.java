@@ -22,6 +22,7 @@
 */
 package beastlier.durations;
 
+import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
 import beast.math.distributions.ParametricDistribution;
@@ -30,6 +31,7 @@ import beast.math.distributions.ParametricDistribution;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("A group of clinical cases whose latent or infectious periods each have the same prior distribution")
 public class IndividualPriorDurationCategory extends DurationCategory {
 
     public Input<ParametricDistribution> distributionInput = new Input<>("distribution", "The prior distribution for" +

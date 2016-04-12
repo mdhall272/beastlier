@@ -24,11 +24,13 @@
 package beastlier.geography;
 
 import beast.core.CalculationNode;
+import beast.core.Description;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("A spatial transmission kernel function")
 public abstract class SpatialKernel extends CalculationNode {
 
     public abstract double getValue(double distance);

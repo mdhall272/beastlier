@@ -23,13 +23,15 @@
 
 package beastlier.outbreak;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
 /**
- * @author Matthew Hall <mdhall@ic.ac.uk>
- */
+ *@author Matthew Hall <mdhall@ic.ac.uk>
+        */
 
+@Description("A ClinicalCase with a longitude and latitude")
 public class GeographicallyLocatedClinicalCase extends ClinicalCase {
 
     public Input<RealParameter> longitudeInput = new Input<>("longitude", "Longitude (x) component of this host's" +

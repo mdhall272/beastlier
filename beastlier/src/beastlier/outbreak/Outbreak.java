@@ -24,6 +24,7 @@
 package beastlier.outbreak;
 
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.datatype.DataType;
 
@@ -35,6 +36,7 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("An outbreak is a collection of ClinicalCases from the same event")
 public class Outbreak extends BEASTObject implements DataType {
 
     public Input<Boolean> hasGeographyInput = new Input<>("hasGeography", "True if hosts have geographical locations",

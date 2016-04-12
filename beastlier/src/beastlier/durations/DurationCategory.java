@@ -23,9 +23,9 @@
 package beastlier.durations;
 
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
-import beast.math.distributions.ParametricDistribution;
 import beastlier.outbreak.ClinicalCase;
 
 import java.util.List;
@@ -34,6 +34,8 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("A group of clinical cases whose latent or infectious periods have something in common (e.g. have the" +
+        "same prior distribution")
 public abstract class DurationCategory extends BEASTObject {
 
     //todo some class (between-host model?) should check the categories are mutually exclusive

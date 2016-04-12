@@ -23,6 +23,7 @@
 package beastlier.durations;
 
 import beast.core.BEASTObject;
+import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
 import beast.math.GammaFunction;
@@ -35,8 +36,9 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("A group of clinical cases whose latent or infectious periods are assumed to be drawn from the same" +
+        " unknown normal distribution")
 public class NormalHyperpriorDurationCategory extends DurationCategory {
-
 
     public Input<NormalGamma> distributionInput = new Input<>("distribution", "The normal-gamma distribution " +
             "determining the hyperprior");

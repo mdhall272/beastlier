@@ -22,6 +22,7 @@
 */
 package beast.math.distributions;
 
+import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
@@ -32,6 +33,7 @@ import org.apache.commons.math.distribution.Distribution;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
+@Description("The normal-gamma distribution, which takes two parameters")
 public class NormalGamma extends ParametricDistribution {
 
     final public Input<RealParameter> muInput = new Input<>("mu", "mu parameter of distribution");

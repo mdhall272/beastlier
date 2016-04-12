@@ -30,7 +30,6 @@ import beast.core.StateNodeInitialiser;
 import beast.util.TreeParser;
 import com.google.common.collect.Lists;
 
-import javax.swing.tree.TreeNode;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.logging.Level;

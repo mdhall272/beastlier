@@ -151,4 +151,17 @@ public class Outbreak extends BEASTObject implements DataType {
         throw new RuntimeException("Not implemented");
     }
 
+    public ClinicalCase getCaseByID(String id){
+        for(ClinicalCase aCase : cases){
+            if(aCase.getID().equals(id)){
+                return aCase;
+            }
+        }
+        throw new RuntimeException("Looking for a clinical case that is not present in the outbreak");
+    }
+
+    public List<ClinicalCase> getCases(){
+        return cases;
+    }
+
 }

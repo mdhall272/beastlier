@@ -41,6 +41,9 @@ public class InfectionBranchMovementOperator extends TreeOperator{
         if(!(treeInput.get(this) instanceof PartitionedTree)){
             throw new RuntimeException("This operator is designed for partitioned trees only");
         }
+        if(!(((PartitionedTree) treeInput.get(this)).rules== PartitionedTree.Rules.THIRD_TYPE)){
+            throw new RuntimeException("This operator is designed for trees with partition rules of the third type");
+        }
     }
 
 

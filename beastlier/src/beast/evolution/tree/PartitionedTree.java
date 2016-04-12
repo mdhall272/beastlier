@@ -27,14 +27,17 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
-import beast.evolution.operators.TreeOperator;
 import beast.util.TreeParser;
 import com.google.common.collect.Lists;
 
+import javax.swing.tree.TreeNode;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static beast.evolution.tree.PartitionedTree.Rules.SECOND_TYPE;
+import static beast.evolution.tree.PartitionedTree.Rules.THIRD_TYPE;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk> based on MultiTypeTree.java from the MultiTypeTree package by Tim Vaughan
@@ -64,12 +67,23 @@ public class PartitionedTree extends Tree {
             "rootBranchLength", "The length of the root branch (the index infection must occur along this branch",
             50.0);
 
+    String[] ruleTypes = {"second", "third"};
+
+    public Input<String> rulesInput = new Input<>("rules", "Whether partitioning obeys the rules for the second" +
+            " class of transmissiont tree reconstruction (internal nodes are transmissions), or the third " +
+            "(within-host diversity)", "third", ruleTypes);
+
     /*
      * Non-input fields:
      */
     protected String elementLabel;
     protected TraitSet elementTraitSet;
-    protected List<String> elementList;
+    protected List<Object> elementList;
+
+    public enum Rules {SECOND_TYPE, THIRD_TYPE};
+
+    public Rules rules;
+
 
     protected double rootBranchLength;
 
@@ -87,6 +101,8 @@ public class PartitionedTree extends Tree {
 
     @Override
     public void initAndValidate() {
+
+        rules = rulesInput.get().equals("second") ? SECOND_TYPE : THIRD_TYPE;
 
         if (m_initial.get() != null && !(this instanceof StateNodeInitialiser)) {
 
@@ -154,6 +170,16 @@ public class PartitionedTree extends Tree {
 
         processTraits(m_traitList.get());
 
+        if(rules == SECOND_TYPE){
+            for(int i=0; i<elementList.size(); i++){
+               if(getTipsInElement(i).size() > 1){
+                   throw new IllegalArgumentException("As currently implemented rules of the second type require one" +
+                           " and only one tip per partition element");
+               }
+
+           }
+        }
+
         if(!isValid()){
             throw new RuntimeException("Starting tree is not properly partitioned");
         }
@@ -217,8 +243,9 @@ public class PartitionedTree extends Tree {
             Set<String> typeSet = new HashSet<>();
 
             int nTaxa = elementTraitSet.taxaInput.get().asStringList().size();
-            for (int i = 0; i < nTaxa; i++)
+            for (int i = 0; i < nTaxa; i++) {
                 typeSet.add(elementTraitSet.getStringValue(i));
+            }
 
             // Include any additional trait values in type list
             // Don't do this for now
@@ -228,7 +255,6 @@ public class PartitionedTree extends Tree {
 //            }
 
             elementList = Lists.newArrayList(typeSet);
-            Collections.sort(elementList);
 
             System.out.println("Partition element trait with the following elements detected:");
             for (int i = 0; i < elementList.size(); i++)
@@ -276,7 +302,7 @@ public class PartitionedTree extends Tree {
      * Retrieve the list of elements.
      * @return List of elements.
      */
-    public List<String> getElementList() {
+    public List<Object> getElementList() {
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 
@@ -288,7 +314,7 @@ public class PartitionedTree extends Tree {
      * @param element
      * @return string name of given type
      */
-    public String getElementString(int element) {
+    public Object getElementString(int element) {
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 
@@ -446,28 +472,51 @@ public class PartitionedTree extends Tree {
      */
     public boolean isValid() {
 
-        for(int i=0; i<nodeCount; i++){
-            PartitionedTreeNode node = (PartitionedTreeNode)getNode(i);
-            int elementNumber = node.getPartitionElementNumber();
+        if(rules==THIRD_TYPE) {
 
-            boolean linked = false;
-            for(Node child : node.getChildren()){
-                if (((PartitionedTreeNode)child).getPartitionElementNumber()==elementNumber){
+            for (int i = 0; i < nodeCount; i++) {
+                PartitionedTreeNode node = (PartitionedTreeNode) getNode(i);
+                int elementNumber = node.getPartitionElementNumber();
+
+                boolean linked = false;
+                for (Node child : node.getChildren()) {
+                    if (((PartitionedTreeNode) child).getPartitionElementNumber() == elementNumber) {
+                        linked = true;
+                    }
+                }
+
+                Node parent = node.getParent();
+                if (((PartitionedTreeNode) parent).getPartitionElementNumber() == elementNumber) {
                     linked = true;
                 }
-            }
 
-            Node parent = node.getParent();
-            if (((PartitionedTreeNode)parent).getPartitionElementNumber()==elementNumber){
-                linked = true;
-            }
+                if (!linked) {
+                    return false;
+                }
 
-            if(!linked){
-                return false;
             }
+            return true;
+        } else {
+            for (int i = 0; i < internalNodeCount; i++) {
+                PartitionedTreeNode node = (PartitionedTreeNode) getNode(i);
+                int elementNumber = node.getPartitionElementNumber();
 
+                int childrenInSameElement = 0;
+
+                for(Node child : node.getChildren()){
+
+                    if(((PartitionedTreeNode)child).getPartitionElementNumber() ==
+                            node.getPartitionElementNumber()){
+                        childrenInSameElement++;
+                    }
+                }
+
+                if(childrenInSameElement!=1){
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
     }
 
 

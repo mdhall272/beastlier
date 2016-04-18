@@ -49,6 +49,7 @@ public class NormalHyperpriorDurationCategory extends DurationCategory {
     public void initAndValidate() {
         super.initAndValidate();
         distribution = distributionInput.get();
+        hasProbability = true;
     }
 
     public List<ClinicalCase> getCases(){

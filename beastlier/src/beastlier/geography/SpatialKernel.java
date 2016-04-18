@@ -25,6 +25,9 @@ package beastlier.geography;
 
 import beast.core.CalculationNode;
 import beast.core.Description;
+import beastlier.outbreak.ClinicalCase;
+import beastlier.outbreak.GeographicallyLocatedClinicalCase;
+import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -34,6 +37,11 @@ import beast.core.Description;
 public abstract class SpatialKernel extends CalculationNode {
 
     public abstract double getValue(double distance);
+
+    public double getValue(GeographicallyLocatedClinicalCase case1, GeographicallyLocatedClinicalCase case2){
+        return getValue(Util.EuclideanDistance(case1.getCoordinates(), case2.getCoordinates()));
+
+    }
 
     public static class Util{
 

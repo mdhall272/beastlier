@@ -38,11 +38,15 @@ import java.util.List;
         "same prior distribution")
 public abstract class DurationCategory extends BEASTObject {
 
-    //todo some class (between-host model?) should check the categories are mutually exclusive
-
     public Input<List<ClinicalCase>> casesInput = new Input<>("cases", "A list of cases in this category");
 
     protected List<ClinicalCase> cases;
+
+    protected boolean hasProbability;
+
+    public boolean hasProbability(){
+        return hasProbability;
+    }
 
     @Override
     public void initAndValidate() {

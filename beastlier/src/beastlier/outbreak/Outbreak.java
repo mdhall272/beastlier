@@ -164,12 +164,20 @@ public class Outbreak extends BEASTObject implements DataType {
         return cases;
     }
 
+    public List<ClinicalCase> getEverInfectedCases(){
+        return everInfectedCases;
+    }
+
     public ClinicalCase getCase(int number){
         return cases.get(number);
     }
 
     public int getCaseIndex(ClinicalCase aCase){
         return cases.indexOf(aCase);
+    }
+
+    public boolean hasGeography(){
+        return hasGeography;
     }
 
 }

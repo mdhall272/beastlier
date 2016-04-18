@@ -53,6 +53,14 @@ public class ClinicalCase extends BEASTObject {
         return wasEverInfected;
     }
 
+    public double getEndTime(){
+        return endOfInfectiousTime.getValue();
+    }
+
+    public double getIndexPriorWeight(){
+        return indexPriorWeight;
+    }
+
     @Override
     public void initAndValidate() {
         taxa = taxaInput.get();

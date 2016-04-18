@@ -24,9 +24,13 @@ package beast.evolution.tree.partitioned;
 
 import beast.core.Input;
 import beast.evolution.tree.EpidemiologicalPartitionedTree;
-import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.TreeDistribution;
+import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -36,8 +40,19 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The collection of clinical cases");
 
-    private EpidemiologicalPartitionedTree tree;
-    private Outbreak outbreak;
+
+    protected EpidemiologicalPartitionedTree tree;
+    protected Outbreak outbreak;
+    protected boolean hasLatentPeriods;
+
+    protected ArrayList<TreeEvent> sortedTreeEvents;
+    protected ArrayList<TreeEvent> storedSortedTreeEvents;
+
+    public enum EventType{
+        INFECTION,
+        INFECTIOUSNESS,
+        END
+    }
 
     public void initAndValidate(){
         if(!(treeInput.get() instanceof EpidemiologicalPartitionedTree)){
@@ -47,8 +62,89 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
         tree = (EpidemiologicalPartitionedTree) treeInput.get();
         outbreak = outbreakInput.get();
+        sortEvents();
+        storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
     }
 
+    protected double getInfectionTime(ClinicalCase aCase){
+        return tree.getInfectionTime(aCase);
+    }
+    protected abstract double getInfectiousTime(ClinicalCase aCase);
+
+    protected class TreeEvent{
+
+        private EventType type;
+        private double time;
+        private ClinicalCase aCase;
+        private ClinicalCase infectorCase;
+
+        private TreeEvent(EventType type, double time, ClinicalCase aCase){
+            this.type = type;
+            this.time = time;
+            this.aCase = aCase;
+            this.infectorCase = null;
+        }
+
+        private TreeEvent(double time, ClinicalCase aCase, ClinicalCase infectorCase){
+            this.type = EventType.INFECTION;
+            this.time = time;
+            this.aCase = aCase;
+            this.infectorCase = infectorCase;
+        }
+
+        public double getTime(){
+            return time;
+        }
+
+        public EventType getType(){
+            return type;
+        }
+
+        public ClinicalCase getCase(){
+            return aCase;
+        }
+
+        public ClinicalCase getInfector(){
+            return infectorCase;
+        }
+
+    }
+
+
+    protected void sortEvents(){
+        ArrayList<TreeEvent> out = new ArrayList<TreeEvent>();
+        for(ClinicalCase aCase : outbreak.getCases()){
+
+
+            double infectionTime = tree.getInfectionTime(aCase);
+            out.add(new TreeEvent(infectionTime, aCase, tree.getInfector(aCase)));
+
+            if(aCase.wasEverInfected()) {
+
+                double endTime = aCase.getEndTime();
+
+                out.add(new TreeEvent(EventType.END, endTime, aCase));
+
+                if (hasLatentPeriods) {
+                    double infectiousnessTime = getInfectiousTime(aCase);
+                    out.add(new TreeEvent(EventType.INFECTIOUSNESS, infectiousnessTime, aCase));
+
+                }
+            }
+        }
+
+        Collections.sort(out, new EventComparator());
+
+        sortedTreeEvents = out;
+
+    }
+
+    private class EventComparator implements Comparator<TreeEvent> {
+        public int compare(TreeEvent treeEvent1, TreeEvent treeEvent2) {
+            return Double.compare(treeEvent1.getTime(),
+                    treeEvent2.getTime());
+        }
+    }
 
 
 }

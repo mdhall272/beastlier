@@ -1,5 +1,5 @@
 /*
-* File ClinicalCase.java
+* File FixedValueDurationCategory.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -20,36 +20,32 @@
 * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
 * Boston, MA  02110-1301  USA
 */
-
-package beastlier.outbreak;
+package beastlier.durations;
 
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
 /**
- *@author Matthew Hall <mdhall@ic.ac.uk>
-        */
+ * @author Matthew Hall <mdhall@ic.ac.uk>
+ */
 
-@Description("A ClinicalCase with a longitude and latitude")
-public class GeographicallyLocatedClinicalCase extends ClinicalCase {
+@Description("A group of clinical cases whose latent or infectious periods are identical")
+public class FixedValueDurationCategory extends DurationCategory {
 
-    public Input<RealParameter> longitudeInput = new Input<>("longitude", "Longitude (x) component of this host's" +
-            " location");
-    public Input<RealParameter> latitudeInput = new Input<>("latitude", "Latitude (y) component of this host's" +
-            " location");
+    public Input<RealParameter> valueInput = new Input<>("value", "The fixed value of this duration across all " +
+            "clinical cases in the category");
 
-    private RealParameter longitude;
-    private RealParameter latitude;
+    private RealParameter value;
 
     public void initAndValidate(){
-        longitude = longitudeInput.get();
-        latitude = latitudeInput.get();
+        super.initAndValidate();
+        value = valueInput.get();
+        hasProbability = false;
     }
 
-    public double[] getCoordinates(){
-        double[] out = {longitude.getValue(), latitude.getValue()};
-        return out;
+    public double getValue(){
+        return value.getValue();
     }
 
 }

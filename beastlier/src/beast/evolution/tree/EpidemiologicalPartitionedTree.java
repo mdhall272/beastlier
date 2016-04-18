@@ -139,18 +139,23 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public double getInfectionTime(ClinicalCase aCase){
-        int partitionElementNumber = outbreak.getCases().indexOf(aCase);
+        if(aCase.wasEverInfected()) {
 
-        if(rules==Rules.SECOND_TYPE){
-            return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
+            int partitionElementNumber = outbreak.getCases().indexOf(aCase);
 
-        } else {
-            PartitionedTreeNode mrca = getElementMRCA(partitionElementNumber);
-            if(!mrca.isRoot()) {
-                return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * mrca.getLength());
+            if (rules == Rules.SECOND_TYPE) {
+                return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
+
             } else {
-                return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * rootBranchLength);
+                PartitionedTreeNode mrca = getElementMRCA(partitionElementNumber);
+                if (!mrca.isRoot()) {
+                    return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * mrca.getLength());
+                } else {
+                    return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * rootBranchLength);
+                }
             }
+        } else {
+            return Double.POSITIVE_INFINITY;
         }
     }
 
@@ -161,6 +166,16 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public RealParameter getQ(int index){
         return q.get(index);
+    }
+
+    public ClinicalCase getInfector(ClinicalCase aCase){
+        PartitionedTreeNode elementMRCA = getElementMRCA(outbreak.getCaseIndex(aCase));
+        PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
+        if(parent == null){
+            return null;
+        } else {
+            return getNodeCase(parent);
+        }
     }
 
 

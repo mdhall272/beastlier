@@ -43,6 +43,7 @@ public class IndividualPriorDurationCategory extends DurationCategory {
     public void initAndValidate() {
         super.initAndValidate();
         distribution = distributionInput.get();
+        hasProbability = true;
     }
 
 

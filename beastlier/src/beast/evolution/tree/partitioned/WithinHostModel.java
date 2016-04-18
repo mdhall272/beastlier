@@ -28,7 +28,6 @@ import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -38,11 +37,11 @@ public abstract class WithinHostModel extends TreeDistribution {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The collection of clinical cases");
 
-    private EpidemiologicalPartitionedTree tree;
-    private Outbreak outbreak;
+    protected EpidemiologicalPartitionedTree tree;
+    protected Outbreak outbreak;
 
-    private HashMap<ClinicalCase, Treelet> elementsAsTrees;
-    private HashMap<ClinicalCase, Treelet> storedElementsAsTrees;
+    protected HashMap<ClinicalCase, Treelet> elementsAsTrees;
+    protected HashMap<ClinicalCase, Treelet> storedElementsAsTrees;
 
     @Override
     public void initAndValidate(){
@@ -54,10 +53,13 @@ public abstract class WithinHostModel extends TreeDistribution {
         tree = (EpidemiologicalPartitionedTree) treeInput.get();
         outbreak = outbreakInput.get();
 
-        if(tree.getRules()== PartitionedTree.Rules.SECOND_TYPE){
+        if(tree.getRules() == PartitionedTree.Rules.SECOND_TYPE){
             throw new IllegalArgumentException("Trees must be partitioned by third-type rules to have a within-" +
                     "host model");
         }
+
+        explodeTree();
+        storedElementsAsTrees = new HashMap<>(elementsAsTrees);
     }
 
     protected class Treelet extends Tree {

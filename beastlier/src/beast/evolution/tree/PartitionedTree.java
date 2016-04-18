@@ -338,6 +338,14 @@ public class PartitionedTree extends Tree {
         return elementLabel;
     }
 
+    public Rules getRules(){
+        return rules;
+    }
+
+    public double getRootBranchLength(){
+        return rootBranchLength;
+    }
+
 
     @Override
     protected final void initArrays() {

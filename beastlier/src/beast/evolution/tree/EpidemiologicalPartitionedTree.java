@@ -41,8 +41,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The set of clinical cases");
     public Input<List<RealParameter>> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
             "rules of the third type only", null, Input.Validate.OPTIONAL);
-    public Input<Double> zeroTimeInput = new Input<>("zeroTime", "The time of the last tip on the forwards timescale", 0.0,
-            Input.Validate.OPTIONAL);
+    public Input<Double> zeroTimeInput = new Input<>("zeroTime", "The time of the last tip on the forwards timescale",
+            0.0, Input.Validate.OPTIONAL);
 
     private double zeroTime;
     private List<RealParameter> q;
@@ -53,6 +53,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         zeroTime = zeroTimeInput.get();
         outbreak = outbreakInput.get();
+
+        //todo limits for the qs?
+
         q = qInput.get();
 
         if((rules == Rules.THIRD_TYPE && q==null) || (rules == Rules.SECOND_TYPE && q!=null)){
@@ -119,7 +122,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     }
 
-
     private double heightToTime(double height){
         return zeroTime - height;
     }
@@ -128,11 +130,18 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         return zeroTime - time;
     }
 
-    private double getInfectionTime(ClinicalCase aCase){
+    public double getNodeTime(PartitionedTreeNode node){
+        return heightToTime(node.getHeight());
+    }
+
+    public ClinicalCase getNodeCase(PartitionedTreeNode node){
+        return outbreak.getCase(node.getPartitionElementNumber());
+    }
+
+    public double getInfectionTime(ClinicalCase aCase){
         int partitionElementNumber = outbreak.getCases().indexOf(aCase);
 
         if(rules==Rules.SECOND_TYPE){
-            PartitionedTreeNode tip = getTipsInElement(partitionElementNumber).iterator().next();
             return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
 
         } else {
@@ -143,6 +152,15 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                 return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * rootBranchLength);
             }
         }
+    }
+
+    public Node getEarliestNodeInPartition(ClinicalCase aCase){
+        int index = outbreak.getCaseIndex(aCase);
+        return getEarliestNodeInPartition(index);
+    }
+
+    public RealParameter getQ(int index){
+        return q.get(index);
     }
 
 

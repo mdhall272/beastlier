@@ -90,8 +90,7 @@ public class PartitionedTree extends Tree {
 
     public PartitionedTree(Node rootNode) {
         if (!(rootNode instanceof PartitionedTreeNode))
-            throw new IllegalArgumentException("Attempted to instantiate "
-                    + "multi-type tree with regular root node.");
+            throw new IllegalArgumentException("Attempted to instantiate partitioned tree with regular root node.");
 
 
         setRoot(rootNode);
@@ -106,8 +105,8 @@ public class PartitionedTree extends Tree {
         if (m_initial.get() != null && !(this instanceof StateNodeInitialiser)) {
 
             if (!(m_initial.get() instanceof PartitionedTree)) {
-                throw new IllegalArgumentException("Attempted to initialise "
-                        + "multi-type tree with regular tree object.");
+                throw new IllegalArgumentException("Attempted to initialise partitioned tree with regular tree " +
+                        "object.");
             }
 
             PartitionedTree other = (PartitionedTree) m_initial.get();
@@ -975,6 +974,17 @@ public class PartitionedTree extends Tree {
         return null;
     }
 
+    public static boolean directDescendant(Node node, Node possibleAncestor){
+        Node currentNode = node;
+
+        while(currentNode!=null){
+            if(currentNode==possibleAncestor){
+                return true;
+            }
+            currentNode = currentNode.getParent();
+        }
+        return false;
+    }
 
     /////////////////////////////////////////////////
     // Serialization and deserialization for state //

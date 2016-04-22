@@ -24,6 +24,8 @@ package beast.evolution.tree;
 
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.util.RandomPartition;
+import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
@@ -55,10 +57,21 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         q = qInput.get();
 
+        if(q != null && q.size() != elementList.size()){
+            throw new IllegalArgumentException("Wrong number of q parameters");
+        }
+
         if((rules == Rules.THIRD_TYPE && q==null) || (rules == Rules.SECOND_TYPE && q!=null)){
             throw new IllegalArgumentException("The q parameters should be present if and only if the rules are of" +
                     " the third type");
         }
+
+        // this is a bit of a hack but should make the run start up from a random tree much more often
+
+        if(rules == Rules.THIRD_TYPE && m_initial.get() instanceof RandomPartition){
+            initialiseQs();
+        }
+
         super.initAndValidate();
     }
 
@@ -173,6 +186,28 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             return null;
         } else {
             return getNodeCase(parent);
+        }
+    }
+
+    // This forces cases in a random starting partition to have infection times at some point while the infector case
+    // was infected. The problem comes when the infection branch is longer than its sibling branch and the infection
+    // point is at a lower height than the sibling node. This doesn't invariably cause a problem but it can. Here
+    // we randomly assign cases for which this happens a qi that has a higher height.
+
+    private void initialiseQs(){
+        for(ClinicalCase aCase : outbreak.getCases()){
+            int caseNo = outbreak.getCaseIndex(aCase);
+
+            Node mrca = getElementMRCA(caseNo);
+            if(!mrca.isRoot()) {
+                double mrcaLength = mrca.getLength();
+                Node sibling = sibling(mrca);
+                double siblingLength = sibling.getLength();
+                double difference = mrcaLength - siblingLength;
+                if(difference > 0 && mrcaLength*q.get(caseNo).getValue() < difference){
+                    q.get(caseNo).setValue((difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
+                }
+            }
         }
     }
 

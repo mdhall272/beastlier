@@ -65,7 +65,6 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
     private Object randomlyAssignNode(PartitionedTreeNode node, boolean allowCreep){
 
         if(node.isLeaf()){
-
             return node.getPartitionElementNumber();
         } else {
 

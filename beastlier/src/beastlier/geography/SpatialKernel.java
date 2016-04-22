@@ -25,9 +25,7 @@ package beastlier.geography;
 
 import beast.core.CalculationNode;
 import beast.core.Description;
-import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
-import org.apache.commons.math3.stat.clustering.EuclideanDoublePoint;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>

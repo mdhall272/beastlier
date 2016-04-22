@@ -25,7 +25,6 @@ package beastlier.operators;
 
 import beast.core.Input;
 import beast.evolution.operators.TreeOperator;
-import beast.evolution.tree.Node;
 import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.evolution.tree.Tree;

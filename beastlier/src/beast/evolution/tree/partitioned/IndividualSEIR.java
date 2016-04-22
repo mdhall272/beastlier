@@ -22,9 +22,7 @@
 */
 package beast.evolution.tree.partitioned;
 
-import beast.core.Function;
 import beast.core.Input;
-import beast.core.parameter.CompoundValuable;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.ParametricDistribution;
 import beastlier.durations.DurationCategory;

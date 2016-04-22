@@ -28,9 +28,7 @@ import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>

@@ -22,7 +22,6 @@
 */
 package beastlier.durations;
 
-import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;

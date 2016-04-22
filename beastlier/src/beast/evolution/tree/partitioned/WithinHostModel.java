@@ -45,7 +45,7 @@ public abstract class WithinHostModel extends TreeDistribution {
 
     @Override
     public void initAndValidate(){
-        if(!(treeInput.get() instanceof PartitionedTree )){
+        if(!(treeInput.get() instanceof EpidemiologicalPartitionedTree )){
             throw new IllegalArgumentException("Trees given to the within-host model must have node partitions and" +
                     " an outbreak");
         }
@@ -108,8 +108,7 @@ public abstract class WithinHostModel extends TreeDistribution {
 
                 if (!elementRoot.isLeaf()) {
                     for (int j = 0; j < elementRoot.getChildCount(); j++) {
-                        copyPartitionToTreelet(littleTree, (PartitionedTreeNode)elementRoot.getChild(i), newRoot,
-                                aCase);
+                        copyPartitionToTreelet((PartitionedTreeNode)elementRoot.getChild(i), newRoot, aCase);
                     }
                 }
 
@@ -137,7 +136,7 @@ public abstract class WithinHostModel extends TreeDistribution {
         }
     }
 
-    private void copyPartitionToTreelet(Tree littleTree, PartitionedTreeNode oldNode, Node newParent,
+    private void copyPartitionToTreelet(PartitionedTreeNode oldNode, Node newParent,
                                         ClinicalCase element){
 
         if (oldNode.getPartitionElementNumber() == outbreak.getCaseIndex(element)) {
@@ -152,7 +151,7 @@ public abstract class WithinHostModel extends TreeDistribution {
                 for (int i = 0; i < oldNode.getChildCount(); i++) {
                     PartitionedTreeNode castChild = (PartitionedTreeNode) oldNode.getChild(i);
 
-                    copyPartitionToTreelet(littleTree, castChild, newChild, element);
+                    copyPartitionToTreelet(castChild, newChild, element);
                 }
             }
         } else {

@@ -23,6 +23,8 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
+import beast.core.StateNode;
+import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
@@ -34,7 +36,7 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class EpidemiologicalPartitionedTree extends PartitionedTree {
+public class EpidemiologicalPartitionedTree extends PartitionedTree implements StateNodeInitialiser {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The set of clinical cases");
     public Input<List<RealParameter>> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
@@ -177,4 +179,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
 
+    @Override
+    public void initStateNodes() {
+
+    }
+
+    @Override
+    public void getInitialisedStateNodes(List<StateNode> stateNodes) {
+
+    }
 }

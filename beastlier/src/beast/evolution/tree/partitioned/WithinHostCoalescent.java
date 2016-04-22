@@ -27,7 +27,7 @@ import beast.core.Input;
 import beast.evolution.tree.coalescent.*;
 import beast.math.Binomial;
 import beastlier.outbreak.ClinicalCase;
-import util.BigDecimalUtils;
+import beast.util.BigDecimalUtils;
 
 import java.math.BigDecimal;
 

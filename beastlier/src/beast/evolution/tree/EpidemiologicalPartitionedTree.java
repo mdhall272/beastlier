@@ -23,8 +23,6 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
-import beast.core.StateNode;
-import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
@@ -36,7 +34,7 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class EpidemiologicalPartitionedTree extends PartitionedTree implements StateNodeInitialiser {
+public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The set of clinical cases");
     public Input<List<RealParameter>> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
@@ -49,7 +47,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree implements S
     private Outbreak outbreak;
 
     public void initAndValidate(){
-        super.initAndValidate();
 
         zeroTime = zeroTimeInput.get();
         outbreak = outbreakInput.get();
@@ -62,6 +59,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree implements S
             throw new IllegalArgumentException("The q parameters should be present if and only if the rules are of" +
                     " the third type");
         }
+        super.initAndValidate();
     }
 
     @Override
@@ -179,13 +177,4 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree implements S
     }
 
 
-    @Override
-    public void initStateNodes() {
-
-    }
-
-    @Override
-    public void getInitialisedStateNodes(List<StateNode> stateNodes) {
-
-    }
 }

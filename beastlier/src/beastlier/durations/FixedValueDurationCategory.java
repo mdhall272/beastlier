@@ -33,7 +33,7 @@ import beast.core.parameter.RealParameter;
 @Description("A group of clinical cases whose latent or infectious periods are identical")
 public class FixedValueDurationCategory extends DurationCategory {
 
-    public Input<RealParameter> valueInput = new Input<>("value", "The fixed value of this duration across all " +
+    public Input<RealParameter> valueInput = new Input<>("length", "The fixed value of this duration across all " +
             "clinical cases in the category");
 
     private RealParameter value;

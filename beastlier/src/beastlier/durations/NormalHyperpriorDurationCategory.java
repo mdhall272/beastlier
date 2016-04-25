@@ -39,7 +39,7 @@ import java.util.List;
         " unknown normal distribution")
 public class NormalHyperpriorDurationCategory extends DurationCategory {
 
-    public Input<NormalGamma> distributionInput = new Input<>("distribution", "The normal-gamma distribution " +
+    public Input<NormalGamma> distributionInput = new Input<>("NormalGamma", "The normal-gamma distribution " +
             "determining the hyperprior");
 
     private NormalGamma distribution;

@@ -38,7 +38,7 @@ import java.util.List;
         "same prior distribution")
 public abstract class DurationCategory extends BEASTObject {
 
-    public Input<List<ClinicalCase>> casesInput = new Input<>("cases", "A list of cases in this category");
+    public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case in this category");
 
     protected List<ClinicalCase> cases;
 

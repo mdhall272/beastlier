@@ -41,8 +41,8 @@ public class Outbreak extends BEASTObject implements DataType {
 
     public Input<Boolean> hasGeographyInput = new Input<>("hasGeography", "True if hosts have geographical locations",
             false, Input.Validate.OPTIONAL);
-    public Input<List<ClinicalCase>> casesInput = new Input<>("cases", "A list if all clinical cases (hosts) in the " +
-            "outbreak; can include never-infected susceptibles");
+    public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case (host) in the " +
+            "outbreak; may be a susceptible that was never infected");
 
     private Boolean hasGeography;
     private List<ClinicalCase> cases;

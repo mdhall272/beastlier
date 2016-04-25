@@ -23,11 +23,13 @@
 package beast.util;
 
 import beast.core.Description;
+import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
+import beast.evolution.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,12 +44,15 @@ import java.util.List;
 @Description("Takes an unpartitioned tree and randomly partitions it.")
 public class RandomPartition extends PartitionedTree implements StateNodeInitialiser {
 
+    public Input<Tree> unpartitionInput = new Input<>("unpartitioned", "An unpartitioned tree to randomly partition");
+
     public void initAndValidate(){
 
-        assignFrom(m_initial.get());
-        processTraits(m_traitList.get());
+        assignFrom(unpartitionInput.get());
 
         initStateNodes();
+
+        processTraits(m_traitList.get());
 
         super.initAndValidate();
     }
@@ -58,6 +63,10 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
         PartitionedTreeNode root = (PartitionedTreeNode) getRoot();
         randomlyAssignNode(root, false);
+
+        if (m_initial.get() != null) {
+            m_initial.get().assignFromWithoutID(this);
+        }
 
     }
 

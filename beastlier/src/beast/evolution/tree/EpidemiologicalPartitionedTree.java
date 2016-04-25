@@ -39,13 +39,13 @@ import java.util.List;
 public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The set of clinical cases");
-    public Input<List<RealParameter>> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
+    public Input<RealParameter> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
             "rules of the third type only", null, Input.Validate.OPTIONAL);
     public Input<Double> zeroTimeInput = new Input<>("zeroTime", "The time of the last tip on the forwards timescale",
             0.0, Input.Validate.OPTIONAL);
 
     private double zeroTime;
-    private List<RealParameter> q;
+    private RealParameter q;
     private Outbreak outbreak;
 
     public void initAndValidate(){
@@ -57,8 +57,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         q = qInput.get();
 
-        if(q != null && q.size() != elementList.size()){
-            throw new IllegalArgumentException("Wrong number of q parameters");
+        if(q != null && q.getDimension() != elementList.size()){
+            throw new IllegalArgumentException("q has the wrong dimension");
         }
 
         if((rules == Rules.THIRD_TYPE && q==null) || (rules == Rules.SECOND_TYPE && q!=null)){
@@ -160,9 +160,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             } else {
                 PartitionedTreeNode mrca = getElementMRCA(partitionElementNumber);
                 if (!mrca.isRoot()) {
-                    return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * mrca.getLength());
+                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * mrca.getLength());
                 } else {
-                    return heightToTime(mrca.getHeight() + q.get(partitionElementNumber).getValue() * rootBranchLength);
+                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * rootBranchLength);
                 }
             }
         } else {
@@ -175,8 +175,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         return getEarliestNodeInPartition(index);
     }
 
-    public RealParameter getQ(int index){
-        return q.get(index);
+    public double getQ(int index){
+        return q.getValue(index);
     }
 
     public ClinicalCase getInfector(ClinicalCase aCase){
@@ -204,8 +204,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                 Node sibling = sibling(mrca);
                 double siblingLength = sibling.getLength();
                 double difference = mrcaLength - siblingLength;
-                if(difference > 0 && mrcaLength*q.get(caseNo).getValue() < difference){
-                    q.get(caseNo).setValue((difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
+                if(difference > 0 && mrcaLength*q.getValue(caseNo) < difference){
+                    q.setValue(caseNo, (difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
                 }
             }
         }

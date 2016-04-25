@@ -92,10 +92,10 @@ public abstract class WithinHostModel extends TreeDistribution {
 
                 if(elementRoot.isRoot()){
                     extraHeight = tree.getRootBranchLength()
-                            * tree.getQ(i).getValue();
+                            * tree.getQ(i);
                 } else {
                     extraHeight = elementRoot.getLength()
-                            * tree.getQ(i).getValue();
+                            * tree.getQ(i);
                 }
 
                 Node newRoot = new Node();

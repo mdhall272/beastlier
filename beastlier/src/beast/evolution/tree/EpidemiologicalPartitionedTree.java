@@ -57,6 +57,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         q = qInput.get();
 
+        super.initAndValidate();
+
         if(q != null && q.getDimension() != elementList.size()){
             throw new IllegalArgumentException("q has the wrong dimension");
         }
@@ -72,7 +74,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             initialiseQs();
         }
 
-        super.initAndValidate();
+
     }
 
     @Override

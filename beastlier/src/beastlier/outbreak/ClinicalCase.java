@@ -36,7 +36,7 @@ import beast.evolution.alignment.TaxonSet;
 @Description("Base class for epidemiological information about a case in an outbreak")
 public class ClinicalCase extends BEASTObject {
 
-    public Input<TaxonSet> taxaInput = new Input<>("taxa", "The taxa taken from this host");
+    public Input<TaxonSet> taxaInput = new Input<>("TaxonSet", "The taxa taken from this host");
     public Input<RealParameter> endOfInfectiousTimeInput = new Input<>("endOfInfectiousTime", "The time at which" +
             " this host ceased to be infectious", null, Input.Validate.OPTIONAL);
     public Input<Boolean> wasEverInfectedInput = new Input<>("wasEverInfected", "Was this host ever infected?", true,

@@ -44,13 +44,13 @@ public class IndividualSEIR extends BetweenHostModel {
     public Input<SpatialKernel> kernelInput = new Input<>("kernel", "The spatial kernel function; if null or absent, " +
             "geography will be ignored", null, Input.Validate.OPTIONAL);
     public Input<List<DurationCategory>> latentInput = new Input<>("latentInput", "One or more categories uniting " +
-            "latent periods across clinical cases");
+            "latent periods across clinical cases", new ArrayList<>());
     public Input<List<DurationCategory>> infectiousInput = new Input<>("infectiousInput", "One or more categories " +
-            "uniting infectious periods across clinical cases");
+            "uniting infectious periods across clinical cases", new ArrayList<>());
     public Input<RealParameter> baseTransmissionRateInput = new Input<>("baseTransmissionRate", "The unmodified " +
             "transmission rate");
-    public Input<ParametricDistribution> initialInfectionTimePriorInput = new Input<>("initialInfectionTimePriod", "The prior" +
-            " distribution for the time of the index infection");
+    public Input<ParametricDistribution> initialInfectionTimePriorInput = new Input<>("initialInfectionTimePriod",
+            "The prior distribution for the time of the index infection", null, Input.Validate.OPTIONAL);
 
     private SpatialKernel kernel;
     private RealParameter baseTransmissionRate;

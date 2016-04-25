@@ -28,6 +28,7 @@ import beast.core.Function;
 import beast.core.Input;
 import beastlier.outbreak.ClinicalCase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,7 +39,8 @@ import java.util.List;
         "same prior distribution")
 public abstract class DurationCategory extends BEASTObject {
 
-    public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case in this category");
+    public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case in this category",
+            new ArrayList<>());
 
     protected List<ClinicalCase> cases;
 

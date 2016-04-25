@@ -38,7 +38,7 @@ import java.math.BigDecimal;
 @Description("A parameteric within-host coalescent function shared by every clinical case")
 public class WithinHostCoalescent extends WithinHostModel {
 
-    public Input<PopulationFunction> functionInput = new Input<>("truncCoalescent", "The within-host coalescent " +
+    public Input<PopulationFunction> functionInput = new Input<>("populationFunction", "The within-host coalescent " +
             "process");
 
     private PopulationFunction popFunction;

@@ -40,7 +40,6 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The collection of clinical cases");
 
-
     protected EpidemiologicalPartitionedTree tree;
     protected Outbreak outbreak;
     protected boolean hasLatentPeriods;

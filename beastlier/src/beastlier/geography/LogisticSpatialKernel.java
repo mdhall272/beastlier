@@ -32,8 +32,8 @@ import beast.core.parameter.RealParameter;
 
 public class LogisticSpatialKernel extends SpatialKernel {
 
-    public Input<RealParameter> alphaInput;
-    public Input<RealParameter> r0Input;
+    public Input<RealParameter> alphaInput = new Input<>("alpha", "the alpha parameter of this kernel");
+    public Input<RealParameter> r0Input = new Input<>("r0", "the r0 parameter of this kernel");
 
     RealParameter alpha;
     RealParameter r0;

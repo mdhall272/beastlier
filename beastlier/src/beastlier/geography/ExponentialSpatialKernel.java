@@ -32,7 +32,7 @@ import beast.core.parameter.RealParameter;
 
 public class ExponentialSpatialKernel extends SpatialKernel {
 
-    public Input<RealParameter> alphaInput;
+    public Input<RealParameter> alphaInput = new Input<>("alpha", "the alpha parameter of this kernel");
 
     RealParameter alpha;
 

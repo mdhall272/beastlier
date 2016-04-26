@@ -50,11 +50,15 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
         assignFrom(unpartitionedInput.get());
 
+        elementLabel = elementLabelInput.get();
+
+        processTraits(m_initial.get().m_traitList.get());
+
         initStateNodes();
 
-        processTraits(m_traitList.get());
-
         super.initAndValidate();
+
+
     }
 
 

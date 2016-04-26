@@ -400,13 +400,13 @@ public class PartitionedTree extends Tree {
      */
     @Override
     public void assignFrom(StateNode other) {
-        PartitionedTree pTree = (PartitionedTree) other;
+        Tree pTree = (Tree) other;
 
         PartitionedTreeNode[] pNodes = new PartitionedTreeNode[pTree.getNodeCount()];
         for (int i=0; i<pTree.getNodeCount(); i++)
             pNodes[i] = new PartitionedTreeNode();
 
-        ID = pTree.ID;
+        ID = pTree.getID();
         root = pNodes[pTree.root.getNr()];
         root.assignFrom(pNodes, pTree.root);
         root.parent = null;

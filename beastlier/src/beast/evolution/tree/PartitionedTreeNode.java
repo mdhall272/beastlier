@@ -121,8 +121,11 @@ public class PartitionedTreeNode extends Node {
         setParent(null);
         ID = node.getID();
 
-        PartitionedTreeNode mtNode = (PartitionedTreeNode)node;
-        partitionElementNumber = mtNode.partitionElementNumber;
+        if(node instanceof PartitionedTreeNode) {
+
+            PartitionedTreeNode mtNode = (PartitionedTreeNode) node;
+            partitionElementNumber = mtNode.partitionElementNumber;
+        }
 //        if (mtNode.likes==null) {likes = null;}else{
 //        	likes = Arrays.copyOf(mtNode.likes,mtNode.likes.length);
 //        }

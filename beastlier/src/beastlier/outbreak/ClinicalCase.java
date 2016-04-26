@@ -27,6 +27,7 @@ import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 
 /**
@@ -59,6 +60,10 @@ public class ClinicalCase extends BEASTObject {
 
     public double getIndexPriorWeight(){
         return indexPriorWeight;
+    }
+
+    public TaxonSet getTaxa(){
+        return taxa;
     }
 
     @Override

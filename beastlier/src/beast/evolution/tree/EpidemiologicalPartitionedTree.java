@@ -79,6 +79,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     @Override
     protected void processTraits(List<TraitSet> traitList) {
+
         // Record trait set associated with leaf types.
         for (TraitSet traitSet : traitList) {
             if (traitSet.getTraitName().equals(elementLabel)) {
@@ -104,13 +105,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                     timeTraitSet = traitSet;
             } else {
                 for (Node node : getExternalNodes()) {
-                    PartitionedTreeNode caseNode = (PartitionedTreeNode)node;
+                    PartitionedTreeNode castNode = (PartitionedTreeNode)node;
 
                     String id = node.getID();
                     if (id != null) {
-                        node.setMetaData(traitSet.getTraitName(), traitSet.getValue(id));
-                        caseNode.setPartitionElementNumber(outbreak.getCases()
-                                .indexOf(outbreak.getCaseByID(traitSet.getStringValue(id))));
+                        node.setMetaData(traitSet.getTraitName(), (int)traitSet.getValue(id));
+                        castNode.setPartitionElementNumber(outbreak.getCases()
+                                .indexOf(outbreak.getCase((int)traitSet.getValue(id))));
                     }
                 }
             }
@@ -126,7 +127,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 //            elementTraitSet = elementTraitInput.get();
 
 
-        elementList = new ArrayList<>(outbreak.getCases());
+        elementList = new ArrayList<>(outbreak.getEverInfectedCases());
 
         System.out.println("Partition element trait with the following elements detected:");
         for (int i = 0; i < elementList.size(); i++) {
@@ -155,6 +156,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         if(aCase.wasEverInfected()) {
 
             int partitionElementNumber = outbreak.getCases().indexOf(aCase);
+            int qIndex = outbreak.getEverInfectedCases().indexOf(aCase);
 
             if (rules == Rules.SECOND_TYPE) {
                 return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
@@ -162,9 +164,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             } else {
                 PartitionedTreeNode mrca = getElementMRCA(partitionElementNumber);
                 if (!mrca.isRoot()) {
-                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * mrca.getLength());
+                    return heightToTime(mrca.getHeight() + q.getValue(qIndex) * mrca.getLength());
                 } else {
-                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * rootBranchLength);
+                    return heightToTime(mrca.getHeight() + q.getValue(qIndex) * rootBranchLength);
                 }
             }
         } else {

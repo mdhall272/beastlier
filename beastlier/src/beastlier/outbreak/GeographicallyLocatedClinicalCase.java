@@ -43,6 +43,7 @@ public class GeographicallyLocatedClinicalCase extends ClinicalCase {
     private RealParameter latitude;
 
     public void initAndValidate(){
+        super.initAndValidate();
         longitude = longitudeInput.get();
         latitude = latitudeInput.get();
     }

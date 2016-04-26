@@ -27,6 +27,8 @@ import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.datatype.DataType;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -158,6 +160,15 @@ public class Outbreak extends BEASTObject implements DataType {
             }
         }
         throw new RuntimeException("Looking for a clinical case that is not present in the outbreak");
+    }
+
+    public ClinicalCase getCaseByTaxon(String taxon){
+        for(ClinicalCase aCase : cases){
+            if(aCase.getTaxa().containsAll(Lists.newArrayList(taxon))){
+                return aCase;
+            }
+        }
+        throw new RuntimeException("Looking for a clinical case for a nonexistant taxon");
     }
 
     public List<ClinicalCase> getCases(){

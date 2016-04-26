@@ -110,7 +110,7 @@ public class IndividualSEIR extends BetweenHostModel {
             indexCasePrior.put(aCase, aCase.getIndexPriorWeight()/totalWeights);
         }
 
-        if(kernel!=null && outbreak.hasGeography()){
+        if(kernel!=null && !outbreak.hasGeography()){
             throw new IllegalArgumentException("Kernel specified but ClinicalCases have no attached geographical" +
                     " information");
         }

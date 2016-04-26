@@ -58,6 +58,7 @@ public abstract class WithinHostModel extends TreeDistribution {
                     "host model");
         }
 
+        elementsAsTrees = new HashMap<>();
         explodeTree();
         storedElementsAsTrees = new HashMap<>(elementsAsTrees);
     }
@@ -68,6 +69,7 @@ public abstract class WithinHostModel extends TreeDistribution {
 
         protected Treelet(Tree tree, double zeroHeight){
             tree.initAndValidate();
+            assignFrom(tree);
             this.zeroHeight = zeroHeight;
         }
 
@@ -83,7 +85,7 @@ public abstract class WithinHostModel extends TreeDistribution {
     protected void explodeTree(){
 
         for(int i=0; i<outbreak.getStateCount(); i++){
-            ClinicalCase aCase = outbreak.getCase(i);
+            ClinicalCase aCase = outbreak.getEverInfectedCases().get(i);
             if(aCase.wasEverInfected() && elementsAsTrees.get(aCase)==null){
 
                 Node elementRoot = tree.getEarliestNodeInPartition(aCase);
@@ -100,17 +102,22 @@ public abstract class WithinHostModel extends TreeDistribution {
 
                 Node newRoot = new Node();
 
-                //todo this really might not work
-
                 newRoot.setHeight(0);
 
                 Tree littleTree = new Tree(newRoot);
 
                 if (!elementRoot.isLeaf()) {
                     for (int j = 0; j < elementRoot.getChildCount(); j++) {
-                        copyPartitionToTreelet((PartitionedTreeNode)elementRoot.getChild(i), newRoot, aCase);
+                        copyPartitionToTreelet(littleTree, (PartitionedTreeNode)elementRoot.getChild(j), newRoot, aCase);
                     }
                 }
+
+                littleTree = new Tree(newRoot);
+
+                //so stupid
+
+                littleTree.getLeafNodeCount();
+                littleTree.getInternalNodeCount();
 
                 double minHeight = 0;
                 for(int nodeNo = 0; nodeNo<littleTree.getNodeCount(); nodeNo++){
@@ -122,7 +129,7 @@ public abstract class WithinHostModel extends TreeDistribution {
 
                 for(int nodeNo = 0; nodeNo<littleTree.getNodeCount(); nodeNo++){
                     Node node = littleTree.getNode(nodeNo);
-                    node.setHeight(node.getHeight() + minHeight);
+                    node.setHeight(node.getHeight() - minHeight);
                 }
 
 
@@ -136,22 +143,24 @@ public abstract class WithinHostModel extends TreeDistribution {
         }
     }
 
-    private void copyPartitionToTreelet(PartitionedTreeNode oldNode, Node newParent,
+    private void copyPartitionToTreelet(Tree protoTreelet, PartitionedTreeNode oldNode, Node newParent,
                                         ClinicalCase element){
+
 
         if (oldNode.getPartitionElementNumber() == outbreak.getCaseIndex(element)) {
             if (oldNode.isLeaf()) {
                 Node newTip = new Node(tree.getTaxonId(oldNode));
-                newTip.setParent(newParent);
+                protoTreelet.addNode(newTip);
+                newParent.addChild(newTip);
                 newTip.setHeight(newParent.getHeight() - oldNode.getLength());
             } else {
                 Node newChild = new Node();
+                protoTreelet.addNode(newChild);
                 newParent.addChild(newChild);
-                newChild.setHeight(newParent.getHeight() - oldNode.getHeight());
+                newChild.setHeight(newParent.getHeight() - oldNode.getLength());
                 for (int i = 0; i < oldNode.getChildCount(); i++) {
                     PartitionedTreeNode castChild = (PartitionedTreeNode) oldNode.getChild(i);
-
-                    copyPartitionToTreelet(castChild, newChild, element);
+                    copyPartitionToTreelet(protoTreelet, castChild, newChild, element);
                 }
             }
         } else {
@@ -160,6 +169,7 @@ public abstract class WithinHostModel extends TreeDistribution {
                     outbreak.getCase(oldNode.getPartitionElementNumber()).getID());
             double parentTime = tree.getNodeTime((PartitionedTreeNode)oldNode.getParent());
             double childTime = tree.getInfectionTime(tree.getNodeCase(oldNode));
+            protoTreelet.addNode(transmissionTip);
             newParent.addChild(transmissionTip);
             transmissionTip.setHeight(newParent.getHeight() - (childTime - parentTime) );
         }

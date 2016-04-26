@@ -64,7 +64,7 @@ public class PartitionedTree extends Tree {
 
     public Input<Double> rootBranchLengthInput = new Input<>(
             "rootBranchLength", "The length of the root branch (the index infection must occur along this branch",
-            50.0);
+            50.0, Input.Validate.OPTIONAL);
 
     String[] ruleTypes = {"second", "third"};
 
@@ -117,46 +117,43 @@ public class PartitionedTree extends Tree {
         }
 
         if (nodeCount < 0) {
-            // todo do a random starting tree routine that works for partitions
 
-            throw new RuntimeException("No starting tree specified");
+            if (m_taxonset.get() != null) {
+                // make a caterpillar
+                List<String> sTaxa = m_taxonset.get().asStringList();
+                PartitionedTreeNode left = new PartitionedTreeNode();
+                left.labelNr = 0;
+                left.height = 0;
+                left.setID(sTaxa.get(0));
+                for (int i = 1; i < sTaxa.size(); i++) {
+                    PartitionedTreeNode right = new PartitionedTreeNode();
+                    right.labelNr = i;
+                    right.height = 0;
+                    right.setID(sTaxa.get(i));
+                    PartitionedTreeNode parent = new PartitionedTreeNode();
+                    parent.labelNr = sTaxa.size() + i - 1;
+                    parent.height = i;
+                    left.parent = parent;
+                    parent.setLeft(left);
+                    right.parent = parent;
+                    parent.setRight(right);
+                    left = parent;
+                }
+                root = left;
+                leafNodeCount = sTaxa.size();
+                nodeCount = leafNodeCount * 2 - 1;
+                internalNodeCount = leafNodeCount - 1;
 
-//            if (m_taxonset.get() != null) {
-//                // make a caterpillar
-//                List<String> sTaxa = m_taxonset.get().asStringList();
-//                Node left = new PartitionedTreeNode();
-//                left.labelNr = 0;
-//                left.height = 0;
-//                left.setID(sTaxa.get(0));
-//                for (int i = 1; i < sTaxa.size(); i++) {
-//                    Node right = new PartitionedTreeNode();
-//                    right.labelNr = i;
-//                    right.height = 0;
-//                    right.setID(sTaxa.get(i));
-//                    Node parent = new PartitionedTreeNode();
-//                    parent.labelNr = sTaxa.size() + i - 1;
-//                    parent.height = i;
-//                    left.parent = parent;
-//                    parent.setLeft(left);
-//                    right.parent = parent;
-//                    parent.setRight(right);
-//                    left = parent;
-//                }
-//                root = left;
-//                leafNodeCount = sTaxa.size();
-//                nodeCount = leafNodeCount * 2 - 1;
-//                internalNodeCount = leafNodeCount - 1;
-//
-//            } else {
-//                // make dummy tree with a single root node
-//                root = new PartitionedTreeNode();
-//                root.labelNr = 0;
-//                root.labelNr = 0;
-//                root.m_tree = this;
-//                nodeCount = 1;
-//                internalNodeCount = 0;
-//                leafNodeCount = 1;
-//            }
+            } else {
+                // make dummy tree with a single root node
+                root = new PartitionedTreeNode();
+                root.labelNr = 0;
+                root.labelNr = 0;
+                root.m_tree = this;
+                nodeCount = 1;
+                internalNodeCount = 0;
+                leafNodeCount = 1;
+            }
         }
 
         if (nodeCount >= 0) {
@@ -167,6 +164,12 @@ public class PartitionedTree extends Tree {
         rootBranchLength = rootBranchLengthInput.get();
 
         processTraits(m_traitList.get());
+
+        for(Node node : getInternalNodes()){
+            PartitionedTreeNode castNode = (PartitionedTreeNode)node;
+            castNode.setPartitionElementNumber(0);
+
+        }
 
         if(rules == SECOND_TYPE){
             for(int i=0; i<elementList.size(); i++){
@@ -480,19 +483,19 @@ public class PartitionedTree extends Tree {
 
         if(rules==THIRD_TYPE) {
 
-            for (int i = 0; i < nodeCount; i++) {
-                PartitionedTreeNode node = (PartitionedTreeNode) getNode(i);
-                int elementNumber = node.getPartitionElementNumber();
+            for (Node node : getInternalNodes()) {
+                PartitionedTreeNode castNode = (PartitionedTreeNode) node;
+                int elementNumber = castNode.getPartitionElementNumber();
 
                 boolean linked = false;
-                for (Node child : node.getChildren()) {
+                for (Node child : castNode.getChildren()) {
                     if (((PartitionedTreeNode) child).getPartitionElementNumber() == elementNumber) {
                         linked = true;
                     }
                 }
 
-                Node parent = node.getParent();
-                if (((PartitionedTreeNode) parent).getPartitionElementNumber() == elementNumber) {
+                Node parent = castNode.getParent();
+                if (parent!=null && ((PartitionedTreeNode) parent).getPartitionElementNumber() == elementNumber) {
                     linked = true;
                 }
 
@@ -503,16 +506,15 @@ public class PartitionedTree extends Tree {
             }
             return true;
         } else {
-            for (int i = 0; i < internalNodeCount; i++) {
-                PartitionedTreeNode node = (PartitionedTreeNode) getNode(i);
-                int elementNumber = node.getPartitionElementNumber();
+            for (Node node : getInternalNodes()) {
+                PartitionedTreeNode castNode = (PartitionedTreeNode) node;
+                int elementNumber = castNode.getPartitionElementNumber();
 
                 int childrenInSameElement = 0;
 
                 for(Node child : node.getChildren()){
 
-                    if(((PartitionedTreeNode)child).getPartitionElementNumber() ==
-                            node.getPartitionElementNumber()){
+                    if(((PartitionedTreeNode)child).getPartitionElementNumber() == elementNumber){
                         childrenInSameElement++;
                     }
                 }

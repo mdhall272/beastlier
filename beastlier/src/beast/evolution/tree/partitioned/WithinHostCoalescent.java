@@ -59,9 +59,6 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         for (ClinicalCase aCase : outbreak.getEverInfectedCases()) {
 
-            int number = outbreak.getCaseIndex(aCase);
-
-
             //recalculate everything for now
 
 //                if (recalculateCoalescentFlags[number]) {

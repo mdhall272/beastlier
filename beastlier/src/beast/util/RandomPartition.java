@@ -44,11 +44,11 @@ import java.util.List;
 @Description("Takes an unpartitioned tree and randomly partitions it.")
 public class RandomPartition extends PartitionedTree implements StateNodeInitialiser {
 
-    public Input<Tree> unpartitionInput = new Input<>("unpartitioned", "An unpartitioned tree to randomly partition");
+    public Input<Tree> unpartitionedInput = new Input<>("unpartitioned", "An unpartitioned tree to randomly partition");
 
     public void initAndValidate(){
 
-        assignFrom(unpartitionInput.get());
+        assignFrom(unpartitionedInput.get());
 
         initStateNodes();
 

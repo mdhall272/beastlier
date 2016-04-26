@@ -54,6 +54,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     }
 
     public void initAndValidate(){
+
         if(!(treeInput.get() instanceof EpidemiologicalPartitionedTree)){
             throw new IllegalArgumentException("Trees given to the between-host model must have node partitions and" +
                     " an outbreak");
@@ -112,7 +113,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     protected void sortEvents(){
         ArrayList<TreeEvent> out = new ArrayList<TreeEvent>();
-        for(ClinicalCase aCase : outbreak.getCases()){
+        for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
 
 
             double infectionTime = tree.getInfectionTime(aCase);

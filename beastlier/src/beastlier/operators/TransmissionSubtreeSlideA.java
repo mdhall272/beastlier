@@ -223,7 +223,7 @@ public class TransmissionSubtreeSlideA extends TreeOperator {
 
         PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
         PartitionedTreeNode grandparent = parent != null ? (PartitionedTreeNode) parent.getParent() : null;
-        PartitionedTreeNode sibling = (PartitionedTreeNode)getOtherChild(parent, node);
+        PartitionedTreeNode sibling = parent == null ? null : (PartitionedTreeNode)getOtherChild(parent, node);
 
         return  (!node.isRoot() && ((grandparent != null
                 && parent.getPartitionElementNumber() == grandparent.getPartitionElementNumber())

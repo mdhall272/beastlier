@@ -70,10 +70,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         // this is a bit of a hack but should make the run start up from a random tree much more often
 
-        if(rules == Rules.THIRD_TYPE && m_initial.get() instanceof RandomPartition){
+        if(rules == Rules.THIRD_TYPE && m_initial.get() instanceof RandomPartition) {
             initialiseQs();
         }
-
 
     }
 
@@ -162,7 +161,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                 return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
 
             } else {
-                PartitionedTreeNode mrca = getElementMRCA(partitionElementNumber);
+                PartitionedTreeNode mrca = getEarliestNodeInPartition(partitionElementNumber);
                 if (!mrca.isRoot()) {
                     return heightToTime(mrca.getHeight() + q.getValue(qIndex) * mrca.getLength());
                 } else {

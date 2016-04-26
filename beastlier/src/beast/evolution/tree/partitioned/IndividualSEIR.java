@@ -127,9 +127,9 @@ public class IndividualSEIR extends BetweenHostModel {
 
         double transLogProb = 0;
 
-        if (sortedTreeEvents == null) {
-            sortEvents();
-        }
+//        if (sortedTreeEvents == null) {
+        sortEvents();
+//        }
 
         double rate = baseTransmissionRate.getValue();
 

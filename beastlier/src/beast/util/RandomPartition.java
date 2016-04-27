@@ -86,7 +86,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
             ArrayList<Object> forcedByTopology = new ArrayList<Object>();
 
-            for(Object elementLabel : elementList ){
+            for(Object elementLabel : elementList){
 
                 int elementNo = elementList.indexOf(elementLabel);
 
@@ -100,7 +100,6 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
                         }
                     }
                 }
-
             }
 
             if(forcedByTopology.size()>1){

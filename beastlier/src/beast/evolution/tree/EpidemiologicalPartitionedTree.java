@@ -28,9 +28,12 @@ import beast.util.RandomPartition;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -76,65 +79,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     }
 
-    @Override
-    protected void processTraits(List<TraitSet> traitList) {
-
-        // Record trait set associated with leaf types.
-        for (TraitSet traitSet : traitList) {
-            if (traitSet.getTraitName().equals(elementLabel)) {
-                elementTraitSet = traitSet;
-                break;
-            }
-        }
-
-        if(elementTraitSet == null) {
-            throw new RuntimeException("No TraitSet for partition elements specified");
-        }
-
-
-        for (TraitSet traitSet : traitList) {
-            if(traitSet != elementTraitSet) {
-                for (Node node : getExternalNodes()) {
-                    String id = node.getID();
-                    if (id != null) {
-                        node.setMetaData(traitSet.getTraitName(), traitSet.getValue(id));
-                    }
-                }
-                if (traitSet.isDateTrait())
-                    timeTraitSet = traitSet;
-            } else {
-                for (Node node : getExternalNodes()) {
-                    PartitionedTreeNode castNode = (PartitionedTreeNode)node;
-
-                    String id = node.getID();
-                    if (id != null) {
-                        node.setMetaData(traitSet.getTraitName(), (int)traitSet.getValue(id));
-                        castNode.setPartitionElementNumber(outbreak.getCases()
-                                .indexOf(outbreak.getCase((int)traitSet.getValue(id))));
-                    }
-                }
-            }
-        }
-        traitsProcessed = true;
-
-        //  todo when implementing BEAUTi
-        //
-        // Use explicitly-identified type trait set if available.
-        // Seems dumb, but needed for BEAUti as ListInputEditors
-        // muck things up...
-//        if (elementTraitInput.get() != null)
-//            elementTraitSet = elementTraitInput.get();
-
-
-        elementList = new ArrayList<>(outbreak.getEverInfectedCases());
-
-        System.out.println("Partition element trait with the following elements detected:");
-        for (int i = 0; i < elementList.size(); i++) {
-            System.out.println(elementList.get(i) + " (" + i + ")");
-        }
-
-    }
-
     private double heightToTime(double height){
         return zeroTime - height;
     }
@@ -148,14 +92,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public ClinicalCase getNodeCase(PartitionedTreeNode node){
-        return outbreak.getCase(node.getPartitionElementNumber());
+        return outbreak.getEverInfectedCase(node.getPartitionElementNumber());
     }
 
     public double getInfectionTime(ClinicalCase aCase){
         if(aCase.wasEverInfected()) {
 
-            int partitionElementNumber = outbreak.getCases().indexOf(aCase);
-            int qIndex = outbreak.getEverInfectedCases().indexOf(aCase);
+            int partitionElementNumber = outbreak.getInfectedCaseIndex(aCase);
 
             if (rules == Rules.SECOND_TYPE) {
                 return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
@@ -163,9 +106,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             } else {
                 PartitionedTreeNode mrca = getEarliestNodeInPartition(partitionElementNumber);
                 if (!mrca.isRoot()) {
-                    return heightToTime(mrca.getHeight() + q.getValue(qIndex) * mrca.getLength());
+                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * mrca.getLength());
                 } else {
-                    return heightToTime(mrca.getHeight() + q.getValue(qIndex) * rootBranchLength);
+                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * rootBranchLength);
                 }
             }
         } else {
@@ -174,7 +117,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public Node getEarliestNodeInPartition(ClinicalCase aCase){
-        int index = outbreak.getCaseIndex(aCase);
+        int index = outbreak.getInfectedCaseIndex(aCase);
         return getEarliestNodeInPartition(index);
     }
 
@@ -183,7 +126,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public ClinicalCase getInfector(ClinicalCase aCase){
-        PartitionedTreeNode elementMRCA = getElementMRCA(outbreak.getCaseIndex(aCase));
+        PartitionedTreeNode elementMRCA = getElementMRCA(outbreak.getInfectedCaseIndex(aCase));
         PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
         if(parent == null){
             return null;
@@ -192,14 +135,18 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         }
     }
 
+    private ClinicalCase getCase(String id){
+        return outbreak.getCaseByID(id);
+    }
+
     // This forces cases in a random starting partition to have infection times at some point while the infector case
     // was infected. The problem comes when the infection branch is longer than its sibling branch and the infection
     // point is at a lower height than the sibling node. This doesn't invariably cause a problem but it can. Here
     // we randomly assign cases for which this happens a qi that has a higher height.
 
     private void initialiseQs(){
-        for(ClinicalCase aCase : outbreak.getCases()){
-            int caseNo = outbreak.getCaseIndex(aCase);
+        for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
+            int caseNo = outbreak.getInfectedCaseIndex(aCase);
 
             Node mrca = getElementMRCA(caseNo);
             if(!mrca.isRoot()) {

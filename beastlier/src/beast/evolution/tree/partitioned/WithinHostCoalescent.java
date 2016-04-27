@@ -91,10 +91,8 @@ public class WithinHostCoalescent extends WithinHostModel {
         return logL;
     }
 
-
     public static double calculateTreeletLogLikelihood(IntervalList intervals, PopulationFunction demographicFunction,
                                                        double threshold, double zeroHeight) {
-
         double logL = 0.0;
 
         double startTime = -zeroHeight;

@@ -77,7 +77,7 @@ public class PartitionedTree extends Tree {
      */
     protected String elementLabel;
     protected TraitSet elementTraitSet;
-    protected List<Object> elementList;
+    protected List<String> elementList;
 
     public enum Rules {SECOND_TYPE, THIRD_TYPE};
 
@@ -163,7 +163,9 @@ public class PartitionedTree extends Tree {
         elementLabel = elementLabelInput.get();
         rootBranchLength = rootBranchLengthInput.get();
 
-        processTraits(m_traitList.get());
+        if(!traitsProcessed) {
+            processTraits(m_traitList.get());
+        }
 
         for(Node node : getInternalNodes()){
             PartitionedTreeNode castNode = (PartitionedTreeNode)node;
@@ -243,9 +245,9 @@ public class PartitionedTree extends Tree {
 
             Set<String> typeSet = new HashSet<>();
 
-            int nTaxa = elementTraitSet.taxaInput.get().asStringList().size();
-            for (int i = 0; i < nTaxa; i++) {
-                typeSet.add(elementTraitSet.getStringValue(i));
+            List<String> taxaList = elementTraitSet.taxaInput.get().asStringList();
+            for (String taxon : taxaList) {
+                typeSet.add(elementTraitSet.getStringValue(taxon));
             }
 
             // Include any additional trait values in type list
@@ -257,11 +259,19 @@ public class PartitionedTree extends Tree {
 
             elementList = Lists.newArrayList(typeSet);
 
+            for(Node node : getExternalNodes()){
+                PartitionedTreeNode castNode = (PartitionedTreeNode)node;
+                String taxon = node.getID();
+                castNode.setPartitionElementNumber(elementList.indexOf(elementTraitSet.getStringValue(taxon)));
+            }
+
             System.out.println("Partition element trait with the following elements detected:");
             for (int i = 0; i < elementList.size(); i++)
                 System.out.println(elementList.get(i) + " (" + i + ")");
 
         }
+
+        traitsProcessed = true;
     }
 
     /**
@@ -303,7 +313,7 @@ public class PartitionedTree extends Tree {
      * Retrieve the list of elements.
      * @return List of elements.
      */
-    public List<Object> getElementList() {
+    public List<String> getElementList() {
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 
@@ -315,7 +325,7 @@ public class PartitionedTree extends Tree {
      * @param element
      * @return string name of given type
      */
-    public Object getElementString(int element) {
+    public String getElementString(int element) {
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 
@@ -326,7 +336,7 @@ public class PartitionedTree extends Tree {
      * @param elementString
      * @return integer type corresponding to given type string
      */
-    public int getTypeFromString(String elementString) {
+    public int getElementFromString(String elementString) {
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 

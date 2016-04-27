@@ -82,11 +82,13 @@ public abstract class WithinHostModel extends TreeDistribution {
         }
     }
 
+    // Turn a partitioned phylogeny into a collection of within-host phylogenies
+
     protected void explodeTree(){
 
         for(int i=0; i<outbreak.getStateCount(); i++){
             ClinicalCase aCase = outbreak.getEverInfectedCases().get(i);
-            if(aCase.wasEverInfected() && elementsAsTrees.get(aCase)==null){
+            if(elementsAsTrees.get(aCase)==null){
 
                 Node elementRoot = tree.getEarliestNodeInPartition(aCase);
 
@@ -112,10 +114,9 @@ public abstract class WithinHostModel extends TreeDistribution {
                     }
                 }
 
+                //only way I've found to get a tree to recognise how many nodes it has!
+
                 littleTree = new Tree(newRoot);
-
-                //so stupid
-
                 littleTree.getLeafNodeCount();
                 littleTree.getInternalNodeCount();
 
@@ -146,8 +147,7 @@ public abstract class WithinHostModel extends TreeDistribution {
     private void copyPartitionToTreelet(Tree protoTreelet, PartitionedTreeNode oldNode, Node newParent,
                                         ClinicalCase element){
 
-
-        if (oldNode.getPartitionElementNumber() == outbreak.getCaseIndex(element)) {
+        if (oldNode.getPartitionElementNumber() == outbreak.getInfectedCaseIndex(element)) {
             if (oldNode.isLeaf()) {
                 Node newTip = new Node(tree.getTaxonId(oldNode));
                 protoTreelet.addNode(newTip);
@@ -166,7 +166,7 @@ public abstract class WithinHostModel extends TreeDistribution {
         } else {
             // we need a new tip
             Node transmissionTip = new Node("Transmission_" +
-                    outbreak.getCase(oldNode.getPartitionElementNumber()).getID());
+                    outbreak.getEverInfectedCase(oldNode.getPartitionElementNumber()).getID());
             double parentTime = tree.getNodeTime((PartitionedTreeNode)oldNode.getParent());
             double childTime = tree.getInfectionTime(tree.getNodeCase(oldNode));
             protoTreelet.addNode(transmissionTip);

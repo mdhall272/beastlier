@@ -199,12 +199,22 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         }
 
+        PartitionedTreeNode newRoot = null;
+
         for(int elementNo = 0; elementNo<elementList.size(); elementNo++){
 
             PartitionedTreeNode firstNode = getEarliestNodeInPartition(elementNo);
+            int firstNo = firstNode.getNr();
+            PartitionedTreeNode firstCopy = (PartitionedTreeNode) flatTree.getNode(firstNo);
+
             PartitionedTreeNode lastNode = (PartitionedTreeNode)firstNode.getParent();
 
             if(lastNode != null){
+                int lastNo = lastNode.getNr();
+
+
+                PartitionedTreeNode lastCopy = (PartitionedTreeNode) flatTree.getNode(lastNo);
+
                 double oldLength = firstNode.getLength();
 
                 colourChangeNode = new PartitionedTreeNode();
@@ -212,41 +222,44 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                 colourChangeNode.setID(String.valueOf(nextNodeNr));
                 nextNodeNr++;
 
-                firstNode.setParent(colourChangeNode);
-                colourChangeNode.addChild(firstNode);
+                firstCopy.setParent(colourChangeNode);
+                colourChangeNode.addChild(firstCopy);
 
                 colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*oldLength);
                 colourChangeNode.setMetaData(elementLabel, lastNode.getPartitionElementNumber());
                 colourChangeNode.setPartitionElementNumber(lastNode.getPartitionElementNumber());
 
-                lastNode.setParent(colourChangeNode);
-                if (lastNode.getLeft()==firstNode)
-                    lastNode.setLeft(colourChangeNode);
+                colourChangeNode.setParent(lastCopy);
+                if (lastCopy.getLeft()==firstCopy)
+                    lastCopy.setLeft(colourChangeNode);
                 else
-                    lastNode.setRight(colourChangeNode);
+                    lastCopy.setRight(colourChangeNode);
 
             } else {
                 //dealing with the root
-                double oldLength = firstNode.getLength();
 
                 colourChangeNode = new PartitionedTreeNode();
                 colourChangeNode.setNr(nextNodeNr);
                 colourChangeNode.setID(String.valueOf(nextNodeNr));
                 nextNodeNr++;
 
-                firstNode.setParent(colourChangeNode);
-                colourChangeNode.addChild(firstNode);
+                firstCopy.setParent(colourChangeNode);
+                colourChangeNode.addChild(firstCopy);
 
-                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*oldLength);
+                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*rootBranchLength);
                 colourChangeNode.setMetaData(elementLabel, -1);
                 colourChangeNode.setPartitionElementNumber(-1);
 
-                setRoot(colourChangeNode);
-
+                newRoot = colourChangeNode;
             }
 
         }
+        //and once again this seems the only way to do it.
 
+        flatTree = new Tree(newRoot);
+        flatTree.getInternalNodeCount();
+        flatTree.getLeafNodeCount();
+        flatTree.initAndValidate();
 
         return flatTree;
     }

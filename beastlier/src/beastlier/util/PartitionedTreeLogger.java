@@ -85,7 +85,7 @@ public class PartitionedTreeLogger extends BEASTObject implements Loggable {
             }
 
             out.print("tree STATE_" + nSample + " = ");
-            out.print(pTree.getRoot().toSortedNewick(new int[1], true));
+            out.print(fancyTree.getRoot().toSortedNewick(new int[1], true));
             out.print(";");
 
 

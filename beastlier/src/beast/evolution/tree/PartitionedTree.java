@@ -28,6 +28,7 @@ import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.util.TreeParser;
+import beastlier.outbreak.ClinicalCase;
 import com.google.common.collect.Lists;
 
 import java.io.PrintStream;
@@ -163,14 +164,14 @@ public class PartitionedTree extends Tree {
         elementLabel = elementLabelInput.get();
         rootBranchLength = rootBranchLengthInput.get();
 
-        if(!traitsProcessed) {
-            processTraits(m_traitList.get());
-        }
-
         for(Node node : getInternalNodes()){
             PartitionedTreeNode castNode = (PartitionedTreeNode)node;
             castNode.setPartitionElementNumber(0);
+        }
 
+
+        if(!traitsProcessed) {
+            processTraits(m_traitList.get());
         }
 
         if(rules == SECOND_TYPE){
@@ -629,15 +630,6 @@ public class PartitionedTree extends Tree {
     }
 
     @Override
-    public void log(int i, PrintStream printStream) {
-        printStream.print("beast.evolution.tree STATE_"+i+" = ");
-        printStream.print(toString());
-        printStream.print(";");
-
-
-    }
-
-    @Override
     public void close(PrintStream printStream) {
         printStream.println("End;");
     }
@@ -667,15 +659,16 @@ public class PartitionedTree extends Tree {
 
             if (node.isRoot()) {
                 Node startNode = flatTree.getNode(nodeNum);
-                startNode.setMetaData(elementLabel, ((PartitionedTreeNode)node).getPartitionElementNumber());
-                startNode.metaDataString = String.format("%s=%d", elementLabel, pNode.getPartitionElementNumber());
+                startNode.setMetaData(elementLabel,
+                        elementList.get(((PartitionedTreeNode)node).getPartitionElementNumber()));
+                startNode.metaDataString = elementList.get(((PartitionedTreeNode)node).getPartitionElementNumber());
                 continue;
             }
 
             Node startNode = flatTree.getNode(nodeNum);
-            startNode.setMetaData(elementLabel, ((PartitionedTreeNode)node).getPartitionElementNumber());
-            startNode.metaDataString = String.format("%s=%d", elementLabel, pNode.getPartitionElementNumber());
-
+            startNode.setMetaData(elementLabel,
+                    elementList.get(((PartitionedTreeNode)node).getPartitionElementNumber()));
+            startNode.metaDataString = elementList.get(((PartitionedTreeNode)node).getPartitionElementNumber());
         }
 
         return flatTree;
@@ -1028,4 +1021,13 @@ public class PartitionedTree extends Tree {
             Logger.getLogger(PartitionedTree.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public int getElementNo(String caseID){
+        return elementList.indexOf(caseID);
+    }
+
+    public int getElementNo(ClinicalCase aCase){
+        return getElementNo(aCase.getID());
+    }
+
 }

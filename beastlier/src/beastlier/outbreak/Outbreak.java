@@ -28,7 +28,6 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.datatype.DataType;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import java.util.ArrayList;
 import java.util.Arrays;

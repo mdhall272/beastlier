@@ -87,7 +87,7 @@ public abstract class WithinHostModel extends TreeDistribution {
     protected void explodeTree(){
 
         for(int i=0; i<outbreak.getStateCount(); i++){
-            ClinicalCase aCase = outbreak.getEverInfectedCases().get(i);
+            ClinicalCase aCase = outbreak.getCaseByID(tree.getElementString(i));
             if(elementsAsTrees.get(aCase)==null){
 
                 Node elementRoot = tree.getEarliestNodeInPartition(aCase);
@@ -147,7 +147,7 @@ public abstract class WithinHostModel extends TreeDistribution {
     private void copyPartitionToTreelet(Tree protoTreelet, PartitionedTreeNode oldNode, Node newParent,
                                         ClinicalCase element){
 
-        if (oldNode.getPartitionElementNumber() == outbreak.getInfectedCaseIndex(element)) {
+        if (oldNode.getPartitionElementNumber() == tree.getElementNo(element)) {
             if (oldNode.isLeaf()) {
                 Node newTip = new Node(tree.getTaxonId(oldNode));
                 protoTreelet.addNode(newTip);
@@ -166,7 +166,7 @@ public abstract class WithinHostModel extends TreeDistribution {
         } else {
             // we need a new tip
             Node transmissionTip = new Node("Transmission_" +
-                    outbreak.getEverInfectedCase(oldNode.getPartitionElementNumber()).getID());
+                    tree.getElementString(oldNode.getPartitionElementNumber()));
             double parentTime = tree.getNodeTime((PartitionedTreeNode)oldNode.getParent());
             double childTime = tree.getInfectionTime(tree.getNodeCase(oldNode));
             protoTreelet.addNode(transmissionTip);

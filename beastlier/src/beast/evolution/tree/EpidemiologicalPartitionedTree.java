@@ -92,13 +92,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public ClinicalCase getNodeCase(PartitionedTreeNode node){
-        return outbreak.getEverInfectedCase(node.getPartitionElementNumber());
+        return outbreak.getCaseByID(elementList.get(node.getPartitionElementNumber()));
     }
 
     public double getInfectionTime(ClinicalCase aCase){
         if(aCase.wasEverInfected()) {
 
-            int partitionElementNumber = outbreak.getInfectedCaseIndex(aCase);
+            int partitionElementNumber = elementList.indexOf(aCase.getID());
 
             if (rules == Rules.SECOND_TYPE) {
                 return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
@@ -117,7 +117,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public Node getEarliestNodeInPartition(ClinicalCase aCase){
-        int index = outbreak.getInfectedCaseIndex(aCase);
+        int index = elementList.indexOf(aCase.getID());
         return getEarliestNodeInPartition(index);
     }
 
@@ -126,12 +126,17 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public ClinicalCase getInfector(ClinicalCase aCase){
-        PartitionedTreeNode elementMRCA = getElementMRCA(outbreak.getInfectedCaseIndex(aCase));
-        PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
-        if(parent == null){
-            return null;
+        if(aCase.wasEverInfected()) {
+
+            PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementList.indexOf(aCase.getID()));
+            PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
+            if (parent == null) {
+                return null;
+            } else {
+                return getNodeCase(parent);
+            }
         } else {
-            return getNodeCase(parent);
+            return null;
         }
     }
 
@@ -146,19 +151,104 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     private void initialiseQs(){
         for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
-            int caseNo = outbreak.getInfectedCaseIndex(aCase);
+            int elementNo = getElementNo(aCase);
 
-            Node mrca = getElementMRCA(caseNo);
+            Node mrca = getElementMRCA(elementNo);
             if(!mrca.isRoot()) {
                 double mrcaLength = mrca.getLength();
                 Node sibling = sibling(mrca);
                 double siblingLength = sibling.getLength();
                 double difference = mrcaLength - siblingLength;
-                if(difference > 0 && mrcaLength*q.getValue(caseNo) < difference){
-                    q.setValue(caseNo, (difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
+                if(difference > 0 && mrcaLength*q.getValue(elementNo) < difference){
+                    q.setValue(elementNo, (difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
                 }
             }
         }
+    }
+
+    /**
+     * Generates a new tree in which the colours along the branches are
+     * indicated by the traits of single-child nodes.
+     *
+     * Caveat: assumes more than one node exists on tree (i.e. leaf != root)
+     *
+     * @return Flattened tree.
+     */
+    public Tree getFlattenedTree() {
+
+        // Create new tree to modify.  Note that copy() doesn't
+        // initialise the node array lists, so initArrays() must
+        // be called manually.
+        Tree flatTree = copy();
+        flatTree.initArrays();
+
+        int nextNodeNr = getNodeCount();
+        PartitionedTreeNode colourChangeNode;
+
+        for (Node node : getNodesAsArray()) {
+
+            int nodeNum = node.getNr();
+
+            Node newNode = flatTree.getNode(nodeNum);
+
+            newNode.setMetaData(elementLabel,
+                    ((PartitionedTreeNode) node).getPartitionElementNumber());
+
+            newNode.metaDataString = String.format("%s=\"%s\"", elementLabel,
+                    getElementString(((PartitionedTreeNode) node).getPartitionElementNumber()));
+
+        }
+
+        for(int elementNo = 0; elementNo<elementList.size(); elementNo++){
+
+            PartitionedTreeNode firstNode = getEarliestNodeInPartition(elementNo);
+            PartitionedTreeNode lastNode = (PartitionedTreeNode)firstNode.getParent();
+
+            if(lastNode != null){
+                double oldLength = firstNode.getLength();
+
+                colourChangeNode = new PartitionedTreeNode();
+                colourChangeNode.setNr(nextNodeNr);
+                colourChangeNode.setID(String.valueOf(nextNodeNr));
+                nextNodeNr++;
+
+                firstNode.setParent(colourChangeNode);
+                colourChangeNode.addChild(firstNode);
+
+                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*oldLength);
+                colourChangeNode.setMetaData(elementLabel, lastNode.getPartitionElementNumber());
+                colourChangeNode.setPartitionElementNumber(lastNode.getPartitionElementNumber());
+
+                lastNode.setParent(colourChangeNode);
+                if (lastNode.getLeft()==firstNode)
+                    lastNode.setLeft(colourChangeNode);
+                else
+                    lastNode.setRight(colourChangeNode);
+
+            } else {
+                //dealing with the root
+                double oldLength = firstNode.getLength();
+
+                colourChangeNode = new PartitionedTreeNode();
+                colourChangeNode.setNr(nextNodeNr);
+                colourChangeNode.setID(String.valueOf(nextNodeNr));
+                nextNodeNr++;
+
+                firstNode.setParent(colourChangeNode);
+                colourChangeNode.addChild(firstNode);
+
+                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*oldLength);
+                colourChangeNode.setMetaData(elementLabel, -1);
+                colourChangeNode.setPartitionElementNumber(-1);
+
+                setRoot(colourChangeNode);
+
+            }
+
+        }
+
+
+        return flatTree;
     }
 
 

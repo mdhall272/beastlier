@@ -1,5 +1,5 @@
 /*
-* File InitialPartition.java
+* File RandomPartition.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-
-
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
@@ -64,6 +62,15 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
     @Override
     public void initStateNodes() {
+
+        //sigh... if RandomTree calls this twice at the start of a run then I guess I have to too. Which means
+        //resetting the internal node partition.
+
+        for(Node node : getInternalNodes()){
+            PartitionedTreeNode castNode = (PartitionedTreeNode)node;
+            castNode.setPartitionElementNumber(-1);
+        }
+
 
         PartitionedTreeNode root = (PartitionedTreeNode) getRoot();
         randomlyAssignNode(root, false);

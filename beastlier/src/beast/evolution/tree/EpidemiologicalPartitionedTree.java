@@ -127,14 +127,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public ClinicalCase getInfector(ClinicalCase aCase){
         if(aCase.wasEverInfected()) {
-
-            PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementList.indexOf(aCase.getID()));
-            PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
-            if (parent == null) {
-                return null;
-            } else {
-                return getNodeCase(parent);
-            }
+            String ancestorElement = getAncestorPartitionElement(aCase.getID());
+            return ancestorElement==null ? null : outbreak.getCaseByID(ancestorElement);
         } else {
             return null;
         }

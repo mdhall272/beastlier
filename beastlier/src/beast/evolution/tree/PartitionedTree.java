@@ -1030,4 +1030,15 @@ public class PartitionedTree extends Tree {
         return getElementNo(aCase.getID());
     }
 
+    public String getAncestorPartitionElement(String element){
+        PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementList.indexOf(element));
+        PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
+        if (parent == null) {
+            return null;
+        } else {
+            return elementList.get(parent.getPartitionElementNumber());
+        }
+
+    }
+
 }

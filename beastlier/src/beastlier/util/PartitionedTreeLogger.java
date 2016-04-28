@@ -35,9 +35,7 @@ import java.io.PrintStream;
 
 public class PartitionedTreeLogger extends BEASTObject implements Loggable {
 
-    public Input<PartitionedTree> partitionedTreeInput = new Input<>(
-            "partitionedTree",
-            "Node-partitioned tree to log.",
+    public Input<PartitionedTree> partitionedTreeInput = new Input<>("partitionedTree", "Node-partitioned tree to log.",
             Input.Validate.REQUIRED);
     public Input<Boolean> fancyInput = new Input<>("fancy", "Output trees with infection events as degree two " +
             "internal nodes", false, Input.Validate.OPTIONAL);

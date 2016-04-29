@@ -22,6 +22,7 @@
 */
 package beast.evolution.tree.partitioned;
 
+import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.ParametricDistribution;
@@ -30,9 +31,11 @@ import beastlier.durations.FixedValueDurationCategory;
 import beastlier.geography.SpatialKernel;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
+import org.apache.commons.math.FunctionEvaluationException;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -197,8 +200,6 @@ public class IndividualSEIR extends BetweenHostModel {
 
                     for (ClinicalCase nonInfector : previouslyInfectious) {
 
-
-
                         double timeDuringWhichNoInfection;
                         if (nonInfector.getEndTime() < event.getTime()) {
                             timeDuringWhichNoInfection = nonInfector.getEndTime()
@@ -214,8 +215,12 @@ public class IndividualSEIR extends BetweenHostModel {
 
                         double transRate = rate;
                         if (hasGeography) {
-                            transRate *= kernel.getValue((GeographicallyLocatedClinicalCase)thisCase,
-                                    (GeographicallyLocatedClinicalCase)nonInfector);
+                            try {
+                                transRate *= kernel.getValue((GeographicallyLocatedClinicalCase) thisCase,
+                                        (GeographicallyLocatedClinicalCase) nonInfector);
+                            } catch (FunctionEvaluationException e){
+                                e.printStackTrace();
+                            }
                         }
 
                         transLogProb += -transRate * timeDuringWhichNoInfection;
@@ -230,8 +235,12 @@ public class IndividualSEIR extends BetweenHostModel {
 
 
                         if (hasGeography) {
-                            transRate *= kernel.getValue((GeographicallyLocatedClinicalCase)thisCase,
-                                    (GeographicallyLocatedClinicalCase)infector);
+                            try {
+                                transRate *= kernel.getValue((GeographicallyLocatedClinicalCase) thisCase,
+                                        (GeographicallyLocatedClinicalCase) infector);
+                            } catch (FunctionEvaluationException e){
+                                e.printStackTrace();
+                            }
                         }
 
 
@@ -358,6 +367,35 @@ public class IndividualSEIR extends BetweenHostModel {
                     - tree.getInfectionTime(outbreak.getEverInfectedCase(i))) + "\t");
         }
         out.print(logP + "\t");
+    }
+
+    /**
+     * @return a list of unique ids for the state nodes that form the argument
+     */
+    public List<String> getArguments(){
+        List<String> out = new ArrayList<>();
+        out.add(outbreakInput.get().getID());
+        out.add(treeInput.get().getID());
+
+        return out;
+    }
+
+    /**
+     * @return a list of unique ids for the state nodes that make up the conditions
+     */
+    public List<String> getConditions(){
+        List<String> out = new ArrayList<>();
+        out.addAll(kernelInput.get().getParameterIds());
+        out.add(baseTransmissionRateInput.get().getID());
+
+        return out;
+    }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        return (kernelInput.get()).isDirtyCalculation()
+                || baseTransmissionRateInput.get().isDirtyCalculation()
+                || super.requiresRecalculation();
     }
 
 

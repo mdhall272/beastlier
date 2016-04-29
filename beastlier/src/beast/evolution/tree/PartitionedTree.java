@@ -874,8 +874,8 @@ public class PartitionedTree extends Tree {
         return out;
     }
 
-    public HashSet<PartitionedTreeNode> getNodesInElement(int elementNo){
-        HashSet<PartitionedTreeNode> out = new HashSet<>();
+    public ArrayList<PartitionedTreeNode> getNodesInElement(int elementNo){
+        ArrayList<PartitionedTreeNode> out = new ArrayList<>();
 
         for(Node node : m_nodes){
             if(((PartitionedTreeNode)node).getPartitionElementNumber()==elementNo){
@@ -886,7 +886,7 @@ public class PartitionedTree extends Tree {
         return out;
     }
 
-    public HashSet<PartitionedTreeNode> getNodesInSameElement(PartitionedTreeNode node){
+    public ArrayList<PartitionedTreeNode> getNodesInSameElement(PartitionedTreeNode node){
         int elementNo = node.getPartitionElementNumber();
         return getNodesInElement(elementNo);
     }

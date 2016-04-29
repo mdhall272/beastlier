@@ -142,6 +142,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         for(PartitionedTreeNode changingNode : changesToMake.keySet()){
             changingNode.setPartitionElementNumber(infectedCase);
+            changingNode.setMetaData(tree.getElementLabel(), tree.getElementString(infectedCase));
         }
 
         //todo remove this once you're happy
@@ -160,6 +161,8 @@ public class InfectionBranchMovementOperator extends TreeOperator{
                     && tree.isAncestral(grandparent) ? Math.log(2) : 0;
 
         }
+
+        tree.setSomethingIsDirty(true);
 
         return hr;
     }
@@ -183,7 +186,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
         for(Node child : node.getChildren()){
             PartitionedTreeNode castChild = (PartitionedTreeNode)child;
 
-            if(tree.isAncestral(castChild)){
+            if(!tree.isAncestral(castChild)){
 
                 for(PartitionedTreeNode descendant: tree.samePartitionElementDownTree(castChild)){
                     changesToMake.put(descendant, infectorCase);
@@ -201,7 +204,8 @@ public class InfectionBranchMovementOperator extends TreeOperator{
         changesToMake.put(node, infectorCase);
 
         for(PartitionedTreeNode changingNode : changesToMake.keySet()){
-            changingNode.setPartitionElementNumber(infectedCase);
+            changingNode.setPartitionElementNumber(infectorCase);
+            changingNode.setMetaData(tree.getElementLabel(), tree.getElementString(infectorCase));
         }
 
         //todo remove this once you're happy
@@ -209,6 +213,8 @@ public class InfectionBranchMovementOperator extends TreeOperator{
         if(!tree.isValid()){
             throw new RuntimeException("Tree does not obey the rules");
         }
+
+        tree.setSomethingIsDirty(true);
 
         return out;
     }

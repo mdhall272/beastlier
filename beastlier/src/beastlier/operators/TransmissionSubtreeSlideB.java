@@ -159,6 +159,7 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
                 }
 
                 iP.setPartitionElementNumber(newiPCase);
+                iP.setMetaData(tree.getElementLabel(), tree.getElementString(newiPCase));
 
             } else {
                 // just change the node height
@@ -236,6 +237,7 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
                 }
 
                 iP.setPartitionElementNumber(newiPCase);
+                iP.setMetaData(tree.getElementLabel(), tree.getElementString(newiPCase));
 
             } else {
                 iP.setHeight(newHeight);

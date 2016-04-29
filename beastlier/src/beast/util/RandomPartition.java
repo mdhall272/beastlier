@@ -69,6 +69,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
         for(Node node : getInternalNodes()){
             PartitionedTreeNode castNode = (PartitionedTreeNode)node;
             castNode.setPartitionElementNumber(-1);
+            node.setMetaData(elementLabel, null);
         }
 
 
@@ -113,6 +114,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
                 throw new RuntimeException("Starting phylogeny is incompatible with this tip partition");
             } else if(forcedByTopology.size()==1){
                 node.setPartitionElementNumber(elementList.indexOf(forcedByTopology.get(0)));
+                node.setMetaData(elementLabel, forcedByTopology.get(0));
 
                 for (int i = 0; i < node.getChildCount(); i++) {
                     PartitionedTreeNode child = (PartitionedTreeNode)node.getChild(i);
@@ -176,6 +178,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
                         fillDownTree(node, elementList.indexOf(winner));
                     } else {
                         node.setPartitionElementNumber(elementList.indexOf(winner));
+                        node.setMetaData(elementLabel, winner);
                     }
 
                     return winner;
@@ -191,6 +194,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
     private void fillDownTree(PartitionedTreeNode node, int elementNo){
         if(node.getPartitionElementNumber() == -1){
             node.setPartitionElementNumber(elementNo);
+            node.setMetaData(elementLabel, elementList.get(elementNo));
             for(int i=0; i<2; i++){
                 PartitionedTreeNode child = (PartitionedTreeNode)node.getChild(i);
                 fillDownTree(child, elementNo);

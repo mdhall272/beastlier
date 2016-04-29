@@ -22,6 +22,7 @@
 */
 package beast.evolution.tree.partitioned;
 
+import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.tree.coalescent.*;
@@ -31,7 +32,9 @@ import beast.util.BigDecimalUtils;
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -185,7 +188,6 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     @Override
     public void store() {
-        storedLogP = logP;
         storedElementsAsTrees = new HashMap<>(elementsAsTrees);
         storedIndividualWHProbabilities = individualWHProbabilities.clone();
         super.store();
@@ -193,7 +195,6 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     @Override
     public void restore() {
-        logP = storedLogP;
         elementsAsTrees = storedElementsAsTrees;
         individualWHProbabilities = storedIndividualWHProbabilities;
         super.restore();
@@ -220,6 +221,27 @@ public class WithinHostCoalescent extends WithinHostModel {
         BigDecimal oneMinusExpBigDec = one.subtract(expBigDec);
         BigDecimal logOneMinusExpBigDec = BigDecimalUtils.ln(oneMinusExpBigDec, oneMinusExpBigDec.scale());
         return logOneMinusExpBigDec.doubleValue();
+    }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        return ((CalculationNode) functionInput.get()).isDirtyCalculation()
+                || super.requiresRecalculation();
+    }
+
+    /**
+     * @return a list of unique ids for the state nodes that form the argument
+     */
+    public List<String> getArguments(){
+        return Collections.singletonList(treeInput.get().getID());
+    }
+
+    /**
+     * @return a list of unique ids for the state nodes that make up the conditions
+     */
+    public List<String> getConditions(){
+        return functionInput.get().getParameterIds();
+
     }
 }
 

@@ -133,7 +133,7 @@ public class TransmissionExchangeA extends TreeOperator {
         if(parent==null){
             throw new RuntimeException("Can't exchange the root node");
         }
-        HashSet<PartitionedTreeNode> possibleParentSwaps = tree.getNodesInSameElement(parent);
+        ArrayList<PartitionedTreeNode> possibleParentSwaps = tree.getNodesInSameElement(parent);
         for(PartitionedTreeNode newParent : possibleParentSwaps){
             if(!newParent.isLeaf() && newParent!=parent){
                 for(int i=0; i<2; i++){

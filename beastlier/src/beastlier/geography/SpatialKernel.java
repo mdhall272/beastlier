@@ -26,18 +26,23 @@ package beastlier.geography;
 import beast.core.CalculationNode;
 import beast.core.Description;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
+import org.apache.commons.math.FunctionEvaluationException;
+import org.apache.commons.math.analysis.UnivariateRealFunction;
+
+import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
 @Description("A spatial transmission kernel function")
-public abstract class SpatialKernel extends CalculationNode {
+public abstract class SpatialKernel extends CalculationNode implements UnivariateRealFunction {
 
-    public abstract double getValue(double distance);
+    public abstract List<String> getParameterIds();
 
-    public double getValue(GeographicallyLocatedClinicalCase case1, GeographicallyLocatedClinicalCase case2){
-        return getValue(Util.EuclideanDistance(case1.getCoordinates(), case2.getCoordinates()));
+    public double getValue(GeographicallyLocatedClinicalCase case1, GeographicallyLocatedClinicalCase case2) throws
+            FunctionEvaluationException{
+        return value(Util.EuclideanDistance(case1.getCoordinates(), case2.getCoordinates()));
 
     }
 

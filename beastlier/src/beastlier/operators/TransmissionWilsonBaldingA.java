@@ -60,13 +60,15 @@ public class TransmissionWilsonBaldingA extends TreeOperator{
 
         ArrayList<PartitionedTreeNode> eligibleNodes = getEligibleNodes(tree);
 
-        i = eligibleNodes.get(Randomizer.nextInt(eligibleNodes.size()));
+        int tempRN1 = Randomizer.nextInt(eligibleNodes.size());
 
-        int eligibleNodeCount = eligibleNodes.size();
+        i = eligibleNodes.get(tempRN1);
+
+        double eligibleNodeCount = eligibleNodes.size();
 
         final PartitionedTreeNode iP = (PartitionedTreeNode)i.getParent();
-        HashSet<PartitionedTreeNode> nodesInSameElement = tree.getNodesInSameElement(iP);
-        HashSet<PartitionedTreeNode> possibleDestinations = new HashSet<>();
+        ArrayList<PartitionedTreeNode> nodesInSameElement = tree.getNodesInSameElement(iP);
+        ArrayList<PartitionedTreeNode> possibleDestinations = new ArrayList<>();
         // we can insert the node above OR BELOW any node in the same partition
         for (PartitionedTreeNode node : nodesInSameElement) {
             possibleDestinations.add(node);
@@ -75,13 +77,13 @@ public class TransmissionWilsonBaldingA extends TreeOperator{
                 possibleDestinations.add((PartitionedTreeNode)node.getChild(1));
             }
         }
-        PartitionedTreeNode[] pd = possibleDestinations.toArray(new PartitionedTreeNode[possibleDestinations.size()]);
 
-        PartitionedTreeNode j = pd[Randomizer.nextInt(pd.length)];
+
+        PartitionedTreeNode j = possibleDestinations.get(Randomizer.nextInt(possibleDestinations.size()));
         PartitionedTreeNode jP = (PartitionedTreeNode)j.getParent();
 
         while ((jP != null && (jP.getHeight()  <= i.getHeight())) || (i == j)) {
-            j = (pd[Randomizer.nextInt(pd.length)]);
+            j = possibleDestinations.get(Randomizer.nextInt(possibleDestinations.size()));
             jP = (PartitionedTreeNode)j.getParent();
         }
 
@@ -89,7 +91,9 @@ public class TransmissionWilsonBaldingA extends TreeOperator{
             return Double.NEGATIVE_INFINITY;
         }
 
-        if (jP == iP || j == iP || jP == i) return Double.NEGATIVE_INFINITY;
+        if (jP == iP || j == iP || jP == i) {
+            return Double.NEGATIVE_INFINITY;
+        }
 
         final PartitionedTreeNode CiP = (PartitionedTreeNode)getOtherChild(iP, i);
         PartitionedTreeNode PiP = (PartitionedTreeNode)iP.getParent();
@@ -129,7 +133,7 @@ public class TransmissionWilsonBaldingA extends TreeOperator{
 
         double logq = Math.log(q);
 
-        int reverseEligibleNodeCount = getEligibleNodes(tree).size();
+        double reverseEligibleNodeCount = getEligibleNodes(tree).size();
 
         logq += Math.log(eligibleNodeCount/reverseEligibleNodeCount);
 

@@ -26,6 +26,10 @@ package beastlier.geography;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
@@ -44,10 +48,18 @@ public class LogisticSpatialKernel extends SpatialKernel {
     }
 
     @Override
-    public double getValue(double distance) {
+    public double value(double distance) {
         double alphaValue = alpha.getValue();
         double r0Value = r0.getValue();
 
         return 1/(1+Math.pow((distance/r0Value), alphaValue));
+    }
+
+    @Override
+    public List<String> getParameterIds() {
+        List<String> out = new ArrayList<>();
+        out.add(alphaInput.get().getID());
+        out.add(r0Input.get().getID());
+        return out;
     }
 }

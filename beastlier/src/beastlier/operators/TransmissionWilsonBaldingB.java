@@ -105,8 +105,10 @@ public class TransmissionWilsonBaldingB extends TreeOperator {
 
         if(Randomizer.nextInt(2)==0){
             iP.setPartitionElementNumber(jP.getPartitionElementNumber());
+            iP.setMetaData(tree.getElementLabel(), tree.getElementString(jP.getPartitionElementNumber()));
         } else {
             iP.setPartitionElementNumber(j.getPartitionElementNumber());
+            iP.setMetaData(tree.getElementLabel(), tree.getElementString(j.getPartitionElementNumber()));
         }
 
         return Math.log(q);

@@ -48,4 +48,9 @@ public class FixedValueDurationCategory extends DurationCategory {
         return value.getValue();
     }
 
+    @Override
+    public boolean requiresRecalculation() {
+        return valueInput.isDirty();
+    }
+
 }

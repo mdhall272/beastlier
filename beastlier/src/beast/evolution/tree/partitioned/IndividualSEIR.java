@@ -387,15 +387,28 @@ public class IndividualSEIR extends BetweenHostModel {
         List<String> out = new ArrayList<>();
         out.addAll(kernelInput.get().getParameterIds());
         out.add(baseTransmissionRateInput.get().getID());
+        for(DurationCategory latCat : latentCategories){
+            if(latCat.isDirtyCalculation()){
+                out.add(latCat.getID());
+            }
+        }
 
         return out;
     }
 
     @Override
     protected boolean requiresRecalculation() {
+        boolean aLatentPeriodHasChanged = false;
+        for(DurationCategory latCat : latentCategories){
+            if(((FixedValueDurationCategory)latCat).requiresRecalculation()){
+                aLatentPeriodHasChanged = true;
+            }
+        }
+
         return (kernelInput.get()).isDirtyCalculation()
-                || baseTransmissionRateInput.get().isDirtyCalculation()
-                || super.requiresRecalculation();
+                || baseTransmissionRateInput.get().somethingIsDirty()
+                || super.requiresRecalculation()
+                || aLatentPeriodHasChanged;
     }
 
 

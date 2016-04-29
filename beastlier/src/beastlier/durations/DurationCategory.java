@@ -22,10 +22,7 @@
 */
 package beastlier.durations;
 
-import beast.core.BEASTObject;
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.Input;
+import beast.core.*;
 import beastlier.outbreak.ClinicalCase;
 
 import java.util.ArrayList;
@@ -37,7 +34,7 @@ import java.util.List;
 
 @Description("A group of clinical cases whose latent or infectious periods have something in common (e.g. have the" +
         "same prior distribution")
-public abstract class DurationCategory extends BEASTObject {
+public abstract class DurationCategory extends CalculationNode {
 
     public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case in this category",
             new ArrayList<>());

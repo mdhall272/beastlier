@@ -25,7 +25,6 @@ package beastlier.util;
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.core.Loggable;
-import beast.evolution.tree.EpidemiologicalPartitionedTree;
 import beast.evolution.tree.PartitionedTree;
 
 import java.io.PrintStream;

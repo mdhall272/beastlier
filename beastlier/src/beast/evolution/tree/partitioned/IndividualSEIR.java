@@ -31,6 +31,7 @@ import beastlier.geography.SpatialKernel;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -262,18 +263,7 @@ public class IndividualSEIR extends BetweenHostModel {
             }
         }
 
-
-
-
-
-
         double periodsLogProb = 0;
-
-        HashMap<String, ArrayList<Double>> infectiousPeriodsByCategory
-                = new HashMap<String, ArrayList<Double>>();
-
-
-
 
         for(DurationCategory category : infectiousCategories){
             if(category.hasProbability()) {
@@ -302,9 +292,9 @@ public class IndividualSEIR extends BetweenHostModel {
             return Double.NEGATIVE_INFINITY;
         }
 
+        logP = periodsLogProb + transLogProb;
 
-        return periodsLogProb + transLogProb;
-
+        return logP;
     }
 
     public double getInfectiousTime(ClinicalCase aCase){
@@ -316,7 +306,6 @@ public class IndividualSEIR extends BetweenHostModel {
         FixedValueDurationCategory castCategory = (FixedValueDurationCategory)category;
 
         return getInfectionTime(aCase) + castCategory.getValue();
-
     }
 
     public DurationCategory getLatentCategory(ClinicalCase aCase){
@@ -335,6 +324,40 @@ public class IndividualSEIR extends BetweenHostModel {
             }
         }
         throw new RuntimeException("Can't find an infectious period category for case "+aCase.getID());
+    }
+
+    public void init(final PrintStream out){
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(outbreak.getEverInfectedCases().get(i) + "_infectionTime\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(outbreak.getEverInfectedCases().get(i) + "_infectiousTime\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(outbreak.getEverInfectedCases().get(i) + "_infectiousPeriod\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(outbreak.getEverInfectedCases().get(i) + "_lengthOfInfection\t");
+        }
+        out.print("bhm_logP" + "\t");
+    }
+
+    public void log(final int sample, final PrintStream out){
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(tree.getInfectionTime(outbreak.getEverInfectedCase(i)) + "\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print(getInfectiousTime(outbreak.getEverInfectedCase(i)) + "\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print((outbreak.getEverInfectedCase(i).getEndTime()
+                    - getInfectiousTime(outbreak.getEverInfectedCase(i))) + "\t");
+        }
+        for(int i=0; i<outbreak.getEverInfectedCases().size(); i++){
+            out.print((outbreak.getEverInfectedCase(i).getEndTime()
+                    - tree.getInfectionTime(outbreak.getEverInfectedCase(i))) + "\t");
+        }
+        out.print(logP + "\t");
     }
 
 

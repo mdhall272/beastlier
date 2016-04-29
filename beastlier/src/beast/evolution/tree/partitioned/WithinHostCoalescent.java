@@ -29,7 +29,9 @@ import beast.math.Binomial;
 import beastlier.outbreak.ClinicalCase;
 import beast.util.BigDecimalUtils;
 
+import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.util.HashMap;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -43,11 +45,15 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     private PopulationFunction popFunction;
     protected static double tolerance = 1E-10;
+    private double[] individualWHProbabilities;
+    private double[] storedIndividualWHProbabilities;
 
     public void initAndValidate(){
         super.initAndValidate();
 
         popFunction = functionInput.get();
+
+        individualWHProbabilities = new double[tree.getElementList().size()];
     }
 
 
@@ -55,13 +61,16 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         //checkPartitions();
 
-        double logL = 0;
+        logP = 0;
 
         for (ClinicalCase aCase : outbreak.getEverInfectedCases()) {
+
+            int index = tree.getElementList().indexOf(aCase.getID());
 
             //recalculate everything for now
 
 //                if (recalculateCoalescentFlags[number]) {
+
 
             Treelet treelet = elementsAsTrees.get(aCase);
 
@@ -70,11 +79,15 @@ public class WithinHostCoalescent extends WithinHostModel {
 
 //                    partitionTreeLogLikelihoods[number] = coalescent.calculateLogLikelihood();
 
+                double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
+                        treelet.getZeroHeight());
 
-                logL += calculateTreeletLogLikelihood(intervals, popFunction, 0, treelet.getZeroHeight());
+                individualWHProbabilities[index] = individualLogP;
+
+                logP += individualLogP;
 
             } else {
-                logL += 0.0;
+                logP += 0.0;
             }
 //            recalculateCoalescentFlags[number] = false;
 //        } else {
@@ -88,7 +101,7 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         }
 
-        return logL;
+        return logP;
     }
 
     public static double calculateTreeletLogLikelihood(IntervalList intervals, PopulationFunction demographicFunction,
@@ -167,11 +180,38 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         }
 
-
-
         return logL;
     }
 
+    @Override
+    public void store() {
+        storedLogP = logP;
+        storedElementsAsTrees = new HashMap<>(elementsAsTrees);
+        storedIndividualWHProbabilities = individualWHProbabilities.clone();
+        super.store();
+    }
+
+    @Override
+    public void restore() {
+        logP = storedLogP;
+        elementsAsTrees = storedElementsAsTrees;
+        individualWHProbabilities = storedIndividualWHProbabilities;
+        super.restore();
+    }
+
+    public void init(final PrintStream out){
+        for(int i=0; i<tree.getElementList().size(); i++){
+            out.print("whc_logP_"+tree.getElementList().get(i) + "\t");
+        }
+        out.print("whc_logP_total" + "\t");
+    }
+
+    public void log(final int sample, final PrintStream out){
+        for(int i=0; i<tree.getElementList().size(); i++){
+            out.print(individualWHProbabilities[i] + "\t");
+        }
+        out.print(logP + "\t");
+    }
 
     private static double handleDenominatorUnderflow(double input){
         BigDecimal bigDec = new BigDecimal(input);

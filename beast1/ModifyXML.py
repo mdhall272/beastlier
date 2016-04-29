@@ -682,7 +682,7 @@ def createCategoryCaseElement(tree, name, caseID, endTime, longitude, latitude, 
                               latCategoryName):
     caseElement = tree.Element(name)
     caseElement.set('wasEverInfected', 'true')
-    caseElement.set('caseID', caseID)
+    caseElement.set('hostID', caseID)
     caseElement.set('id', caseID)
     caseElement.set('infectiousCategory', infCategoryName)
     if latCategoryName!=None:
@@ -703,7 +703,7 @@ def createNeverInfectedCategoryCaseElement(tree, name, caseID, longitude, latitu
 
     caseElement.set('wasEverInfected', 'false')
 
-    caseElement.set('caseID', caseID)
+    caseElement.set('hostID', caseID)
     caseElement.set('id', caseID)
 
     if longitude!=None and latitude!=None:

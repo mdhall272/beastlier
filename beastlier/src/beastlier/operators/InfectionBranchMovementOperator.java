@@ -29,7 +29,7 @@ import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.util.Randomizer;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -114,14 +114,14 @@ public class InfectionBranchMovementOperator extends TreeOperator{
         PartitionedTreeNode infectedMRCA = tree.getElementMRCA(infectedCase);
         PartitionedTreeNode infectorMRCA = tree.getElementMRCA(infectorCase);
 
-        HashMap<PartitionedTreeNode, Integer> changesToMake = new HashMap<>();
+        ArrayList<PartitionedTreeNode> changesToMake = new ArrayList<>();
 
         if(tree.isAncestral(parent)){
 
             PartitionedTreeNode grandparent = (PartitionedTreeNode)parent.getParent();
             if(grandparent!=null && grandparent.getPartitionElementNumber() == infectorCase){
                 for(PartitionedTreeNode ancestor : tree.samePartitionElementUpTree(parent)){
-                    changesToMake.put(ancestor, infectedCase);
+                    changesToMake.add(ancestor);
                 }
             }
 
@@ -131,18 +131,23 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
             if(sibling.getPartitionElementNumber() == infectorCase){
                 for(PartitionedTreeNode descendant: tree.samePartitionElementDownTree(sibling)){
-                    changesToMake.put(descendant, infectedCase);
+                    changesToMake.add(descendant);
                 }
-                changesToMake.put(sibling, infectedCase);
+                changesToMake.add(sibling);
             }
 
             hr += node == infectedMRCA ? Math.log(0.5) : 0;
         }
-        changesToMake.put(parent, infectedCase);
+        changesToMake.add(parent);
 
-        for(PartitionedTreeNode changingNode : changesToMake.keySet()){
+        for(PartitionedTreeNode changingNode : changesToMake){
             changingNode.setPartitionElementNumber(infectedCase);
             changingNode.setMetaData(tree.getElementLabel(), tree.getElementString(infectedCase));
+            changingNode.setPartitionDirty(true);
+            PartitionedTreeNode changeParent = (PartitionedTreeNode)changingNode.getParent();
+            if(changeParent!=null && !changesToMake.contains(changeParent)){
+                ((PartitionedTreeNode)changingNode.getParent()).setPartitionDirty(true);
+            }
         }
 
         //todo remove this once you're happy
@@ -162,7 +167,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         }
 
-        tree.setSomethingIsDirty(true);
+        // the treelets that have changed are those from the infector, the infectee, and
 
         return hr;
     }
@@ -175,7 +180,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         int infectorCase = parent.getPartitionElementNumber();
 
-        HashMap<PartitionedTreeNode, Integer> changesToMake = new HashMap<>();
+        ArrayList<PartitionedTreeNode> changesToMake = new ArrayList<>();
 
         double out = 0;
 
@@ -183,30 +188,41 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         // check if either child is not ancestral (at most one is not, and if so it must have been in the same
         // partition as both the other child and 'node')
+        PartitionedTreeNode ancestralChild = null;
+
         for(Node child : node.getChildren()){
             PartitionedTreeNode castChild = (PartitionedTreeNode)child;
 
             if(!tree.isAncestral(castChild)){
 
                 for(PartitionedTreeNode descendant: tree.samePartitionElementDownTree(castChild)){
-                    changesToMake.put(descendant, infectorCase);
+                    changesToMake.add(descendant);
                 }
-                changesToMake.put(castChild, infectorCase);
-            } else if(castChild == infectedMRCA && castChild.getPartitionElementNumber() == infectedCase){
-                // we're moving a transmission event as far down as it can go and need to adjust the HR accordingly
-                out += Math.log(2);
+                changesToMake.add(castChild);
+            } else {
+                ancestralChild =  castChild;
+
+                if(castChild == infectedMRCA && castChild.getPartitionElementNumber() == infectedCase) {
+                    // we're moving a transmission event as far down as it can go and need to adjust the HR accordingly
+                    out += Math.log(2);
+
+                }
+
+
             }
         }
 
         //if you couldn't move it any further up
         out += tree.isRootBlockedBy(infectedCase, infectorCase) && tree.isAncestral(parent) ? Math.log(0.5) : 0;
 
-        changesToMake.put(node, infectorCase);
+        changesToMake.add(node);
 
-        for(PartitionedTreeNode changingNode : changesToMake.keySet()){
+        for(PartitionedTreeNode changingNode : changesToMake){
             changingNode.setPartitionElementNumber(infectorCase);
             changingNode.setMetaData(tree.getElementLabel(), tree.getElementString(infectorCase));
+            changingNode.setPartitionDirty(true);
         }
+        ancestralChild.setPartitionDirty(true);
 
         //todo remove this once you're happy
 

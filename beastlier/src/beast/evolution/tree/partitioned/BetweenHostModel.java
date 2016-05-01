@@ -24,6 +24,7 @@ package beast.evolution.tree.partitioned;
 
 import beast.core.Input;
 import beast.evolution.tree.EpidemiologicalPartitionedTree;
+import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
@@ -31,6 +32,7 @@ import beastlier.outbreak.Outbreak;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -44,6 +46,12 @@ public abstract class BetweenHostModel extends TreeDistribution {
     protected Outbreak outbreak;
     protected boolean hasLatentPeriods;
 
+    //Dirty here means model parameters have changed but the tree and its timings have not so the order of events does
+    // not need recalculating. Filthy means they has so it does;
+
+    public static final int IS_CLEAN = 0, IS_DIRTY = 1, IS_FILTHY = 2;
+    protected int isDirty = 2;
+
     protected ArrayList<TreeEvent> sortedTreeEvents;
     protected ArrayList<TreeEvent> storedSortedTreeEvents;
 
@@ -52,6 +60,21 @@ public abstract class BetweenHostModel extends TreeDistribution {
         INFECTIOUSNESS,
         END
     }
+
+    // Subclasses _must_ do this first.
+
+    public double calculateLogP(){
+
+        if(isDirty==IS_FILTHY) {
+            sortEvents();
+        }
+
+        return evaluateLogP();
+    }
+
+    //Abstract method for doing the actual calculations
+
+    public abstract double evaluateLogP();
 
     public void initAndValidate(){
 
@@ -150,5 +173,15 @@ public abstract class BetweenHostModel extends TreeDistribution {
         }
     }
 
+    public void store() {
+        storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
+        super.store();
+    }
+
+
+    public void restore() {
+        sortedTreeEvents = storedSortedTreeEvents;
+        super.restore();
+    }
 
 }

@@ -53,4 +53,6 @@ public class FixedValueDurationCategory extends DurationCategory {
         return valueInput.isDirty();
     }
 
+
+
 }

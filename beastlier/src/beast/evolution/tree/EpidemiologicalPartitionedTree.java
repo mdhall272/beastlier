@@ -24,6 +24,7 @@ package beast.evolution.tree;
 
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.RandomPartition;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
@@ -258,5 +259,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         return flatTree;
     }
 
+    @Override
+    public boolean somethingIsDirty(){
+        return super.somethingIsDirty() || q.isDirtyCalculation();
+    }
+
+    public RealParameter getQ(){
+        return q;
+    }
 
 }

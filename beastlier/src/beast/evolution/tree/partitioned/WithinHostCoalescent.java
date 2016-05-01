@@ -25,6 +25,9 @@ package beast.evolution.tree.partitioned;
 import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Node;
+import beast.evolution.tree.PartitionedTreeNode;
 import beast.evolution.tree.coalescent.*;
 import beast.math.Binomial;
 import beastlier.outbreak.ClinicalCase;
@@ -32,6 +35,7 @@ import beast.util.BigDecimalUtils;
 
 import java.io.PrintStream;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +55,7 @@ public class WithinHostCoalescent extends WithinHostModel {
     private double[] individualWHProbabilities;
     private double[] storedIndividualWHProbabilities;
 
+
     public void initAndValidate(){
         super.initAndValidate();
 
@@ -62,44 +67,59 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     public double calculateLogP() {
 
-        //checkPartitions();
+        RealParameter q = tree.getQ();
+        for(int i=0; i<q.getDimension(); i++){
+            if(q.isDirty(i)){
+                partitionsRequiringRecalculation[i] = true;
+                int parentPartitionNumber = tree.getAncestorPartitionElement(i);
+                if(parentPartitionNumber != -1) {
+                    partitionsRequiringRecalculation[parentPartitionNumber] = true;
+                }
+            }
+        }
+
+
+        for(Node node : tree.getNodesAsArray()){
+            PartitionedTreeNode castNode = (PartitionedTreeNode) node;
+            if(castNode.isPartitionDirty()){
+                partitionsRequiringRecalculation[castNode.getPartitionElementNumber()] = true;
+            }
+        }
+
+        explodeTree();
 
         logP = 0;
 
-        for (ClinicalCase aCase : outbreak.getEverInfectedCases()) {
+        for (int i=0; i<tree.getNElements(); i++) {
 
-            int index = tree.getElementList().indexOf(aCase.getID());
+            if(partitionsRequiringRecalculation[i]) {
 
-            //recalculate everything for now
+                String caseName = tree.getElementString(i);
+                ClinicalCase aCase = outbreak.getCaseByID(caseName);
 
-//                if (recalculateCoalescentFlags[number]) {
+                Treelet treelet = elementsAsTrees.get(aCase);
 
+                if (treelet.getLeafNodeCount() > 1) {
+                    TreeIntervals intervals = new TreeIntervals(treelet);
 
-            Treelet treelet = elementsAsTrees.get(aCase);
+                    //                    partitionTreeLogLikelihoods[number] = coalescent.calculateLogLikelihood();
 
-            if (treelet.getLeafNodeCount() > 1) {
-                TreeIntervals intervals = new TreeIntervals(treelet);
+                    double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
+                            treelet.getZeroHeight());
 
-//                    partitionTreeLogLikelihoods[number] = coalescent.calculateLogLikelihood();
+                    individualWHProbabilities[i] = individualLogP;
 
-                double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                        treelet.getZeroHeight());
+                    logP += individualLogP;
 
-                individualWHProbabilities[index] = individualLogP;
+                } else {
+                    individualWHProbabilities[i] = 0.0;
 
-                logP += individualLogP;
-
+                    logP += 0.0;
+                }
             } else {
-                logP += 0.0;
+                logP += individualWHProbabilities[i];
             }
-//            recalculateCoalescentFlags[number] = false;
-//        } else {
-//            coalescencesLogLikelihood += partitionTreeLogLikelihoods[number];
-//        }
 
-//        else {
-//                recalculateCoalescentFlags[number] = false;
-//            }
 
 
         }
@@ -197,6 +217,8 @@ public class WithinHostCoalescent extends WithinHostModel {
     public void restore() {
         elementsAsTrees = storedElementsAsTrees;
         individualWHProbabilities = storedIndividualWHProbabilities;
+        Arrays.fill(partitionsRequiringRecalculation, false);
+
         super.restore();
     }
 
@@ -225,6 +247,7 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     @Override
     protected boolean requiresRecalculation() {
+
         return ((CalculationNode) functionInput.get()).isDirtyCalculation()
                 || super.requiresRecalculation();
     }
@@ -241,8 +264,8 @@ public class WithinHostCoalescent extends WithinHostModel {
      */
     public List<String> getConditions(){
         return functionInput.get().getParameterIds();
-
     }
+
 }
 
 

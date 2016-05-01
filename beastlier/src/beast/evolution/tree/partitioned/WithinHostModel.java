@@ -27,6 +27,7 @@ import beast.evolution.tree.*;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -43,6 +44,10 @@ public abstract class WithinHostModel extends TreeDistribution {
     protected HashMap<ClinicalCase, Treelet> elementsAsTrees;
     protected HashMap<ClinicalCase, Treelet> storedElementsAsTrees;
 
+    protected boolean[] partitionsRequiringRecalculation;
+
+
+
     @Override
     public void initAndValidate(){
         if(!(treeInput.get() instanceof EpidemiologicalPartitionedTree )){
@@ -57,6 +62,9 @@ public abstract class WithinHostModel extends TreeDistribution {
             throw new IllegalArgumentException("Trees must be partitioned by third-type rules to have a within-" +
                     "host model");
         }
+
+        partitionsRequiringRecalculation = new boolean[tree.getNElements()];
+        Arrays.fill(partitionsRequiringRecalculation, true);
 
         elementsAsTrees = new HashMap<>();
         explodeTree();
@@ -86,9 +94,11 @@ public abstract class WithinHostModel extends TreeDistribution {
 
     protected void explodeTree(){
 
-        for(int i=0; i<outbreak.getStateCount(); i++){
-            ClinicalCase aCase = outbreak.getCaseByID(tree.getElementString(i));
-            if(elementsAsTrees.get(aCase)==null){
+        for(int i=0; i<tree.getElementList().size(); i++){
+            String caseName = tree.getElementString(i);
+
+            ClinicalCase aCase = outbreak.getCaseByID(caseName);
+            if(partitionsRequiringRecalculation[i]){
 
                 Node elementRoot = tree.getEarliestNodeInPartition(aCase);
 
@@ -138,8 +148,6 @@ public abstract class WithinHostModel extends TreeDistribution {
                         littleTree.getRoot().getHeight() + extraHeight);
 
                 elementsAsTrees.put(aCase, treelet);
-
-
             }
         }
     }

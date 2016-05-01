@@ -32,6 +32,22 @@ import beast.core.Description;
 public class PartitionedTreeNode extends Node {
 
     int partitionElementNumber = -1;
+/*
+    a node is partition-dirty if something has changed that affects the subtree that involves it. This can be:
+
+    1) A change to its height, the height of its parent, or the height of its children. (If a branch connecting
+    to parent or child is an infection branch, this will change the subtree even if no nodes _in_ the subtree change
+    height.
+    2) It has been assigned a new parent or child. This will only not affect the subtree if the new parent/child has
+    the same height as the old one, which is sufficiently unlikely as to not be worth considering
+    3) It has been moved from one partition element to another
+    4) A child has been moved from one partition element to another
+    4) Its parent has been moved from _its_ partition element to another. Because of how the qis work, its parent
+    moving to a from one different element to another is not a problem
+
+    */
+
+    private boolean partitionDirty = true;
 
     /**
      * Obtain partition element number for this node.
@@ -141,4 +157,54 @@ public class PartitionedTreeNode extends Node {
             }
         }
     }
+
+    void setParent(final Node parent, final boolean inOperator) {
+        super.setParent(parent, inOperator);
+        setPartitionDirty(true);
+        if(parent!=null) {
+            ((PartitionedTreeNode) parent).setPartitionDirty(true);
+        }
+    }
+
+    public void setChild(final int childIndex, final Node node) {
+        super.setChild(childIndex, node);
+        setPartitionDirty(true);
+        ((PartitionedTreeNode)node).setPartitionDirty(true);
+    }
+
+
+    public void setLeft(final Node m_left) {
+        super.setLeft(m_left);
+        setPartitionDirty(true);
+        ((PartitionedTreeNode)m_left).setPartitionDirty(true);
+    }
+
+
+    public void setRight(final Node m_right) {
+        super.setRight(m_right);
+        setPartitionDirty(true);
+        ((PartitionedTreeNode)m_right).setPartitionDirty(true);
+    }
+
+    public void setHeight(final double height) {
+        super.setHeight(height);
+        setPartitionDirty(true);
+        PartitionedTreeNode parent = (PartitionedTreeNode)getParent();
+        if(parent != null){
+            parent.setPartitionDirty(true);
+        }
+        for(Node child : getChildren()){
+            PartitionedTreeNode castChild = (PartitionedTreeNode)child;
+            castChild.setPartitionDirty(true);
+        }
+    }
+
+    public void setPartitionDirty(boolean value){
+        partitionDirty = value;
+    }
+
+    public boolean isPartitionDirty() {
+        return partitionDirty;
+    }
+
 }

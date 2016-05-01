@@ -125,15 +125,9 @@ public class IndividualSEIR extends BetweenHostModel {
 
     }
 
-    public double calculateLogP(){
-
-        //todo likelihoodKnown works very differently to BEAST 1. For now, calculate everything every time
+    public double evaluateLogP(){
 
         double transLogProb = 0;
-
-//        if (sortedTreeEvents == null) {
-        sortEvents();
-//        }
 
         double rate = baseTransmissionRate.getValue();
 
@@ -398,17 +392,27 @@ public class IndividualSEIR extends BetweenHostModel {
 
     @Override
     protected boolean requiresRecalculation() {
+
         boolean aLatentPeriodHasChanged = false;
+
         for(DurationCategory latCat : latentCategories){
-            if(((FixedValueDurationCategory)latCat).requiresRecalculation()){
+            if(latCat.isDirtyCalculation()){
                 aLatentPeriodHasChanged = true;
             }
         }
 
-        return (kernelInput.get()).isDirtyCalculation()
-                || baseTransmissionRateInput.get().somethingIsDirty()
-                || super.requiresRecalculation()
-                || aLatentPeriodHasChanged;
+        boolean treeHasChanged = super.requiresRecalculation();
+
+        boolean answer = kernelInput.get().isDirtyCalculation() || baseTransmissionRateInput.get().somethingIsDirty()
+                || treeHasChanged || aLatentPeriodHasChanged;
+
+        if(treeHasChanged || aLatentPeriodHasChanged){
+            isDirty = IS_FILTHY;
+        } else {
+            isDirty = answer ? IS_DIRTY : IS_CLEAN;
+        }
+
+        return answer;
     }
 
 

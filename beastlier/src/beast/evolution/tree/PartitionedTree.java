@@ -1038,7 +1038,29 @@ public class PartitionedTree extends Tree {
         } else {
             return elementList.get(parent.getPartitionElementNumber());
         }
+    }
 
+    public int getAncestorPartitionElement(int element){
+        String ancestorElement = getAncestorPartitionElement(elementList.get(element));
+        return ancestorElement == null ? -1 : elementList.indexOf(ancestorElement);
+    }
+
+    @Override
+    public void setEverythingDirty(final boolean isDirty) {
+        setSomethingIsDirty(isDirty);
+        if (!isDirty) {
+            for( Node n : m_nodes ) {
+                PartitionedTreeNode castNode = (PartitionedTreeNode)n;
+                castNode.isDirty = IS_CLEAN;
+                castNode.setPartitionDirty(false);
+            }
+        } else {
+            for( Node n : m_nodes ) {
+                PartitionedTreeNode castNode = (PartitionedTreeNode)n;
+                castNode.isDirty = IS_FILTHY;
+                castNode.setPartitionDirty(true);
+            }
+        }
     }
 
 }

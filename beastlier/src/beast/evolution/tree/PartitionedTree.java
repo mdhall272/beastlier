@@ -93,7 +93,6 @@ public class PartitionedTree extends Tree {
         if (!(rootNode instanceof PartitionedTreeNode))
             throw new IllegalArgumentException("Attempted to instantiate partitioned tree with regular root node.");
 
-
         setRoot(rootNode);
         initArrays();
     }
@@ -562,8 +561,8 @@ public class PartitionedTree extends Tree {
 
         storeNodes(0, iRoot);
 
-        storedRoot.setHeight(m_nodes[iRoot].getHeight());
-        storedRoot.setParent(null);
+        storedRoot.height = m_nodes[iRoot].height;
+        storedRoot.parent = null;
 
         if (root.getLeft()!=null)
             storedRoot.setLeft(m_storedNodes[root.getLeft().getNr()]);
@@ -588,8 +587,8 @@ public class PartitionedTree extends Tree {
         for (int i = iStart; i<iEnd; i++) {
             PartitionedTreeNode sink = (PartitionedTreeNode)m_storedNodes[i];
             PartitionedTreeNode src = (PartitionedTreeNode)m_nodes[i];
-            sink.setHeight(src.getHeight());
-            sink.setParent(m_storedNodes[src.getParent().getNr()]);
+            sink.height = src.height;
+            sink.parent =  m_storedNodes[src.parent.getNr()];
             if (src.getLeft()!=null) {
                 sink.setLeft(m_storedNodes[src.getLeft().getNr()]);
                 if (src.getRight()!=null)

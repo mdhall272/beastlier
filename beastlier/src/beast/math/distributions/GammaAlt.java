@@ -4,9 +4,8 @@ package beast.math.distributions;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.util.GammaDistributionImplAlt;
 import org.apache.commons.math.distribution.ContinuousDistribution;
-
+import org.apache.commons.math.distribution.GammaDistributionImpl;
 /*
 If a _very_ informative gamma prior is put on latent periods, the run may have trouble starting up because it needs
 short latent periods to find a starting state. This minor modification fixes this by using a gamma distribution whose
@@ -59,3 +58,24 @@ public class GammaAlt extends ParametricDistribution {
     	return offsetInput.get() + m_dist.getAlpha() * m_dist.getBeta();
     }
 } // class Gamma
+
+class GammaDistributionImplAlt extends GammaDistributionImpl {
+
+    public GammaDistributionImplAlt(double alpha, double beta) {
+        super(alpha, beta);
+    }
+
+    public GammaDistributionImplAlt(double alpha, double beta, double inverseCumAccuracy) {
+        super(alpha, beta, inverseCumAccuracy);
+    }
+
+    public double logDensity(double x) {
+
+        double shape = getAlpha();
+        double scale = getBeta();
+
+        return ((shape - 1.0) * (Math.log(x) - Math.log(scale)) - x / scale - org.apache.commons.math.special.Gamma.logGamma(shape)
+                - Math.log(scale));
+    }
+
+}

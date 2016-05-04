@@ -47,7 +47,7 @@ public class Product extends CalculationNode implements Function, Loggable {
      * do the actual work, and reset flag *
      */
     void compute() {
-        product = 0;
+        product = 1;
         final Function v = functionInput.get();
         for (int i = 0; i < v.getDimension(); i++) {
             product *= v.getArrayValue(i);

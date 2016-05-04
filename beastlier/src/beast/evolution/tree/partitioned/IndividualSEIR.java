@@ -253,8 +253,7 @@ public class IndividualSEIR extends BetweenHostModel {
                 if (event.getTime() < Double.POSITIVE_INFINITY) {
 
                     if(event.getTime() > event.getCase().getEndTime()){
-                        throw new RuntimeException(event.getCase().getID() + " noninfectious before" +
-                                "infectious");
+                        return Double.NEGATIVE_INFINITY;
                     }
 
                     if (first) {

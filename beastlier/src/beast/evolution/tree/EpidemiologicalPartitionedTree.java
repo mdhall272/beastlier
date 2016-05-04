@@ -45,8 +45,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public Input<Outbreak> outbreakInput = new Input<>("outbreak", "The set of clinical cases");
     public Input<RealParameter> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
             "rules of the third type only", null, Input.Validate.OPTIONAL);
-    public Input<Double> zeroTimeInput = new Input<>("zeroTime", "The time of the last tip on the forwards timescale",
-            0.0, Input.Validate.OPTIONAL);
 
     private double zeroTime;
     private RealParameter q;
@@ -54,8 +52,14 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public void initAndValidate(){
 
-        zeroTime = zeroTimeInput.get();
         outbreak = outbreakInput.get();
+
+        for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
+            if(aCase.getEndTime() > zeroTime){
+                zeroTime = aCase.getEndTime();
+            }
+        }
+
 
         //todo limits for the qs?
 

@@ -19,7 +19,7 @@ public class GammaAlt extends ParametricDistribution {
     final public Input<RealParameter> alphaInput = new Input<>("alpha", "shape parameter, defaults to 2");
     final public Input<RealParameter> betaInput = new Input<>("beta", "scale parameter, defaults to 2");
 
-    static org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImplAlt(1, 1);
+    org.apache.commons.math.distribution.GammaDistribution m_dist = new GammaDistributionImplAlt(1, 1);
 
     @Override
     public void initAndValidate() {
@@ -30,7 +30,7 @@ public class GammaAlt extends ParametricDistribution {
      * make sure internal state is up to date *
      */
     @SuppressWarnings("deprecation")
-	void refresh() {
+    void refresh() {
         double alpha;
         double beta;
         if (alphaInput.get() == null) {
@@ -55,27 +55,29 @@ public class GammaAlt extends ParametricDistribution {
 
     @Override
     public double getMean() {
-    	return offsetInput.get() + m_dist.getAlpha() * m_dist.getBeta();
+        return offsetInput.get() + m_dist.getAlpha() * m_dist.getBeta();
     }
-} // class Gamma
+    // class Gamma
 
-class GammaDistributionImplAlt extends GammaDistributionImpl {
+    class GammaDistributionImplAlt extends GammaDistributionImpl {
 
-    public GammaDistributionImplAlt(double alpha, double beta) {
-        super(alpha, beta);
-    }
+        public GammaDistributionImplAlt(double alpha, double beta) {
+            super(alpha, beta);
+        }
 
-    public GammaDistributionImplAlt(double alpha, double beta, double inverseCumAccuracy) {
-        super(alpha, beta, inverseCumAccuracy);
-    }
+        public GammaDistributionImplAlt(double alpha, double beta, double inverseCumAccuracy) {
+            super(alpha, beta, inverseCumAccuracy);
+        }
 
-    public double logDensity(double x) {
+        public double logDensity(double x) {
 
-        double shape = getAlpha();
-        double scale = getBeta();
+            double shape = getAlpha();
+            double scale = getBeta();
 
-        return ((shape - 1.0) * (Math.log(x) - Math.log(scale)) - x / scale - org.apache.commons.math.special.Gamma.logGamma(shape)
-                - Math.log(scale));
+            return ((shape - 1.0) * (Math.log(x) - Math.log(scale)) - x / scale -
+                    org.apache.commons.math.special.Gamma.logGamma(shape) - Math.log(scale));
+        }
+
     }
 
 }

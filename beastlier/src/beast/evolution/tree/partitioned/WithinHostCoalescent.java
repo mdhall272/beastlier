@@ -157,6 +157,10 @@ public class WithinHostCoalescent extends WithinHostModel {
                 return Double.NEGATIVE_INFINITY;
             }
 
+            if(finishTime > 0){
+                throw new RuntimeException("Investigate please");
+            }
+
             final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
             final double normalisationArea = demographicFunction.getIntegral(startTime, 0);
 

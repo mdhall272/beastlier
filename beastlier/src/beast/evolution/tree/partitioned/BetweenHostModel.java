@@ -24,7 +24,6 @@ package beast.evolution.tree.partitioned;
 
 import beast.core.Input;
 import beast.evolution.tree.EpidemiologicalPartitionedTree;
-import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeDistribution;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
@@ -32,7 +31,6 @@ import beastlier.outbreak.Outbreak;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -50,7 +48,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     // not need recalculating. Filthy means they has so it does;
 
     public static final int IS_CLEAN = 0, IS_DIRTY = 1, IS_FILTHY = 2;
-    protected int isDirty = 2;
+    protected int typeOfDirt = 2;
 
     protected ArrayList<TreeEvent> sortedTreeEvents;
     protected ArrayList<TreeEvent> storedSortedTreeEvents;
@@ -65,7 +63,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     public double calculateLogP(){
 
-        if(isDirty==IS_FILTHY) {
+        if(typeOfDirt ==IS_FILTHY) {
             sortEvents();
         }
 
@@ -146,41 +144,41 @@ public abstract class BetweenHostModel extends TreeDistribution {
             out.add(new TreeEvent(infectionTime, aCase, tree.getInfector(aCase)));
 
             if(aCase.wasEverInfected()) {
-
                 double endTime = aCase.getEndTime();
-
                 out.add(new TreeEvent(EventType.END, endTime, aCase));
 
                 if (hasLatentPeriods) {
                     double infectiousnessTime = getInfectiousTime(aCase);
                     out.add(new TreeEvent(EventType.INFECTIOUSNESS, infectiousnessTime, aCase));
-
                 }
             }
         }
-
         Collections.sort(out, new EventComparator());
-
         sortedTreeEvents = out;
-
     }
 
     private class EventComparator implements Comparator<TreeEvent> {
         public int compare(TreeEvent treeEvent1, TreeEvent treeEvent2) {
-            return Double.compare(treeEvent1.getTime(),
-                    treeEvent2.getTime());
+            return Double.compare(treeEvent1.getTime(), treeEvent2.getTime());
         }
     }
 
     public void store() {
         storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
+        typeOfDirt = IS_CLEAN;
         super.store();
     }
 
 
     public void restore() {
         sortedTreeEvents = storedSortedTreeEvents;
+        typeOfDirt = IS_CLEAN;
         super.restore();
+    }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        return treeInput.get().somethingIsDirty();
     }
 
 }

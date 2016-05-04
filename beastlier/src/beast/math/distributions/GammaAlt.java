@@ -59,7 +59,7 @@ public class GammaAlt extends ParametricDistribution {
     }
     // class Gamma
 
-    class GammaDistributionImplAlt extends GammaDistributionImpl {
+    public class GammaDistributionImplAlt extends GammaDistributionImpl {
 
         public GammaDistributionImplAlt(double alpha, double beta) {
             super(alpha, beta);

@@ -22,7 +22,6 @@
 */
 package beast.evolution.tree.partitioned;
 
-import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.ParametricDistribution;
@@ -35,7 +34,6 @@ import org.apache.commons.math.FunctionEvaluationException;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,7 +51,7 @@ public class IndividualSEIR extends BetweenHostModel {
             "uniting infectious periods across clinical cases", new ArrayList<>());
     public Input<RealParameter> baseTransmissionRateInput = new Input<>("baseTransmissionRate", "The unmodified " +
             "transmission rate");
-    public Input<ParametricDistribution> initialInfectionTimePriorInput = new Input<>("initialInfectionTimePriod",
+    public Input<ParametricDistribution> initialInfectionTimePriorInput = new Input<>("initialInfectionTimePrior",
             "The prior distribution for the time of the index infection", null, Input.Validate.OPTIONAL);
 
     private SpatialKernel kernel;
@@ -149,9 +147,8 @@ public class IndividualSEIR extends BetweenHostModel {
                         transLogProb += Math.log(indexCasePrior.get(thisCase));
                     }
                     if (initialInfectionTimePrior != null) {
-                        transLogProb += initialInfectionTimePrior.density(currentEventTime);
+                        transLogProb += initialInfectionTimePrior.logDensity(currentEventTime);
                     }
-
                     if (!hasLatentPeriods) {
                         previouslyInfectious.add(thisCase);
                     }
@@ -163,28 +160,18 @@ public class IndividualSEIR extends BetweenHostModel {
                     ClinicalCase infector = event.getInfector();
 
                     if(thisCase.wasEverInfected()) {
-
                         if (previouslyInfectious.contains(thisCase)){
-//                                throw new RuntimeException(thisCase.getID() + " infected after it was infectious");
                             return Double.NEGATIVE_INFINITY;
                         }
-
                         if (event.getTime() > thisCase.getEndTime()){
-//                                throw new RuntimeException(thisCase.getID() + " ceased to be infected before it was " +
-//                                        "infected");
                             return Double.NEGATIVE_INFINITY;
                         }
                         if (infector.getEndTime() < event.getTime()){
-//                                throw new RuntimeException(thisCase.getID() + " infected by " + infector.getID() +
-//                                        " after the latter ceased to be infectious");
                             return Double.NEGATIVE_INFINITY;
                         }
                         if (getInfectiousTime(infector) > event.getTime()) {
-//                                throw new RuntimeException(thisCase.getID() + " infected by "
-//                                        + infector.getID() + " before the latter became infectious");
                             return Double.NEGATIVE_INFINITY;
                         }
-
                         if(!previouslyInfectious.contains(infector)){
                             throw new RuntimeException("Infector not previously infected");
                         }
@@ -196,14 +183,21 @@ public class IndividualSEIR extends BetweenHostModel {
 
                         double timeDuringWhichNoInfection;
                         if (nonInfector.getEndTime() < event.getTime()) {
-                            timeDuringWhichNoInfection = nonInfector.getEndTime()
-                                    - getInfectiousTime(nonInfector);
+                            timeDuringWhichNoInfection = nonInfector.getEndTime() - getInfectiousTime(nonInfector);
                         } else {
-                            timeDuringWhichNoInfection = event.getTime()
-                                    - getInfectiousTime(nonInfector);
+                            timeDuringWhichNoInfection = event.getTime() - getInfectiousTime(nonInfector);
                         }
 
-                        if(timeDuringWhichNoInfection<0){
+                        if(timeDuringWhichNoInfection < 0){
+                            if (nonInfector.getEndTime() < event.getTime()) {
+                                timeDuringWhichNoInfection = nonInfector.getEndTime()
+                                        - getInfectiousTime(nonInfector);
+                            } else {
+                                double a = event.getTime();
+                                double b = getInfectiousTime(nonInfector);
+                                timeDuringWhichNoInfection = event.getTime()
+                                        - getInfectiousTime(nonInfector);
+                            }
                             throw new RuntimeException("negative time");
                         }
 
@@ -226,8 +220,6 @@ public class IndividualSEIR extends BetweenHostModel {
 
                     if(thisCase.wasEverInfected()) {
                         double transRate = rate;
-
-
                         if (hasGeography) {
                             try {
                                 transRate *= kernel.getValue((GeographicallyLocatedClinicalCase) thisCase,
@@ -236,16 +228,12 @@ public class IndividualSEIR extends BetweenHostModel {
                                 e.printStackTrace();
                             }
                         }
-
-
                         transLogProb += Math.log(transRate);
                     }
 
                     if (!hasLatentPeriods) {
                         previouslyInfectious.add(thisCase);
                     }
-
-
                 }
 
 
@@ -406,10 +394,12 @@ public class IndividualSEIR extends BetweenHostModel {
                 || treeHasChanged || aLatentPeriodHasChanged;
 
         if(treeHasChanged || aLatentPeriodHasChanged){
-            isDirty = IS_FILTHY;
+            typeOfDirt = IS_FILTHY;
         } else {
-            isDirty = answer ? IS_DIRTY : IS_CLEAN;
+            typeOfDirt = answer ? IS_DIRTY : IS_CLEAN;
         }
+
+
 
         return answer;
     }

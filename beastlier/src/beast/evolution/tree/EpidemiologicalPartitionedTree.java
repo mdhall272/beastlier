@@ -265,7 +265,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     @Override
     public boolean somethingIsDirty(){
-        return super.somethingIsDirty() || q.isDirtyCalculation();
+        return super.somethingIsDirty() || q.somethingIsDirty();
     }
 
     public RealParameter getQ(){

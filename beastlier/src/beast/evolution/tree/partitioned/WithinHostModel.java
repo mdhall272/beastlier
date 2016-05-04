@@ -44,7 +44,7 @@ public abstract class WithinHostModel extends TreeDistribution {
     protected HashMap<ClinicalCase, Treelet> elementsAsTrees;
     protected HashMap<ClinicalCase, Treelet> storedElementsAsTrees;
 
-    protected boolean[] partitionsRequiringRecalculation;
+    protected boolean[] treeletsRequiringExtraction;
 
 
 
@@ -63,8 +63,8 @@ public abstract class WithinHostModel extends TreeDistribution {
                     "host model");
         }
 
-        partitionsRequiringRecalculation = new boolean[tree.getNElements()];
-        Arrays.fill(partitionsRequiringRecalculation, true);
+        treeletsRequiringExtraction = new boolean[tree.getNElements()];
+        Arrays.fill(treeletsRequiringExtraction, true);
 
         elementsAsTrees = new HashMap<>();
         explodeTree();
@@ -95,10 +95,10 @@ public abstract class WithinHostModel extends TreeDistribution {
     protected void explodeTree(){
 
         for(int i=0; i<tree.getElementList().size(); i++){
-            String caseName = tree.getElementString(i);
+            if(treeletsRequiringExtraction[i]){
+                String caseName = tree.getElementString(i);
 
-            ClinicalCase aCase = outbreak.getCaseByID(caseName);
-            if(partitionsRequiringRecalculation[i]){
+                ClinicalCase aCase = outbreak.getCaseByID(caseName);
 
                 Node elementRoot = tree.getEarliestNodeInPartition(aCase);
 

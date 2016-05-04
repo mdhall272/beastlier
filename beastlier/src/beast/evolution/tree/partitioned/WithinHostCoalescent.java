@@ -52,38 +52,48 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     private PopulationFunction popFunction;
     protected static double tolerance = 1E-10;
+    public boolean[] recalculateTreeletLogP;
     private double[] individualWHProbabilities;
     private double[] storedIndividualWHProbabilities;
 
 
     public void initAndValidate(){
         super.initAndValidate();
-
         popFunction = functionInput.get();
-
         individualWHProbabilities = new double[tree.getElementList().size()];
+        recalculateTreeletLogP = new boolean[tree.getElementList().size()];
+        Arrays.fill(recalculateTreeletLogP, true);
     }
 
 
     public double calculateLogP() {
 
         RealParameter q = tree.getQ();
-        for(int i=0; i<q.getDimension(); i++){
-            if(q.isDirty(i)){
-                partitionsRequiringRecalculation[i] = true;
+        for (int i = 0; i < q.getDimension(); i++) {
+            if (q.isDirty(i)) {
+                treeletsRequiringExtraction[i] = true;
+                recalculateTreeletLogP[i] = true;
                 int parentPartitionNumber = tree.getAncestorPartitionElement(i);
-                if(parentPartitionNumber != -1) {
-                    partitionsRequiringRecalculation[parentPartitionNumber] = true;
+                if (parentPartitionNumber != -1) {
+                    treeletsRequiringExtraction[parentPartitionNumber] = true;
+                    recalculateTreeletLogP[parentPartitionNumber] = true;
                 }
             }
         }
 
-
-        for(Node node : tree.getNodesAsArray()){
+        for (Node node : tree.getNodesAsArray()) {
             PartitionedTreeNode castNode = (PartitionedTreeNode) node;
-            if(castNode.isPartitionDirty()){
-                partitionsRequiringRecalculation[castNode.getPartitionElementNumber()] = true;
+            if (castNode.isPartitionDirty()) {
+                treeletsRequiringExtraction[castNode.getPartitionElementNumber()] = true;
+                recalculateTreeletLogP[castNode.getPartitionElementNumber()] = true;
             }
+        }
+
+        // if the population function has changed, then all treelets need probabilities recalculated but (unless
+        // something else has changed) no treelets actually need re-extracting
+
+        if(((CalculationNode)popFunction).isDirtyCalculation()){
+            Arrays.fill(recalculateTreeletLogP, true);
         }
 
         explodeTree();
@@ -92,7 +102,7 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         for (int i=0; i<tree.getNElements(); i++) {
 
-            if(partitionsRequiringRecalculation[i]) {
+            if(recalculateTreeletLogP[i]) {
 
                 String caseName = tree.getElementString(i);
                 ClinicalCase aCase = outbreak.getCaseByID(caseName);
@@ -101,8 +111,6 @@ public class WithinHostCoalescent extends WithinHostModel {
 
                 if (treelet.getLeafNodeCount() > 1) {
                     TreeIntervals intervals = new TreeIntervals(treelet);
-
-                    //                    partitionTreeLogLikelihoods[number] = coalescent.calculateLogLikelihood();
 
                     double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
                             treelet.getZeroHeight());
@@ -210,6 +218,8 @@ public class WithinHostCoalescent extends WithinHostModel {
     public void store() {
         storedElementsAsTrees = new HashMap<>(elementsAsTrees);
         storedIndividualWHProbabilities = individualWHProbabilities.clone();
+        Arrays.fill(treeletsRequiringExtraction, false);
+        Arrays.fill(recalculateTreeletLogP, false);
         super.store();
     }
 
@@ -217,8 +227,8 @@ public class WithinHostCoalescent extends WithinHostModel {
     public void restore() {
         elementsAsTrees = storedElementsAsTrees;
         individualWHProbabilities = storedIndividualWHProbabilities;
-        Arrays.fill(partitionsRequiringRecalculation, false);
-
+        Arrays.fill(treeletsRequiringExtraction, false);
+        Arrays.fill(recalculateTreeletLogP, false);
         super.restore();
     }
 

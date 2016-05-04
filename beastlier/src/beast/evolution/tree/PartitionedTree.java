@@ -845,6 +845,10 @@ public class PartitionedTree extends Tree {
 
     public boolean isAncestral(PartitionedTreeNode node){
 
+        if(node.isLeaf()){
+            return true;
+        }
+
         int elementNo = node.getPartitionElementNumber();
 
         Set<String> descendentLeaves = TreeUtils.getDescendantLeaves(this, node);

@@ -33,7 +33,7 @@ public class PartitionedTreeNode extends Node {
 
     int partitionElementNumber = -1;
 /*
-    a node is partition-dirty if something has changed that affects the subtree that involves it. This can be:
+    a node is partition-dirty if something has changed about it that affects the subtree that involves it. This can be:
 
     1) A change to its height, the height of its parent, or the height of its children. (If a branch connecting
     to parent or child is an infection branch, this will change the subtree even if no nodes _in_ the subtree change
@@ -42,8 +42,8 @@ public class PartitionedTreeNode extends Node {
     the same height as the old one, which is sufficiently unlikely as to not be worth considering
     3) It has been moved from one partition element to another
     4) A child has been moved from one partition element to another
-    4) Its parent has been moved from _its_ partition element to another. Because of how the qis work, its parent
-    moving to a from one different element to another is not a problem
+    4) Its parent has been moved from _its_ partition element to another or vice versa. Because of how the qis work,
+    its parent moving to a from one different element to another is not a problem
 
     */
 
@@ -197,6 +197,17 @@ public class PartitionedTreeNode extends Node {
             PartitionedTreeNode castChild = (PartitionedTreeNode)child;
             castChild.setPartitionDirty(true);
         }
+    }
+
+    /**
+     * scale height of this node and all its descendants
+     *
+     * @param scale scale factor
+     */
+    public void scale(final double scale) {
+        ((PartitionedTreeNode)getParent()).setPartitionDirty(true);
+        setPartitionDirty(true);
+        super.scale(scale);
     }
 
     public void setPartitionDirty(boolean value){

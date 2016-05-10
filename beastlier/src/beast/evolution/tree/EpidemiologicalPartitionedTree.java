@@ -22,12 +22,20 @@
 */
 package beast.evolution.tree;
 
+import beast.core.Citation;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.util.RandomPartition;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
+
+@Citation(value=
+        "Hall M, Woolhouse M, Rambaut A, (2015) Epidemic reconstruction in a \n" +
+                "  phylogenetics framework: transmission trees as partitions of the node set. \n" +
+                "  PLoS Computational Biology 11(2): e1003537", year = 2015,
+        firstAuthorSurname = "hall",
+        DOI="10.1371/10.1371/journal.pcbi.1004613")
 
 
 /**

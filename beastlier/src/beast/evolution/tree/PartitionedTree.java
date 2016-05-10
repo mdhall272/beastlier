@@ -1132,8 +1132,10 @@ public class PartitionedTree extends Tree {
         Arrays.fill(elementEarliestNodes, -1);
         storedElementEarliestNodes = new int[elementList.size()];
         Arrays.fill(storedElementEarliestNodes, -1);
-        infectors = new int[elementList.size()];
-        storedInfectors = new int[elementList.size()];
+        if(isDirty) {
+            infectors = new int[elementList.size()];
+            storedInfectors = new int[elementList.size()];
+        }
     }
 
 }

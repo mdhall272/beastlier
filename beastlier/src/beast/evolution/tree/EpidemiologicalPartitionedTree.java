@@ -30,6 +30,8 @@ import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
+import java.util.Arrays;
+
 @Citation(value=
         "Hall M, Woolhouse M, Rambaut A, (2015) Epidemic reconstruction in a \n" +
                 "  phylogenetics framework: transmission trees as partitions of the node set. \n" +
@@ -54,7 +56,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     private Double[] infectionTimes;
     private Double[] storedInfectionTimes;
-
 
     public void initAndValidate(){
 
@@ -90,6 +91,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         infectionTimes = new Double[elementList.size()];
         storedInfectionTimes = new Double[elementList.size()];
+        Arrays.fill(infectionTimes, null);
+        Arrays.fill(storedInfectionTimes, null);
     }
 
     private double heightToTime(double height){
@@ -303,6 +306,15 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     public RealParameter getQ(){
         return q;
+    }
+
+    @Override
+    public void setEverythingDirty(final boolean isDirty) {
+        super.setEverythingDirty(isDirty);
+        if(isDirty){
+            infectionTimes = new Double[elementList.size()];
+            storedInfectionTimes = new Double[elementList.size()];
+        }
     }
 
 

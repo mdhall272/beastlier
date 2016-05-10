@@ -132,6 +132,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     }
 
     protected void sortEvents(){
+
         ArrayList<TreeEvent> out = new ArrayList<>();
         for(ClinicalCase aCase : outbreak.getCases()){
 

@@ -52,11 +52,9 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
         processTraits(m_initial.get().m_traitList.get());
 
-        initStateNodes();
-
         super.initAndValidate();
 
-
+        initStateNodes();
     }
 
 
@@ -71,7 +69,6 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
             castNode.setPartitionElementNumber(-1);
             node.setMetaData(elementLabel, null);
         }
-
 
         PartitionedTreeNode root = (PartitionedTreeNode) getRoot();
         randomlyAssignNode(root, false);

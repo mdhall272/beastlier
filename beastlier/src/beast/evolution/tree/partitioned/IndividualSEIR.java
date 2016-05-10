@@ -63,7 +63,11 @@ public class IndividualSEIR extends BetweenHostModel {
     private List<DurationCategory> infectiousCategories;
 
     public void initAndValidate(){
-        super.initAndValidate();
+
+        hasGeography = kernel != null;
+
+        hasLatentPeriods = true;
+
         kernel = kernelInput.get();
         baseTransmissionRate = baseTransmissionRateInput.get();
         initialInfectionTimePrior = initialInfectionTimePriorInput.get();
@@ -101,6 +105,7 @@ public class IndividualSEIR extends BetweenHostModel {
         }
 
         double totalWeights = 0;
+        super.initAndValidate();
 
         indexCasePrior = new HashMap<>();
 
@@ -117,13 +122,17 @@ public class IndividualSEIR extends BetweenHostModel {
                     " information");
         }
 
-        hasGeography = kernel != null;
-
-        hasLatentPeriods = true;
 
     }
 
     public double evaluateLogP(){
+
+//        try {
+//            tree.log(0, new PrintStream("test.nex"));
+//        }catch(Exception e){
+//            e.printStackTrace();
+//
+//        }
 
         double transLogProb = 0;
 
@@ -189,15 +198,6 @@ public class IndividualSEIR extends BetweenHostModel {
                         }
 
                         if(timeDuringWhichNoInfection < 0){
-                            if (nonInfector.getEndTime() < event.getTime()) {
-                                timeDuringWhichNoInfection = nonInfector.getEndTime()
-                                        - getInfectiousTime(nonInfector);
-                            } else {
-                                double a = event.getTime();
-                                double b = getInfectiousTime(nonInfector);
-                                timeDuringWhichNoInfection = event.getTime()
-                                        - getInfectiousTime(nonInfector);
-                            }
                             throw new RuntimeException("negative time");
                         }
 
@@ -398,11 +398,6 @@ public class IndividualSEIR extends BetweenHostModel {
         } else {
             typeOfDirt = answer ? IS_DIRTY : IS_CLEAN;
         }
-
-
-
         return answer;
     }
-
-
 }

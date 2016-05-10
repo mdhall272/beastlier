@@ -24,17 +24,11 @@ package beast.evolution.tree;
 
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.tree.coalescent.TreeIntervals;
 import beast.util.RandomPartition;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
-import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -49,6 +43,10 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     private double zeroTime;
     private RealParameter q;
     private Outbreak outbreak;
+
+    private Double[] infectionTimes;
+    private Double[] storedInfectionTimes;
+
 
     public void initAndValidate(){
 
@@ -82,6 +80,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
             initialiseQs();
         }
 
+        infectionTimes = new Double[elementList.size()];
+        storedInfectionTimes = new Double[elementList.size()];
     }
 
     private double heightToTime(double height){
@@ -101,20 +101,33 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public double getInfectionTime(ClinicalCase aCase){
-        if(aCase.wasEverInfected()) {
 
+        if(aCase.wasEverInfected()) {
             int partitionElementNumber = elementList.indexOf(aCase.getID());
 
-            if (rules == Rules.SECOND_TYPE) {
-                return heightToTime(getEarliestNodeInPartition(partitionElementNumber).getHeight());
+            PartitionedTreeNode earliestNode = getEarliestNodeInPartition(partitionElementNumber);
 
+            if(!earliestNode.isPartitionDirty() && !q.isDirty(partitionElementNumber)){
+                return infectionTimes[partitionElementNumber];
             } else {
-                PartitionedTreeNode mrca = getEarliestNodeInPartition(partitionElementNumber);
-                if (!mrca.isRoot()) {
-                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * mrca.getLength());
+
+                double result;
+
+                if (rules == Rules.SECOND_TYPE) {
+                    result = heightToTime(earliestNode.getHeight());
+
                 } else {
-                    return heightToTime(mrca.getHeight() + q.getValue(partitionElementNumber) * rootBranchLength);
+                    if (!earliestNode.isRoot()) {
+                        result = heightToTime(earliestNode.getHeight()
+                                + q.getValue(partitionElementNumber) * earliestNode.getLength());
+                    } else {
+                        result = heightToTime(earliestNode.getHeight()
+                                + q.getValue(partitionElementNumber) * rootBranchLength);
+                    }
                 }
+                infectionTimes[partitionElementNumber] = result;
+
+                return result;
             }
         } else {
             return Double.POSITIVE_INFINITY;
@@ -264,6 +277,18 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     @Override
+    public void store(){
+        super.store();
+        storedInfectionTimes = infectionTimes.clone();
+    }
+
+    @Override
+    public void restore(){
+        super.restore();
+        infectionTimes = storedInfectionTimes;
+    }
+
+    @Override
     public boolean somethingIsDirty(){
         return super.somethingIsDirty() || q.somethingIsDirty();
     }
@@ -271,5 +296,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public RealParameter getQ(){
         return q;
     }
+
 
 }

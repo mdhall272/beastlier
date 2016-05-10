@@ -205,7 +205,9 @@ public class PartitionedTreeNode extends Node {
      * @param scale scale factor
      */
     public void scale(final double scale) {
-        ((PartitionedTreeNode)getParent()).setPartitionDirty(true);
+        if(getParent()!=null) {
+            ((PartitionedTreeNode) getParent()).setPartitionDirty(true);
+        }
         setPartitionDirty(true);
         super.scale(scale);
     }

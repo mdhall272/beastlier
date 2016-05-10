@@ -84,6 +84,13 @@ public class PartitionedTree extends Tree {
 
     public Rules rules;
 
+    private int[] elementEarliestNodes;
+    private int[] storedElementEarliestNodes;
+    private int[] infectors;
+    private int[] storedInfectors;
+
+    //saves time - tip numbers for each element.
+    private ArrayList<ArrayList<Integer>> singletonTips = new ArrayList<>();
 
     protected double rootBranchLength;
 
@@ -190,6 +197,22 @@ public class PartitionedTree extends Tree {
         // Ensure tree is compatible with traits.
         if (hasDateTrait())
             adjustTreeNodeHeights(root);
+
+        elementEarliestNodes = new int[elementList.size()];
+        storedElementEarliestNodes = new int[elementList.size()];
+        Arrays.fill(elementEarliestNodes, -1);
+        Arrays.fill(storedElementEarliestNodes, -1);
+        infectors = new int[elementList.size()];
+        storedInfectors = new int[elementList.size()];
+
+        for(int i=0; i<getNElements(); i++){
+            singletonTips.add(new ArrayList<>());
+        }
+
+        for(Node tip : getExternalNodes()){
+            PartitionedTreeNode castTip = (PartitionedTreeNode) tip;
+            singletonTips.get(castTip.getPartitionElementNumber()).add(castTip.getNr());
+        }
     }
 
 
@@ -556,6 +579,9 @@ public class PartitionedTree extends Tree {
     /////////////////////////////////////////////////
     @Override
     protected void store() {
+        storedElementEarliestNodes = elementEarliestNodes.clone();
+        storedInfectors = infectors.clone();
+
         storedRoot = m_storedNodes[root.getNr()];
         int iRoot = root.getNr();
 
@@ -578,6 +604,13 @@ public class PartitionedTree extends Tree {
         mtStoredRoot.partitionElementNumber = ((PartitionedTreeNode)m_nodes[iRoot]).partitionElementNumber;
 
         storeNodes(iRoot+1, nodeCount);
+    }
+
+    @Override
+    public void restore(){
+        elementEarliestNodes = storedElementEarliestNodes;
+        infectors = storedInfectors;
+        super.restore();
     }
 
     /**
@@ -806,15 +839,22 @@ public class PartitionedTree extends Tree {
     // here begin the partition utility functions
 
     public PartitionedTreeNode getElementMRCA(int elementNo){
-        HashSet<String> elementTips = new HashSet<>();
+        if(singletonTips.get(elementNo).size() == 1){
+            return (PartitionedTreeNode)getNode(singletonTips.get(elementNo).get(0));
+        } else {
+            ArrayList<Integer> elementTips = singletonTips.get(elementNo);
+            HashSet<String> stringElementTips = new HashSet<>();
 
-        for(Node tip : getExternalNodes()){
-            if(((PartitionedTreeNode)tip).getPartitionElementNumber()==elementNo){
-                elementTips.add(getTaxonId(tip));
+            for (Integer tipNo : elementTips) {
+                if (((PartitionedTreeNode)getNode(tipNo)).getPartitionElementNumber() == elementNo) {
+                    stringElementTips.add(getTaxonId(getNode(tipNo)));
+                }
             }
+            PartitionedTreeNode result = (PartitionedTreeNode) TreeUtils.getCommonAncestorNode(this, stringElementTips);
 
+            return result;
         }
-        return (PartitionedTreeNode) TreeUtils.getCommonAncestorNode(this, elementTips);
+
     }
 
     public boolean isRootBlockedBy(int elementNo, int maybeBlockedBy){
@@ -894,30 +934,45 @@ public class PartitionedTree extends Tree {
         return getNodesInElement(elementNo);
     }
 
+
     public PartitionedTreeNode getEarliestNodeInPartition(int elementNo){
 
-        PartitionedTreeNode tipMRCA = getElementMRCA(elementNo);
-
-        if(tipMRCA.getPartitionElementNumber() != elementNo){
-            throw new RuntimeException("Node partition disconnected");
+        int oldNodeNo = elementEarliestNodes[elementNo];
+        PartitionedTreeNode old;
+        if(oldNodeNo==-1) {
+            old = null;
+        } else {
+            old = (PartitionedTreeNode) getNode(oldNodeNo);
         }
+        if(old!=null && !old.isPartitionDirty()){
+            return old;
+        } else {
 
-        PartitionedTreeNode child = tipMRCA;
-        PartitionedTreeNode parent = (PartitionedTreeNode)child.getParent();
-        boolean transmissionFound = parent == null;
-        while (!transmissionFound) {
+            PartitionedTreeNode tipMRCA = getElementMRCA(elementNo);
 
-            if (child.getPartitionElementNumber() != parent.getPartitionElementNumber()) {
-                transmissionFound = true;
-            } else {
-                child = parent;
-                parent = (PartitionedTreeNode)child.getParent();
-                if (parent == null) {
+            if (tipMRCA.getPartitionElementNumber() != elementNo) {
+                throw new RuntimeException("Node partition disconnected");
+            }
+
+            PartitionedTreeNode child = tipMRCA;
+            PartitionedTreeNode parent = (PartitionedTreeNode) child.getParent();
+            boolean transmissionFound = parent == null;
+            while (!transmissionFound) {
+
+                if (child.getPartitionElementNumber() != parent.getPartitionElementNumber()) {
                     transmissionFound = true;
+                } else {
+                    child = parent;
+                    parent = (PartitionedTreeNode) child.getParent();
+                    if (parent == null) {
+                        transmissionFound = true;
+                    }
                 }
             }
+
+            elementEarliestNodes[elementNo] = child.getNr();
+            return child;
         }
-        return child;
 
     }
 
@@ -1034,18 +1089,27 @@ public class PartitionedTree extends Tree {
     }
 
     public String getAncestorPartitionElement(String element){
-        PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementList.indexOf(element));
-        PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
-        if (parent == null) {
-            return null;
-        } else {
-            return elementList.get(parent.getPartitionElementNumber());
-        }
+        int ancestorElement = getAncestorPartitionElement(elementList.indexOf(element));
+        return ancestorElement == -1 ? null : elementList.get(ancestorElement);
     }
 
-    public int getAncestorPartitionElement(int element){
-        String ancestorElement = getAncestorPartitionElement(elementList.get(element));
-        return ancestorElement == null ? -1 : elementList.indexOf(ancestorElement);
+    public int getAncestorPartitionElement(int elementNo){
+
+        PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementNo);
+        PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
+        if(!elementMRCA.isPartitionDirty() && (parent==null || !parent.isPartitionDirty())){
+            return infectors[elementNo];
+        } else {
+            if (parent == null) {
+                infectors[elementNo] = -1;
+                return -1;
+            } else {
+                int result = parent.getPartitionElementNumber();
+                infectors[elementNo] = result;
+                return result;
+            }
+        }
+
     }
 
     @Override
@@ -1064,6 +1128,12 @@ public class PartitionedTree extends Tree {
                 castNode.setPartitionDirty(true);
             }
         }
+        elementEarliestNodes = new int[elementList.size()];
+        Arrays.fill(elementEarliestNodes, -1);
+        storedElementEarliestNodes = new int[elementList.size()];
+        Arrays.fill(storedElementEarliestNodes, -1);
+        infectors = new int[elementList.size()];
+        storedInfectors = new int[elementList.size()];
     }
 
 }

@@ -188,7 +188,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         ArrayList<PartitionedTreeNode> changesToMake = new ArrayList<>();
 
-        double out = 0;
+        double hr = 0;
 
         PartitionedTreeNode infectedMRCA = tree.getElementMRCA(infectedCase);
 
@@ -211,14 +211,14 @@ public class InfectionBranchMovementOperator extends TreeOperator{
                     if(castChild == infectedMRCA){
                         // we're moving a transmission event as far down as it can go and need to adjust the HR
                         // accordingly
-                        out += Math.log(2);
+                        hr += Math.log(2);
                     }
                 }
             }
         }
 
         //if you couldn't move it any further up
-        out += tree.isRootBlockedBy(infectedCase, infectorCase) && tree.isAncestral(parent) ? Math.log(0.5) : 0;
+        hr += tree.isRootBlockedBy(infectedCase, infectorCase) && tree.isAncestral(parent) ? Math.log(0.5) : 0;
 
         changesToMake.add(node);
 
@@ -239,7 +239,7 @@ public class InfectionBranchMovementOperator extends TreeOperator{
 
         tree.setSomethingIsDirty(true);
 
-        return out;
+        return hr;
     }
 
 

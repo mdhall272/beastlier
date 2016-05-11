@@ -63,12 +63,13 @@ public class IndividualSEIR extends BetweenHostModel {
     private List<DurationCategory> infectiousCategories;
 
     public void initAndValidate(){
+        kernel = kernelInput.get();
 
         hasGeography = kernel != null;
 
         hasLatentPeriods = true;
 
-        kernel = kernelInput.get();
+
         baseTransmissionRate = baseTransmissionRateInput.get();
         initialInfectionTimePrior = initialInfectionTimePriorInput.get();
 

@@ -100,8 +100,10 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                     //p's subtree is now disconnected from the tree
                     if(i.getPartitionElementNumber() == p.getPartitionElementNumber()) {
                         PartitionedTreeNode currentNode = PiP;
-                        while (currentNode.getPartitionElementNumber() == p.getPartitionElementNumber()) {
+                        while (currentNode!=null &&
+                                currentNode.getPartitionElementNumber() == p.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(CiP.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     }
@@ -112,6 +114,7 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                     // and it's back. No need to worry about anything further up the tree since it's now the root.
                     if(i.getPartitionElementNumber() != p.getPartitionElementNumber()){
                         p.setPartitionElementNumber(newChild.getPartitionElementNumber());
+                        p.setPartitionDirty(true);
                     }
                 }
                 // 3.1.2 no new root
@@ -123,6 +126,7 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                         while (currentNode != null &&
                                 currentNode.getPartitionElementNumber() == p.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(CiP.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     }
@@ -135,10 +139,12 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                         while (currentNode != null &&
                                 currentNode.getPartitionElementNumber() == newChild.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(p.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     } else {
                         p.setPartitionElementNumber(newChild.getPartitionElementNumber());
+                        p.setPartitionDirty(true);
                     }
                 }
 
@@ -196,10 +202,12 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                         while (currentNode != null &&
                                 currentNode.getPartitionElementNumber() == newChild.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(p.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     } else {
                         p.setPartitionElementNumber(newChild.getPartitionElementNumber());
+                        p.setPartitionDirty(true);
                     }
 
                 } else {
@@ -210,6 +218,7 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                         while (currentNode != null &&
                                 currentNode.getPartitionElementNumber() == p.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(CiP.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     }
@@ -222,10 +231,12 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                         while (currentNode != null &&
                                 currentNode.getPartitionElementNumber() == newChild.getPartitionElementNumber()) {
                             currentNode.setPartitionElementNumber(p.getPartitionElementNumber());
+                            currentNode.setPartitionDirty(true);
                             currentNode = (PartitionedTreeNode) currentNode.getParent();
                         }
                     } else {
                         p.setPartitionElementNumber(newChild.getPartitionElementNumber());
+                        p.setPartitionDirty(true);
                     }
                 }
 
@@ -245,6 +256,10 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                 logq = 0.0;
             }
         }
+        if(!((PartitionedTree)treeInput.get()).isValid()) {
+            throw new RuntimeException("Fix this operator!");
+        }
+
         return logq;
     }
 

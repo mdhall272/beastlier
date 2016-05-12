@@ -109,6 +109,7 @@ public class SecondTypeWilsonBalding extends WilsonBalding {
             while (currentNode != null &&
                     currentNode.getPartitionElementNumber() == iP.getPartitionElementNumber()) {
                 currentNode.setPartitionElementNumber(CiP.getPartitionElementNumber());
+                currentNode.setPartitionDirty(true);
                 currentNode = (PartitionedTreeNode) currentNode.getParent();
             }
         }
@@ -123,10 +124,12 @@ public class SecondTypeWilsonBalding extends WilsonBalding {
             while (currentNode != null &&
                     currentNode.getPartitionElementNumber() == j.getPartitionElementNumber()) {
                 currentNode.setPartitionElementNumber(iP.getPartitionElementNumber());
+                currentNode.setPartitionDirty(true);
                 currentNode = (PartitionedTreeNode) currentNode.getParent();
             }
         } else {
             iP.setPartitionElementNumber(j.getPartitionElementNumber());
+            iP.setPartitionDirty(true);
         }
 
         // mark paths to common ancestor as changed
@@ -149,6 +152,10 @@ public class SecondTypeWilsonBalding extends WilsonBalding {
 //        }
 
         iP.setHeight(newAge);
+
+        if(!((PartitionedTree)treeInput.get()).isValid()) {
+            throw new RuntimeException("Fix this operator!");
+        }
 
         return Math.log(hastingsRatio);
     }

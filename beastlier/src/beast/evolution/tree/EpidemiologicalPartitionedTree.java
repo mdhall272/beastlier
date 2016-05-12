@@ -114,7 +114,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
             PartitionedTreeNode earliestNode = getEarliestNodeInPartition(partitionElementNumber);
 
-            if(!earliestNode.isPartitionDirty() && (rules==Rules.SECOND_TYPE || !q.isDirty(partitionElementNumber))){
+            if(!earliestNode.isPartitionDirty() && (rules==Rules.SECOND_TYPE || !q.isDirty(partitionElementNumber)) &&
+                    !(earliestNode.isRoot() && rootBranchLength.isDirty(0))){
                 return infectionTimes[partitionElementNumber];
             } else {
 
@@ -126,7 +127,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                     } else {
                         result = heightToTime(earliestNode.getHeight() + getRootBranchLength());
                     }
-
 
                 } else {
                     if (!earliestNode.isRoot()) {
@@ -302,7 +302,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     @Override
     public boolean somethingIsDirty(){
-        return super.somethingIsDirty() || (rules==Rules.THIRD_TYPE && q.somethingIsDirty());
+        return super.somethingIsDirty() || (rules==Rules.THIRD_TYPE && q.somethingIsDirty())
+                || rootBranchLength.somethingIsDirty();
     }
 
     public RealParameter getQ(){

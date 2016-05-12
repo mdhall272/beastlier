@@ -55,15 +55,21 @@ public class SecondTypeExchange extends Exchange {
 
 
         PartitionedTreeNode currentParent = castJP;
-        while(currentParent.getPartitionElementNumber()==castJ.getPartitionElementNumber()){
+        while(currentParent!=null && currentParent.getPartitionElementNumber()==castJ.getPartitionElementNumber()){
             currentParent.setPartitionElementNumber(castI.getPartitionElementNumber());
+            currentParent.setPartitionDirty(true);
             currentParent = (PartitionedTreeNode)currentParent.getParent();
         }
 
         currentParent = castIP;
-        while(currentParent.getPartitionElementNumber()==castI.getPartitionElementNumber()){
+        while(currentParent!=null && currentParent.getPartitionElementNumber()==castI.getPartitionElementNumber()){
             currentParent.setPartitionElementNumber(castJ.getPartitionElementNumber());
+            currentParent.setPartitionDirty(true);
             currentParent = (PartitionedTreeNode)currentParent.getParent();
+        }
+
+        if(!((PartitionedTree)treeInput.get()).isValid()) {
+            throw new RuntimeException("Fix this operator!");
         }
     }
 }

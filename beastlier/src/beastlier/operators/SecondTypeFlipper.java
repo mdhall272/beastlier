@@ -87,13 +87,21 @@ public class SecondTypeFlipper extends TreeOperator {
 
         PartitionedTreeNode currentNode = parent;
         while(currentNode!=null && currentNode.getPartitionElementNumber()==infectorCase){
+            currentNode.setPartitionDirty(true);
             currentNode.setPartitionElementNumber(infectedCase);
             currentNode = (PartitionedTreeNode) currentNode.getParent();
         }
 
+        child1.setPartitionDirty(true);
+        child2.setPartitionDirty(true);
+
         treeInput.get().setSomethingIsDirty(true);
 
         //this is a really simple and pleasing move
+
+        if(!((PartitionedTree)treeInput.get()).isValid()) {
+            throw new RuntimeException("Fix this operator!");
+        }
 
         return 0;
     }

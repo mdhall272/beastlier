@@ -153,10 +153,6 @@ public class SecondTypeWilsonBalding extends WilsonBalding {
 
         iP.setHeight(newAge);
 
-        if(!((PartitionedTree)treeInput.get()).isValid()) {
-            throw new RuntimeException("Fix this operator!");
-        }
-
         return Math.log(hastingsRatio);
     }
 

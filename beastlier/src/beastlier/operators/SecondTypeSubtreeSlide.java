@@ -256,9 +256,6 @@ public class SecondTypeSubtreeSlide extends SubtreeSlide {
                 logq = 0.0;
             }
         }
-        if(!((PartitionedTree)treeInput.get()).isValid()) {
-            throw new RuntimeException("Fix this operator!");
-        }
 
         return logq;
     }

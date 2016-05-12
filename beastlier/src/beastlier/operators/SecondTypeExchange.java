@@ -67,10 +67,6 @@ public class SecondTypeExchange extends Exchange {
             currentParent.setPartitionDirty(true);
             currentParent = (PartitionedTreeNode)currentParent.getParent();
         }
-
-        if(!((PartitionedTree)treeInput.get()).isValid()) {
-            throw new RuntimeException("Fix this operator!");
-        }
     }
 }
 

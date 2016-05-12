@@ -99,10 +99,6 @@ public class SecondTypeFlipper extends TreeOperator {
 
         //this is a really simple and pleasing move
 
-        if(!((PartitionedTree)treeInput.get()).isValid()) {
-            throw new RuntimeException("Fix this operator!");
-        }
-
         return 0;
     }
 

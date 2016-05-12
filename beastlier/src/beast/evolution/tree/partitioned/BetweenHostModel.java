@@ -63,7 +63,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     public double calculateLogP(){
 
-        if(typeOfDirt ==IS_FILTHY) {
+        if(typeOfDirt == IS_FILTHY) {
             sortEvents();
         }
 

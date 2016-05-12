@@ -32,7 +32,7 @@ import beast.util.Randomizer;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class TransmissionWilsonBaldingB extends TreeOperator {
+public class ThirdTypeWilsonBaldingB extends TreeOperator {
 
     @Override
     public void initAndValidate() {

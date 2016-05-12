@@ -85,10 +85,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         // this is a bit of a hack but should make the run start up from a random tree much more often
 
-        if(rules == Rules.THIRD_TYPE && m_initial.get() instanceof RandomPartition) {
-            initialiseQs();
-        }
-
         infectionTimes = new Double[elementList.size()];
         storedInfectionTimes = new Double[elementList.size()];
         Arrays.fill(infectionTimes, null);
@@ -118,14 +114,19 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
             PartitionedTreeNode earliestNode = getEarliestNodeInPartition(partitionElementNumber);
 
-            if(!earliestNode.isPartitionDirty() && !q.isDirty(partitionElementNumber)){
+            if(!earliestNode.isPartitionDirty() && (rules==Rules.SECOND_TYPE || !q.isDirty(partitionElementNumber))){
                 return infectionTimes[partitionElementNumber];
             } else {
 
                 double result;
 
                 if (rules == Rules.SECOND_TYPE) {
-                    result = heightToTime(earliestNode.getHeight());
+                    if (!earliestNode.isRoot()) {
+                        result = heightToTime(earliestNode.getParent().getHeight());
+                    } else {
+                        result = heightToTime(earliestNode.getHeight() + getRootBranchLength());
+                    }
+
 
                 } else {
                     if (!earliestNode.isRoot()) {
@@ -133,7 +134,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                                 + q.getValue(partitionElementNumber) * earliestNode.getLength());
                     } else {
                         result = heightToTime(earliestNode.getHeight()
-                                + q.getValue(partitionElementNumber) * rootBranchLength);
+                                + q.getValue(partitionElementNumber) * getRootBranchLength());
                     }
                 }
                 infectionTimes[partitionElementNumber] = result;
@@ -269,7 +270,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                 firstCopy.setParent(colourChangeNode);
                 colourChangeNode.addChild(firstCopy);
 
-                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*rootBranchLength);
+                colourChangeNode.setHeight(firstNode.getHeight() + q.getValue(elementNo)*rootBranchLength.getValue());
                 colourChangeNode.setMetaData(elementLabel, -1);
                 colourChangeNode.setPartitionElementNumber(-1);
 
@@ -301,7 +302,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
     @Override
     public boolean somethingIsDirty(){
-        return super.somethingIsDirty() || q.somethingIsDirty();
+        return super.somethingIsDirty() || (rules==Rules.THIRD_TYPE && q.somethingIsDirty());
     }
 
     public RealParameter getQ(){

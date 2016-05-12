@@ -1,5 +1,5 @@
 /*
-* File TransmissionExchangeA.java
+* File TransmissionExchangeB.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -32,15 +32,14 @@ import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
-@Description("Implements branch exchange operations consistent with node partitions, such that the transmission beast.evolution.tree" +
-        "is unchanged")
-public class TransmissionExchangeA extends TreeOperator {
+@Description("Implements branch exchange operations consistent with node partitions, also changing the transmission" +
+        "beast/evolution/tree")
+public class ThirdTypeExchangeB extends TreeOperator {
+
 
     @Override
     public void initAndValidate() {
@@ -72,19 +71,32 @@ public class TransmissionExchangeA extends TreeOperator {
         return fLogHastingsRatio;
     }
 
-    public double operate(final PartitionedTree tree) throws Exception {
+
+    /**
+     * WARNING: Assumes strictly bifurcating beast.beast.evolution.tree.
+     * @param tree
+     */
+    public double operate(final PartitionedTree tree) {
 
         final int nodeCount = tree.getNodeCount();
 
         PartitionedTreeNode i = (PartitionedTreeNode)tree.getRoot();
+        PartitionedTreeNode iP = null;
+        boolean partitionsMatch = true;
 
-        while (i.isRoot()) {
-            i = (PartitionedTreeNode)tree.getNode(Randomizer.nextInt(nodeCount));
+        while (i.isRoot() || partitionsMatch) {
+            i = (PartitionedTreeNode) tree.getNode(Randomizer.nextInt(nodeCount));
+            iP = (PartitionedTreeNode) i.getParent();
+            partitionsMatch = i.isRoot() || i.getPartitionElementNumber() == iP.getPartitionElementNumber();
         }
 
         ArrayList<PartitionedTreeNode> candidates = getPossibleExchanges(tree, i);
 
         int candidateCount = candidates.size();
+
+        if(candidateCount==0){
+            return Double.NEGATIVE_INFINITY;
+        }
 
         PartitionedTreeNode j = candidates.get(Randomizer.nextInt(candidates.size()));
 
@@ -92,8 +104,7 @@ public class TransmissionExchangeA extends TreeOperator {
 
         double HRDenom = (1/((double)candidateCount)) + (1/((double)jFirstCandidateCount));
 
-        final Node iP = i.getParent();
-        final Node jP = j.getParent();
+        PartitionedTreeNode jP = (PartitionedTreeNode)j.getParent();
 
         exchangeNodes(i, j, iP, jP);
 
@@ -113,42 +124,42 @@ public class TransmissionExchangeA extends TreeOperator {
             }
         }
 
+
         int reverseCandidatesIfirstCount = getPossibleExchanges(tree, i).size();
         int reverseCandidatesJfirstCount = getPossibleExchanges(tree, j).size();
 
         double HRNum = (1/(double)reverseCandidatesIfirstCount) + (1/(double)reverseCandidatesJfirstCount);
 
-        if(!tree.isValid()) {
-            throw new RuntimeException("TEA isn't working properly");
-        }
-
         return Math.log(HRNum/HRDenom);
-
     }
 
-    public ArrayList<PartitionedTreeNode> getPossibleExchanges(PartitionedTree tree, PartitionedTreeNode node)
-            throws Exception{
-        ArrayList<PartitionedTreeNode> out = new ArrayList<PartitionedTreeNode>();
+    public ArrayList<PartitionedTreeNode> getPossibleExchanges(PartitionedTree tree, PartitionedTreeNode node){
+        ArrayList<PartitionedTreeNode> out = new ArrayList<>();
         PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
         if(parent==null){
             throw new RuntimeException("Can't exchange the root node");
         }
-        ArrayList<PartitionedTreeNode> possibleParentSwaps = tree.getNodesInSameElement(parent);
-        for(PartitionedTreeNode newParent : possibleParentSwaps){
-            if(!newParent.isLeaf() && newParent!=parent){
-                for(int i=0; i<2; i++){
-                    PartitionedTreeNode candidate = (PartitionedTreeNode)newParent.getChild(i);
-                    if(candidate != parent
-                            && node != newParent
-                            && candidate.getHeight()  < parent.getHeight()
-                            && node.getHeight() < newParent.getHeight() ) {
-                        if(out.contains(candidate) || candidate==node){
-                            throw new Exception("Adding a candidate that already exists in the list or" +
-                                    " the node itself");
-                        }
-                        out.add(candidate);
+        if(parent.getPartitionElementNumber() == node.getPartitionElementNumber()){
+            throw new RuntimeException("This node is not exchangeable by this operator");
+        }
+        for(int i=0; i<tree.getNodeCount(); i++){
+
+            PartitionedTreeNode candidate = (PartitionedTreeNode)tree.getNode(i);
+
+            PartitionedTreeNode newParent = (PartitionedTreeNode)candidate.getParent();
+            if(newParent!=parent && newParent!=null){
+                if(candidate != parent
+                        && node != newParent
+                        && candidate.getHeight() < parent.getHeight()
+                        && node.getHeight()  < newParent.getHeight()
+                        && newParent.getPartitionElementNumber()!=candidate.getPartitionElementNumber()){
+                    if(out.contains(candidate) || candidate==node){
+                        throw new RuntimeException("Adding a candidate that already exists in the list or" +
+                                " the node itself");
                     }
+                    out.add(candidate);
                 }
+
             }
         }
         return out;

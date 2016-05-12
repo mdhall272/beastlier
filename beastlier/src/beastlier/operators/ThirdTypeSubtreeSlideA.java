@@ -1,5 +1,5 @@
 /*
-* File TransmissionSubtreeSlideB.java
+* File TransmissionSubtreeSlideA.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -25,7 +25,6 @@ package beastlier.operators;
 
 import beast.core.Input;
 import beast.evolution.operators.TreeOperator;
-import beast.evolution.tree.Node;
 import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.evolution.tree.Tree;
@@ -33,13 +32,13 @@ import beast.util.Randomizer;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
-
-public class TransmissionSubtreeSlideB extends TreeOperator {
+public class ThirdTypeSubtreeSlideA extends TreeOperator {
 
     final public Input<Double> sizeInput = new Input<>("size", "size of the slide, default 1.0", 1.0);
     final public Input<Boolean> gaussianInput = new Input<>("gaussian", "Gaussian (=true=default) or uniform delta",
@@ -64,18 +63,28 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
         limit = limitInput.get();
     }
 
+    /**
+     * Do a probabilistic subtree slide move.
+     *
+     * @return log of Hastings Ratio, or Double.NEGATIVE_INFINITY if proposal should not be accepted *
+     */
+    @Override
     public double proposal() {
 
         final PartitionedTree tree = (PartitionedTree)treeInput.get(this);
 
-        double logq;
+        double logq = 0;
 
         PartitionedTreeNode i;
 
-        // 1. choose a random eligible node avoiding root
-        do {
-            i = (PartitionedTreeNode)tree.getNode(Randomizer.nextInt(tree.getNodeCount()));
-        } while (!eligibleForMove(i, tree));
+        // 1. choose a random eligible node
+
+        ArrayList<PartitionedTreeNode> eligibleNodes = getEligibleNodes(tree);
+
+        i = eligibleNodes.get(Randomizer.nextInt(eligibleNodes.size()));
+
+        int eligibleNodeCount = eligibleNodes.size();
+
 
         final PartitionedTreeNode iP = (PartitionedTreeNode)i.getParent();
         final PartitionedTreeNode CiP = (PartitionedTreeNode)getOtherChild(iP, i);
@@ -86,19 +95,10 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
         final double oldHeight = iP.getHeight();
         final double newHeight = oldHeight + delta;
 
-        int iCase = i.getPartitionElementNumber();
         int iPCase = iP.getPartitionElementNumber();
-        int CiPCase = CiP.getPartitionElementNumber();
-        int PiPCase = -1;
-        if(PiP!=null){
-            PiPCase = PiP.getPartitionElementNumber();
-        }
-
-
 
         // 3. if the move is down
         if (delta > 0) {
-
 
             // 3.1 if the topology will change
             if (PiP != null && PiP.getHeight() < newHeight) {
@@ -109,6 +109,11 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
                     newChild = newParent;
                     newParent = (PartitionedTreeNode)newParent.getParent();
                     if (newParent == null) break;
+                }
+
+                // if the parent has slid out of its partition
+                if(newChild.getPartitionElementNumber() != iPCase){
+                    return Double.NEGATIVE_INFINITY;
                 }
 
                 // 3.1.1 if creating a new root
@@ -129,44 +134,16 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
 
                 iP.setHeight(newHeight);
 
-
                 // 3.1.3 count the hypothetical sources of this destination.
-                final int possibleSources = intersectingEdges(newChild, oldHeight, null);
+                final int possibleSources = intersectingEdges(newChild, oldHeight, iPCase, null);
 
-                logq = -Math.log(possibleSources);
-
-                // Randomly assign iP the partition of either its parent or the child that is not i, and adjust q
-                // appropriately
-
-                if(PiPCase != CiPCase){
-                    logq += Math.log(0.5);
-                }
-
-                int newiPCase;
-
-                int newChildCase = newChild.getPartitionElementNumber();
-
-                if(newParent != null && newParent.getPartitionElementNumber() != newChildCase){
-                    if(Randomizer.nextInt(2)==0){
-                        newiPCase = newParent.getPartitionElementNumber();
-                    } else {
-                        newiPCase = newChildCase;
-                    }
-
-                    logq += Math.log(2);
-                } else {
-                    newiPCase = newChildCase;
-                }
-
-                iP.setPartitionElementNumber(newiPCase);
-                iP.setMetaData(tree.getElementLabel(), tree.getElementString(newiPCase));
+                logq -= Math.log(possibleSources);
 
             } else {
                 // just change the node height
-                // todo you could actually randomise whether the subtree containing iP is changed here
 
                 iP.setHeight(newHeight);
-                logq = 0.0;
+                logq += 0.0;
             }
         }
         // 4 if we are sliding the subtree up.
@@ -177,11 +154,13 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
                 return Double.NEGATIVE_INFINITY;
             }
 
-            // 4.1 will the move change the topology?
+
+            // 4.1 will the move change the topology
             if (CiP.getHeight() > newHeight) {
 
-                List<Node> newChildren = new ArrayList<>();
-                final int possibleDestinations = intersectingEdges(CiP, newHeight, newChildren);
+                List<PartitionedTreeNode> newChildren = new ArrayList<>();
+                final int possibleDestinations = intersectingEdges(CiP, newHeight, iP.getPartitionElementNumber(),
+                        newChildren);
 
                 // if no valid destinations then return a failure
                 if (newChildren.size() == 0) {
@@ -190,7 +169,7 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
 
                 // pick a random parent/child destination edge uniformly from options
                 final int childIndex = Randomizer.nextInt(newChildren.size());
-                PartitionedTreeNode newChild = (PartitionedTreeNode)newChildren.get(childIndex);
+                PartitionedTreeNode newChild = newChildren.get(childIndex);
                 PartitionedTreeNode newParent = (PartitionedTreeNode)newChild.getParent();
 
                 // 4.1.1 if iP was root
@@ -210,72 +189,67 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
 
                 iP.setHeight(newHeight);
 
-                logq = Math.log(possibleDestinations);
-
-                // Randomly assign iP the partition of either its parent or the child that is not i, and adjust q
-                // appropriately
-
-                if(PiP!=null && PiPCase != CiPCase){
-                    logq += Math.log(0.5);
-                }
-
-                int newiPCase;
-
-                int newChildCase = newChild.getPartitionElementNumber();
-
-                if(newParent.getPartitionElementNumber() != newChildCase){
-                    if(Randomizer.nextInt(2)==0){
-                        newiPCase = newParent.getPartitionElementNumber();
-                    } else {
-                        newiPCase = newChildCase;
-                    }
-
-                    logq += Math.log(2);
-                } else {
-                    //upward, so don't have to worry about newParent being the root if the topology changed
-                    newiPCase = newChildCase;
-                }
-
-                iP.setPartitionElementNumber(newiPCase);
-                iP.setMetaData(tree.getElementLabel(), tree.getElementString(newiPCase));
+                logq += Math.log(possibleDestinations);
 
             } else {
                 iP.setHeight(newHeight);
-                logq = 0.0;
+                logq += 0.0;
             }
         }
 
-        if (logq == Double.NEGATIVE_INFINITY) return Double.NEGATIVE_INFINITY;
+        if (logq == Double.NEGATIVE_INFINITY) return logq;
+
+        int reverseEligibleNodeCount = getEligibleNodes(tree).size();
+        logq += Math.log(eligibleNodeCount/reverseEligibleNodeCount);
 
         return logq;
     }
 
-    private boolean eligibleForMove(PartitionedTreeNode node, PartitionedTree tree){
-        // to be eligible for this move, the node's parent must exist and be in a different partition to itself. This
-        // forces the parent to be in the same partition as either its grandchild or its child.
+    private ArrayList<PartitionedTreeNode> getEligibleNodes(PartitionedTree tree){
+        ArrayList<PartitionedTreeNode> out = new ArrayList<>();
+        for(int i = 0; i < tree.getNodeCount(); i++){
+            PartitionedTreeNode node = (PartitionedTreeNode)tree.getNode(i);
 
-        return (!node.isRoot() && ((PartitionedTreeNode)node.getParent()).getPartitionElementNumber()
-                != node.getPartitionElementNumber());
+            if(eligibleForMove(node, tree)){
+                out.add(node);
+            }
+        }
+        return out;
     }
 
-    //intersectingEdges is the same as in normal STS, since there's no additional restriction in this case regarding
-    // where nodes can go, and the move does not modify eligibility for itself
+    private boolean eligibleForMove(PartitionedTreeNode node, PartitionedTree tree){
+        // to be eligible for this move, the node's parent and grandparent, or parent and sibling, must be in the
+        // same partition element (so removing the parent has no effect on the transmission tree)
 
-    private int intersectingEdges(Node node, double height, List<Node> directChildren) {
-        final Node parent = node.getParent();
-        if (parent.getHeight() < height) return 0;
+        PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
+        PartitionedTreeNode grandparent = parent != null ? (PartitionedTreeNode) parent.getParent() : null;
+        PartitionedTreeNode sibling = parent == null ? null : (PartitionedTreeNode)getOtherChild(parent, node);
+
+        return  (!node.isRoot() && ((grandparent != null
+                && parent.getPartitionElementNumber() == grandparent.getPartitionElementNumber())
+                || parent.getPartitionElementNumber() == sibling.getPartitionElementNumber()));
+    }
+
+    //intersectingEdges here is modified to count only possible sources for this special case of the operator - i.e.
+    //only branches which have one end in the relevant partition
+
+    private int intersectingEdges(PartitionedTreeNode node, double height, int elementNo,
+                                  List<PartitionedTreeNode> directChildren) {
+        final PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
+        if (parent.getHeight() < height || parent.getPartitionElementNumber() != elementNo) return 0;
         if (node.getHeight() < height) {
-            if (directChildren != null) directChildren.add(node);
+            if (directChildren != null){
+                directChildren.add(node);
+            }
             return 1;
         }
-        if (node.isLeaf()) {
-            return 0;
-        } else {
-            final int count = intersectingEdges(node.getLeft(), height, directChildren) +
-                    intersectingEdges(node.getRight(), height, directChildren);
-            return count;
+        int count = 0;
+        for (int i = 0; i < node.getChildCount(); i++) {
+            count += intersectingEdges((PartitionedTreeNode)node.getChild(i), height, elementNo, directChildren);
         }
+        return count;
     }
+
 
     private double getDelta() {
         if (!gaussianInput.get()) {
@@ -284,6 +258,7 @@ public class TransmissionSubtreeSlideB extends TreeOperator {
             return Randomizer.nextGaussian() * size;
         }
     }
+
 
     /**
      * automatic parameter tuning *

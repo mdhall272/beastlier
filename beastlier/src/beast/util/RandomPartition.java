@@ -128,8 +128,6 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
 
                 Object[] choices = new Object[2];
 
-
-
                 for (int i = 0; i < node.getChildCount(); i++) {
                     PartitionedTreeNode child = (PartitionedTreeNode)node.getChild(i);
 

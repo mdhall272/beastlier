@@ -35,7 +35,7 @@ import java.util.ArrayList;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class InfectionBranchMovementOperator extends TreeOperator{
+public class ThirdTypeInfectionBranchOperator extends TreeOperator{
 
     public void initAndValidate() {
         if(!(treeInput.get() instanceof PartitionedTree)){
@@ -158,11 +158,6 @@ public class InfectionBranchMovementOperator extends TreeOperator{
             }
         }
 
-        //todo remove this once you're happy
-
-        if(!tree.isValid()){
-            throw new RuntimeException("Tree does not obey the rules");
-        }
 
         //HR adjustments for reverse moves
         if(tree.isAncestral(parent)){

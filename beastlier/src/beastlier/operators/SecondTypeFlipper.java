@@ -58,13 +58,12 @@ public class SecondTypeFlipper extends TreeOperator {
 
         PartitionedTreeNode parentNode = (PartitionedTreeNode) tree.getInternalNodes().get(nodeToAdjust);
 
-        double hr = adjustTree(tree, parentNode);
+        double hr = adjustTree(parentNode);
 
         return hr;
     }
 
-    private double adjustTree(PartitionedTree tree, PartitionedTreeNode parent) {
-        double out;
+    private double adjustTree(PartitionedTreeNode parent) {
 
         int infectorCase = parent.getPartitionElementNumber();
 
@@ -74,7 +73,7 @@ public class SecondTypeFlipper extends TreeOperator {
             throw new RuntimeException("Bifurcating trees only");
         }
         PartitionedTreeNode child1 = (PartitionedTreeNode) parent.getChild(0);
-        PartitionedTreeNode child2 = (PartitionedTreeNode) parent.getChild(0);
+        PartitionedTreeNode child2 = (PartitionedTreeNode) parent.getChild(1);
         if(parent.getPartitionElementNumber() != child1.getPartitionElementNumber() &&
                 parent.getPartitionElementNumber() != child2.getPartitionElementNumber()){
             throw new RuntimeException("This tree does not obey second-type partition rules");

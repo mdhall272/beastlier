@@ -37,7 +37,7 @@ import java.util.HashSet;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class TransmissionWilsonBaldingA extends TreeOperator{
+public class ThirdTypeWilsonBaldingA extends TreeOperator{
 
     @Override
     public void initAndValidate() {

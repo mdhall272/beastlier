@@ -27,6 +27,7 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
+import beast.core.parameter.RealParameter;
 import beast.util.TreeParser;
 import beastlier.outbreak.ClinicalCase;
 import com.google.common.collect.Lists;
@@ -63,9 +64,8 @@ public class PartitionedTree extends Tree {
 //            "Comma-delimited list of types to be included even when absent " +
 //                    "from the sampled taxa.");
 
-    public Input<Double> rootBranchLengthInput = new Input<>(
-            "rootBranchLength", "The length of the root branch (the index infection must occur along this branch",
-            50.0, Input.Validate.OPTIONAL);
+    public Input<RealParameter> rootBranchLengthInput = new Input<>(
+            "rootBranchLength", "The length of the root branch (the index infection must occur along this branch");
 
     String[] ruleTypes = {"second", "third"};
 
@@ -92,7 +92,7 @@ public class PartitionedTree extends Tree {
     //saves time - tip numbers for each element.
     private ArrayList<ArrayList<Integer>> singletonTips = new ArrayList<>();
 
-    protected double rootBranchLength;
+    RealParameter rootBranchLength;
 
     public PartitionedTree() { };
 
@@ -175,7 +175,6 @@ public class PartitionedTree extends Tree {
             castNode.setPartitionElementNumber(0);
         }
 
-
         if(!traitsProcessed) {
             processTraits(m_traitList.get());
         }
@@ -188,10 +187,6 @@ public class PartitionedTree extends Tree {
                }
 
            }
-        }
-
-        if(!isValid()){
-            throw new RuntimeException("Starting tree is not properly partitioned");
         }
 
         // Ensure tree is compatible with traits.
@@ -378,7 +373,7 @@ public class PartitionedTree extends Tree {
     }
 
     public double getRootBranchLength(){
-        return rootBranchLength;
+        return rootBranchLength.getValue();
     }
 
 
@@ -543,18 +538,17 @@ public class PartitionedTree extends Tree {
                 PartitionedTreeNode castNode = (PartitionedTreeNode) node;
                 int elementNumber = castNode.getPartitionElementNumber();
 
-                int childrenInSameElement = 0;
+                PartitionedTreeNode child1 = (PartitionedTreeNode)castNode.getChild(0);
+                PartitionedTreeNode child2 = (PartitionedTreeNode)castNode.getChild(1);
 
-                for(Node child : node.getChildren()){
-
-                    if(((PartitionedTreeNode)child).getPartitionElementNumber() == elementNumber){
-                        childrenInSameElement++;
-                    }
-                }
-
-                if(childrenInSameElement!=1){
+                if(elementNumber != child1.getPartitionElementNumber() &&
+                        elementNumber != child2.getPartitionElementNumber()){
                     return false;
                 }
+                if(child1.getPartitionElementNumber() == child2.getPartitionElementNumber()){
+                    return false;
+                }
+
             }
             return true;
         }

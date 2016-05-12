@@ -23,7 +23,6 @@
 package beastlier.operators;
 
 import beast.evolution.operators.TreeOperator;
-import beast.evolution.tree.Node;
 import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.util.Randomizer;
@@ -47,6 +46,9 @@ public class SecondTypeFlipper extends TreeOperator {
 
 
     public double proposal() {
+
+        //note that in second type trees there's no need to use the partition-dirty flag, as that is used by the
+        //within-host model
 
         final PartitionedTree tree = (PartitionedTree)treeInput.get(this);
 
@@ -89,6 +91,8 @@ public class SecondTypeFlipper extends TreeOperator {
             currentNode.setPartitionElementNumber(infectedCase);
             currentNode = (PartitionedTreeNode) currentNode.getParent();
         }
+
+        treeInput.get().setSomethingIsDirty(true);
 
         //this is a really simple and pleasing move
 

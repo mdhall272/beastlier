@@ -188,7 +188,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                 processedEndDate = datetime.strptime(currentRow[endTimeColumn], dateFormat)
                 endTime = (processedEndDate - dayOne).days
             else:
-                endTime = currentRow[endTimeColumn]
+                endTime = float(currentRow[endTimeColumn])
 
             taxa = list()
 
@@ -201,7 +201,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                         processedExamDate = datetime.strptime(currentTaxaRow[examTimeColumn], dateFormat)
                         examTime = (processedExamDate - dayOne).days
                     else:
-                        examTime = currentTaxaRow[examTimeColumn]
+                        examTime = float(currentTaxaRow[examTimeColumn])
 
                     if examTime > endTime:
                         raise Exception ("For host ID "+hostName+" at least one examination time is post end-of "

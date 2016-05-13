@@ -764,7 +764,7 @@ def main():
                                                    'for formats) for the date entries in the data table. If absent, '
                                                    'times of sampling and noninfectiousness are parsed as floating '
                                                    'point numbers.')
-    parser.add_argument('-k', '--kernel', default="n", help='The type of spatial kernel to use (e=exponential, p=power'
+    parser.add_argument('-k', '--kernel', default="x", help='The type of spatial kernel to use (e=exponential, p=power'
                                                             ' law, g=Gaussian, l=logistic, x=none (no geography))')
     parser.add_argument('-i', '--infectiousPeriods', help='The prior distribution on the length of infectious periods.'
                                                           ' Accepts variable arguments; the first is the type of'

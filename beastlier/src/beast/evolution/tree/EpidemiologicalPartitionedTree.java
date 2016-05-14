@@ -91,11 +91,11 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         Arrays.fill(storedInfectionTimes, null);
     }
 
-    private double heightToTime(double height){
+    public double heightToTime(double height){
         return zeroTime - height;
     }
 
-    private double timeToHeight(double time){
+    public double timeToHeight(double time){
         return zeroTime - time;
     }
 

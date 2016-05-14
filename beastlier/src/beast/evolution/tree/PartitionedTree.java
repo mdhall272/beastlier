@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 
 import static beast.evolution.tree.PartitionedTree.Rules.SECOND_TYPE;
 import static beast.evolution.tree.PartitionedTree.Rules.THIRD_TYPE;
+import static beast.evolution.tree.PartitionedTree.Rules.UNRESTRICTED;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk> based on MultiTypeTree.java from the MultiTypeTree package by Tim Vaughan
@@ -67,11 +68,18 @@ public class PartitionedTree extends Tree {
     public Input<RealParameter> rootBranchLengthInput = new Input<>(
             "rootBranchLength", "The length of the root branch (the index infection must occur along this branch");
 
-    String[] ruleTypes = {"second", "third"};
+    //Second-type rules: internal nodes represent transmissions, one tip per case, no within-host diversity. Internal
+    //nodes must be in the same partition element as one and only one child
+    //Third-type rules: complete transmission bottleneck.  Internal nodes must be in the same partition element as at
+    //least one adjacent node.
+    //Unrestricted rules: all internal nodes must be in a single element; no further conditions
+
+    String[] ruleTypes = {"second", "third", "unrestricted"};
 
     public Input<String> rulesInput = new Input<>("rules", "Whether partitioning obeys the rules for the second" +
-            " class of transmissiont tree reconstruction (internal nodes are transmissions), or the third " +
-            "(within-host diversity)", "third", ruleTypes);
+            " class of transmission tree reconstruction (internal nodes are transmissions), or the third " +
+            "(within-host diversity with a complete bottleneck), or no rules (if e.g. this tree is to be guided by" +
+            " a separate tree object)", "third", ruleTypes);
 
     /*
      * Non-input fields:
@@ -80,7 +88,7 @@ public class PartitionedTree extends Tree {
     protected TraitSet elementTraitSet;
     protected List<String> elementList;
 
-    public enum Rules {SECOND_TYPE, THIRD_TYPE};
+    public enum Rules {SECOND_TYPE, THIRD_TYPE, UNRESTRICTED};
 
     public Rules rules;
 
@@ -107,7 +115,17 @@ public class PartitionedTree extends Tree {
     @Override
     public void initAndValidate() {
 
-        rules = rulesInput.get().equals("second") ? SECOND_TYPE : THIRD_TYPE;
+        switch(rulesInput.get()){
+            case "second":
+                rules = SECOND_TYPE;
+                break;
+            case "third":
+                rules = THIRD_TYPE;
+                break;
+            case "unrestricted":
+                rules = UNRESTRICTED;
+                break;
+        }
 
         if (m_initial.get() != null && !(this instanceof StateNodeInitialiser)) {
 
@@ -508,8 +526,9 @@ public class PartitionedTree extends Tree {
      * @return true if times are "valid" and the element assignment is a valid partition structure
      */
     public boolean isValid() {
-
-        if(rules==THIRD_TYPE) {
+        if(rules == UNRESTRICTED){
+            return true;
+        } else if(rules==THIRD_TYPE) {
 
             for (Node node : getInternalNodes()) {
                 PartitionedTreeNode castNode = (PartitionedTreeNode) node;

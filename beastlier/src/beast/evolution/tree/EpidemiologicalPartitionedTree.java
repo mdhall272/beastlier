@@ -50,7 +50,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public Input<RealParameter> qInput = new Input<>("q", "The set of q parameters for each clinical case; " +
             "rules of the third type only", null, Input.Validate.OPTIONAL);
 
-    private double zeroTime;
     private RealParameter q;
     private Outbreak outbreak;
 
@@ -60,12 +59,6 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public void initAndValidate(){
 
         outbreak = outbreakInput.get();
-
-        for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
-            if(aCase.getEndTime() > zeroTime){
-                zeroTime = aCase.getEndTime();
-            }
-        }
 
 
         //todo limits for the qs?
@@ -91,16 +84,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         Arrays.fill(storedInfectionTimes, null);
     }
 
-    public double heightToTime(double height){
-        return zeroTime - height;
-    }
-
-    public double timeToHeight(double time){
-        return zeroTime - time;
-    }
-
     public double getNodeTime(PartitionedTreeNode node){
-        return heightToTime(node.getHeight());
+        return getDate(node.getHeight());
     }
 
     public ClinicalCase getNodeCase(PartitionedTreeNode node){
@@ -123,17 +108,17 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
                 if (rules == Rules.SECOND_TYPE) {
                     if (!earliestNode.isRoot()) {
-                        result = heightToTime(earliestNode.getParent().getHeight());
+                        result = getDate(earliestNode.getParent().getHeight());
                     } else {
-                        result = heightToTime(earliestNode.getHeight() + getRootBranchLength());
+                        result = getDate(earliestNode.getHeight() + getRootBranchLength());
                     }
 
                 } else {
                     if (!earliestNode.isRoot()) {
-                        result = heightToTime(earliestNode.getHeight()
+                        result = getDate(earliestNode.getHeight()
                                 + q.getValue(partitionElementNumber) * earliestNode.getLength());
                     } else {
-                        result = heightToTime(earliestNode.getHeight()
+                        result = getDate(earliestNode.getHeight()
                                 + q.getValue(partitionElementNumber) * getRootBranchLength());
                     }
                 }

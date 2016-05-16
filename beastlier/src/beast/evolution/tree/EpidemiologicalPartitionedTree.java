@@ -92,8 +92,15 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
         return outbreak.getCaseByID(elementList.get(node.getPartitionElementNumber()));
     }
 
-    public double getInfectionTime(ClinicalCase aCase){
+    public double getInfectionHeightByNr(int elementNo){
+        return getInfectionHeight(outbreak.getCaseByID(elementList.get(elementNo)));
+    }
 
+    public double getInfectionTimeByNr(int elementNo){
+        return getInfectionTime(outbreak.getCaseByID(elementList.get(elementNo)));
+    }
+
+    public double getInfectionHeight(ClinicalCase aCase){
         if(aCase.wasEverInfected()) {
             int partitionElementNumber = elementList.indexOf(aCase.getID());
 
@@ -108,24 +115,33 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
                 if (rules == Rules.SECOND_TYPE) {
                     if (!earliestNode.isRoot()) {
-                        result = getDate(earliestNode.getParent().getHeight());
+                        result = earliestNode.getParent().getHeight();
                     } else {
-                        result = getDate(earliestNode.getHeight() + getRootBranchLength());
+                        result = earliestNode.getHeight() + getRootBranchLength();
                     }
 
                 } else {
                     if (!earliestNode.isRoot()) {
-                        result = getDate(earliestNode.getHeight()
-                                + q.getValue(partitionElementNumber) * earliestNode.getLength());
+                        result = earliestNode.getHeight()
+                                + q.getValue(partitionElementNumber) * earliestNode.getLength();
                     } else {
-                        result = getDate(earliestNode.getHeight()
-                                + q.getValue(partitionElementNumber) * getRootBranchLength());
+                        result = earliestNode.getHeight()
+                                + q.getValue(partitionElementNumber) * getRootBranchLength();
                     }
                 }
                 infectionTimes[partitionElementNumber] = result;
 
                 return result;
             }
+        } else {
+            return Double.NEGATIVE_INFINITY;
+        }
+    }
+
+    public double getInfectionTime(ClinicalCase aCase){
+
+        if(aCase.wasEverInfected()) {
+            return getDate(getInfectionTime(aCase));
         } else {
             return Double.POSITIVE_INFINITY;
         }

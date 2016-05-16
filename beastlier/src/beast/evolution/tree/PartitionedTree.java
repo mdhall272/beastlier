@@ -33,6 +33,7 @@ import beastlier.outbreak.ClinicalCase;
 import com.google.common.collect.Lists;
 
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,7 +99,7 @@ public class PartitionedTree extends Tree {
     private int[] storedInfectors;
 
     //saves time - tip numbers for each element.
-    private ArrayList<ArrayList<Integer>> singletonTips = new ArrayList<>();
+    private ArrayList<ArrayList<Integer>> tipsPerElement = new ArrayList<>();
 
     RealParameter rootBranchLength;
 
@@ -219,12 +220,12 @@ public class PartitionedTree extends Tree {
         storedInfectors = new int[elementList.size()];
 
         for(int i=0; i<getNElements(); i++){
-            singletonTips.add(new ArrayList<>());
+            tipsPerElement.add(new ArrayList<>());
         }
 
         for(Node tip : getExternalNodes()){
             PartitionedTreeNode castTip = (PartitionedTreeNode) tip;
-            singletonTips.get(castTip.getPartitionElementNumber()).add(castTip.getNr());
+            tipsPerElement.get(castTip.getPartitionElementNumber()).add(castTip.getNr());
         }
     }
 
@@ -852,10 +853,10 @@ public class PartitionedTree extends Tree {
     // here begin the partition utility functions
 
     public PartitionedTreeNode getElementMRCA(int elementNo){
-        if(singletonTips.get(elementNo).size() == 1){
-            return (PartitionedTreeNode)getNode(singletonTips.get(elementNo).get(0));
+        if(tipsPerElement.get(elementNo).size() == 1){
+            return (PartitionedTreeNode)getNode(tipsPerElement.get(elementNo).get(0));
         } else {
-            ArrayList<Integer> elementTips = singletonTips.get(elementNo);
+            ArrayList<Integer> elementTips = tipsPerElement.get(elementNo);
             HashSet<String> stringElementTips = new HashSet<>();
 
             for (Integer tipNo : elementTips) {
@@ -867,7 +868,22 @@ public class PartitionedTree extends Tree {
 
             return result;
         }
+    }
 
+    public ArrayList<Integer> getTipNumbers(int elementNo){
+        return tipsPerElement.get(elementNo);
+    }
+
+    public int getTipNumber(int elementNo){
+        if(rules != SECOND_TYPE){
+            throw new RuntimeException("Possible to have multiple tips per host in this model");
+        }
+
+        return tipsPerElement.get(elementNo).get(0);
+    }
+
+    public PartitionedTreeNode getTip(int elementNo){
+        return (PartitionedTreeNode)getNode(getTipNumber(elementNo));
     }
 
     public boolean isRootBlockedBy(int elementNo, int maybeBlockedBy){
@@ -918,8 +934,8 @@ public class PartitionedTree extends Tree {
         return false;
     }
 
-    public HashSet<PartitionedTreeNode> getTipsInElement(int elementNo){
-        HashSet<PartitionedTreeNode> out = new HashSet<>();
+    public List<PartitionedTreeNode> getTipsInElement(int elementNo){
+        List<PartitionedTreeNode> out = new ArrayList<>();
 
         for(Node node : getExternalNodes()){
             if(((PartitionedTreeNode)node).getPartitionElementNumber()==elementNo){
@@ -930,7 +946,7 @@ public class PartitionedTree extends Tree {
         return out;
     }
 
-    public ArrayList<PartitionedTreeNode> getNodesInElement(int elementNo){
+    public List<PartitionedTreeNode> getNodesInElement(int elementNo){
         ArrayList<PartitionedTreeNode> out = new ArrayList<>();
 
         for(Node node : m_nodes){
@@ -942,7 +958,7 @@ public class PartitionedTree extends Tree {
         return out;
     }
 
-    public ArrayList<PartitionedTreeNode> getNodesInSameElement(PartitionedTreeNode node){
+    public List<PartitionedTreeNode> getNodesInSameElement(PartitionedTreeNode node){
         int elementNo = node.getPartitionElementNumber();
         return getNodesInElement(elementNo);
     }
@@ -1060,6 +1076,35 @@ public class PartitionedTree extends Tree {
             currentNode = currentNode.getParent();
         }
         return false;
+    }
+
+    //lists the ancestors of an element, from itself to the root
+
+    public List<Integer> getAncestralChain(int elementNo){
+        if(rules == UNRESTRICTED){
+            throw new RuntimeException("The ancestral chain in this tree may not be consistent.");
+        }
+
+        List<Integer> out = new ArrayList<>();
+        out.add(elementNo);
+
+        //any tip will do
+        PartitionedTreeNode currentNode = getTipsInElement(elementNo).get(0);
+
+        while(currentNode != null){
+            int currentElementNo = currentNode.getPartitionElementNumber();
+            if(currentElementNo != out.get(out.size()-1)){
+                out.add(currentElementNo);
+            }
+            currentNode = (PartitionedTreeNode)currentNode.getParent();
+        }
+
+        //the last element must be the dark one
+        if(out.get(out.size()-1)!=-1){
+            out.add(-1);
+        }
+
+        return out;
     }
 
     /////////////////////////////////////////////////

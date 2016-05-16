@@ -124,6 +124,8 @@ public class PartitionedTreeNode extends Node {
         return node;
     }
 
+
+
     /**
      * assign values from a beast.evolution.tree in array representation *
      * @param nodes

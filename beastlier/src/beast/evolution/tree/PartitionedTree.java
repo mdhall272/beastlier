@@ -1107,6 +1107,7 @@ public class PartitionedTree extends Tree {
         return out;
     }
 
+
     /////////////////////////////////////////////////
     // Serialization and deserialization for state //
     /////////////////////////////////////////////////
@@ -1196,4 +1197,27 @@ public class PartitionedTree extends Tree {
         }
     }
 
+    public List<Node> ancestorsAtHeight(List<PartitionedTreeNode> nodes, double height){
+        for(Node node : nodes){
+            if(height < node.getHeight()){
+                throw new RuntimeException("All nodes should be below stated height");
+            }
+        }
+        Set<Node> ancestors = new HashSet<>();
+        for(Node node : nodes){
+            Node currentNode = node;
+            while(currentNode.getParent() != null && currentNode.getParent().getHeight() < height){
+                currentNode = currentNode.getParent();
+            }
+            if(currentNode.getHeight() > height){
+                throw new RuntimeException("Something is wrong.");
+            }
+            ancestors.add(currentNode);
+
+        }
+
+        List<Node> out = new ArrayList<>();
+        out.addAll(ancestors);
+        return out;
+    }
 }

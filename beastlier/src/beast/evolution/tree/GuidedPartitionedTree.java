@@ -23,10 +23,11 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Ints;
+import com.sun.tools.javac.util.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -76,11 +77,11 @@ public class GuidedPartitionedTree extends PartitionedTree {
         heightAdjustment = latestGuideDate - latestDateHere;
     }
 
-    private double guideTreeHeight(double thisTreeHeight){
+    public double guideTreeHeight(double thisTreeHeight){
         return thisTreeHeight + heightAdjustment;
     }
 
-    private double thisTreeHeight(double guideTreeHeight){
+    public double thisTreeHeight(double guideTreeHeight){
         return guideTreeHeight - heightAdjustment;
     }
 
@@ -125,7 +126,7 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
     //Partition the internal nodes according to the guide; return false if you can't do it
 
-    private boolean updatePartitions(){
+    public boolean updatePartitions(){
 
         //this is going to be slow if done like this, but it will catch problems.
 
@@ -141,13 +142,50 @@ public class GuidedPartitionedTree extends PartitionedTree {
             if(requiredElements.size()!=1){
                 return false;
             }
-            castNode.setPartitionElementNumber(requiredElements.get(0));
+            int elementNo = requiredElements.get(0);
+
+            castNode.setPartitionElementNumber(elementNo);
+
+            List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
+
+            List<Double> transitionHeights = new ArrayList<>();
+            List<Integer> infectorsAlongBranch = new ArrayList<>();
+
+            //starting at the end of the branch
+
+
+            if(!node.isRoot()) {
+                int currentPositionInChain = 0;
+                double currentHeight = node.getHeight();
+                double parentHeight = node.getParent().getHeight();
+                while (currentHeight < parentHeight) {
+                    currentHeight = tt.getInfectionHeightByNr(ancestralChain.get(currentPositionInChain));
+                    if(currentHeight < parentHeight){
+                        transitionHeights.add(currentHeight);
+                        infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
+                        currentPositionInChain++;
+                    } else {
+                        transitionHeights.add(parentHeight);
+                        infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
+                    }
+                }
+            } else {
+                //the root branch stretches to infinity
+                for(int no : ancestralChain){
+                    infectorsAlongBranch.add(no);
+                    transitionHeights.add(tt.getInfectionHeightByNr(no));
+                }
+            }
+            int[] branchElements = Ints.toArray(infectorsAlongBranch);
+            double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
+
+            node.setMetaData("historyElements", branchElements);
+            node.setMetaData("historyHeights", branchTransitionHeights);
 
         }
-
-        return false;
-
+        return true;
     }
+
 
     public boolean somethingIsDirty(){
         return super.somethingIsDirty() || tt.somethingIsDirty();
@@ -197,4 +235,117 @@ public class GuidedPartitionedTree extends PartitionedTree {
         }
     }
 
+    // The bundle is the set of branches that are in the given element at the given height (even if neither node is
+    // in it); more efficient to borrow the intersectingEdges trick from operators, which also helps if some subtrees
+    // are temporarily disconnected mid-proposal
+
+    public int getBundle(PartitionedTreeNode node, double height, int elementNo, List<PartitionedTreeNode> twigs){
+
+        List<Integer> ancestralChain = getAncestralChain(elementNo);
+
+        final PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
+
+        //we can stop if:
+        //1) We're so far down that the edge cannot intersect
+        //2) We're higher up than the required height and in a partition element which is not part of the ancestral
+        //chain. There's no way a lineage can re-enter the required element subsequently.
+
+        if((parent != null && parent.getHeight() < height) ||
+                (node.getHeight() > height && !(ancestralChain.contains(node.getPartitionElementNumber())))){
+            return 0;
+        }
+
+        if(parent!=null && !(ancestralChain.contains(parent.getPartitionElementNumber()))){
+            throw new RuntimeException("The bundle function is not working");
+        }
+
+        if (node.getHeight() < height) {
+            if(parent == null || ancestralChain.contains(parent.getPartitionElementNumber())){
+                int[] branchElements = (int[])node.getMetaData("historyElements");
+                double[] transitionHeights = (double[])node.getMetaData("historyHeights");
+
+                double currentHeight = node.getHeight();
+                int currentIndex = -1;
+                int currentElement = node.getPartitionElementNumber();
+
+                while(currentHeight < height){
+                    currentIndex ++;
+                    currentHeight = transitionHeights[currentIndex];
+                    currentElement = branchElements[currentIndex];
+                }
+
+                if(currentElement == elementNo){
+                    if(twigs != null) {
+                        twigs.add(node);
+                    }
+                    return 1;
+                }
+
+            }
+        }
+
+        int count = 0;
+        for (int i = 0; i < node.getChildCount(); i++) {
+            count += getBundle((PartitionedTreeNode)node.getChild(i), height, elementNo, twigs);
+        }
+        return count;
+    }
+
+    // The hooks are where the phylogeny nodes protruding from the transmission tree branch as it is moved hook
+    // onto the rest of the tree. This can feasibly be the root's "parent", and because of difficulties with
+    // the root otherwise, this function returns the ends of the hook branches, not the beginnings.
+    // They can be found by finding the bundle at the point of infection and then tracing up to the nodes below
+    // the points of attachment to the rest of the tree
+
+    public List<PartitionedTreeNode> getHooks(int elementNo, double height){
+        // First, get all the nodes whose parent branches are at in the required element at the right time (even if
+        // neither node is
+
+        List<PartitionedTreeNode> laterNodes = new ArrayList<>();
+
+        getBundle((PartitionedTreeNode)getRoot(), height, elementNo, laterNodes);
+
+        //but this isn't quite it; if any two nodes in that set coalesce with each other before they coalesce
+        //which nodes from elsewhere in the tree, then the hook extends from their ancestor, not them.
+
+        //dear God is this method inefficient right now
+
+        boolean satisfied = false;
+
+        while(!satisfied){
+            Set<PartitionedTreeNode> parents = new HashSet<>();
+            boolean rootIsIn = false;
+            for(PartitionedTreeNode child : laterNodes){
+                if(child.getParent() != null){
+                    parents.add((PartitionedTreeNode)child.getParent());
+                } else {
+                    rootIsIn = true;
+                }
+            }
+            //if all the parents are distinct then you can stop.
+            if((rootIsIn && parents.size() == laterNodes.size()-1)
+                    || (!(rootIsIn) && parents.size() == laterNodes.size())){
+                satisfied = true;
+            } else {
+                outer_loop:
+                for(PartitionedTreeNode node1 : laterNodes){
+                    for(PartitionedTreeNode node2 : laterNodes){
+                        if(node1!=node2){
+                            if(node1.getParent() == node2.getParent()){
+                                laterNodes.remove(node1);
+                                laterNodes.remove(node2);
+                                laterNodes.add((PartitionedTreeNode)node1.getParent());
+                                break outer_loop;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return laterNodes;
+    }
 }
+
+
+
+

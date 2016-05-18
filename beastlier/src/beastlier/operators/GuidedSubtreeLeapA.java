@@ -54,18 +54,23 @@ public class GuidedSubtreeLeapA extends TreeOperator {
         if(tt.getRules() != PartitionedTree.Rules.SECOND_TYPE){
             throw new IllegalArgumentException("The guide tree must be partitioned according to second-type rules");
         }
-        size = sizeInput.get();
+        if(!(treeInput.get() instanceof GuidedPartitionedTree)){
+            throw new IllegalArgumentException("This operator is for phylogenies guided by a transmission tree object");
+        }
 
+        size = sizeInput.get();
     }
 
     public double proposal() {
 
-        //this move works on nodes with a parent which is the MRCA of two tips from the same partition element
+        //this move works only within the transmission chain leading to some clinical case
 
         int endOfChain = Randomizer.nextInt(tt.getNElements());
         HashMap<Node, Node> references = new HashMap<>();
         GuidedPartitionedTree originalTree = (GuidedPartitionedTree)treeInput.get();
         Tree prunedSubtree = originalTree.extractAncestralSubtree(endOfChain, references);
+
+        //todo are heights actually recalculated?
         double differenceInRootHeights = originalTree.getRoot().getHeight() - prunedSubtree.getRoot().getHeight();
         if(differenceInRootHeights < 0){
             throw new RuntimeException("Pruning must have failed");
@@ -80,10 +85,11 @@ public class GuidedSubtreeLeapA extends TreeOperator {
         Node node;
 
         do {
-            // choose a random node avoiding root and any nodes that don't exist in the actual tree
+            // choose a random node avoiding root. I _think_ that nodes that don't exist in the original tree are
+            // OK, since it's their _parents_ that get moved.
             node = prunedSubtree.getNode(Randomizer.nextInt(prunedSubtree.getNodeCount()));
 
-        } while (node == root && !references.containsValue(node));
+        } while (node == root);
 
         // get its parent - this is the node we will prune/graft
         final Node parent = node.getParent();

@@ -51,12 +51,15 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     public Input<PopulationFunction> functionInput = new Input<>("populationFunction", "The within-host coalescent " +
             "process");
+    public Input<Boolean> enforceCoalescenceInput = new Input<>("enforceCoalescence", "Whether probabilities are " +
+            "calculated under the assumption that all lineages coalesce before the time of infection");
 
     private PopulationFunction popFunction;
     protected static double tolerance = 1E-10;
     public boolean[] recalculateTreeletLogP;
     private double[] individualWHProbabilities;
     private double[] storedIndividualWHProbabilities;
+    private boolean enforceCoalescence;
 
 
 
@@ -66,12 +69,11 @@ public class WithinHostCoalescent extends WithinHostModel {
         individualWHProbabilities = new double[tree.getElementList().size()];
         recalculateTreeletLogP = new boolean[tree.getElementList().size()];
         Arrays.fill(recalculateTreeletLogP, true);
+        enforceCoalescence = enforceCoalescenceInput.get();
     }
 
 
     public double calculateLogP() {
-
-
 
         // if the population function has changed, then all treelets need probabilities recalculated but (unless
         // something else has changed) no treelets actually need re-extracting
@@ -101,7 +103,7 @@ public class WithinHostCoalescent extends WithinHostModel {
                         TreeIntervals intervals = new TreeIntervals(treelet);
 
                         double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                                treelet.getZeroHeight());
+                                treelet.getZeroHeight(), enforceCoalescence);
 
                         individualWHProbabilities[i] = individualLogP;
 
@@ -125,81 +127,114 @@ public class WithinHostCoalescent extends WithinHostModel {
     }
 
     public static double calculateTreeletLogLikelihood(IntervalList intervals, PopulationFunction demographicFunction,
-                                                       double threshold, double zeroHeight) {
+                                                       double threshold, double zeroHeight,
+                                                       boolean enforceCoalescence) {
         double logL = 0.0;
         double startTime = -zeroHeight;
         final int n = intervals.getIntervalCount();
 
-        //TreeIntervals sets up a first zero-length interval with a lineage count of zero - skip this one
+        if(enforceCoalescence) {
 
-        for (int i = 0; i < n; i++) {
+            //TreeIntervals sets up a first zero-length interval with a lineage count of zero - skip this one
 
-            // time zero corresponds to the date of first infection
+            for (int i = 0; i < n; i++) {
 
-            final double duration = intervals.getInterval(i);
-            final double finishTime = startTime + duration;
+                // time zero corresponds to the date of first infection
 
-            // if this has happened the run is probably pretty unhappy
+                final double duration = intervals.getInterval(i);
+                final double finishTime = startTime + duration;
 
-            if (finishTime == 0) {
-                return Double.NEGATIVE_INFINITY;
+                // if this has happened the run is probably pretty unhappy
+
+                if (finishTime == 0) {
+                    return Double.NEGATIVE_INFINITY;
+                }
+
+                if (finishTime > 0) {
+                    throw new RuntimeException("Investigate please");
+                }
+
+                final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
+                final double normalisationArea = demographicFunction.getIntegral(startTime, 0);
+
+                if (intervalArea == 0 && duration > tolerance) {
+                    return Double.NEGATIVE_INFINITY;
+                }
+
+                final int lineageCount = intervals.getLineageCount(i);
+
+                if (lineageCount >= 2) {
+
+                    final double kChoose2 = Binomial.choose2(lineageCount);
+
+                    if (intervals.getIntervalType(i) == IntervalType.COALESCENT) {
+
+                        logL += -kChoose2 * intervalArea;
+
+                        final double demographicAtCoalPoint = demographicFunction.getPopSize(finishTime);
+
+                        if (duration == 0.0 || demographicAtCoalPoint * (intervalArea / duration) >= threshold) {
+                            logL -= Math.log(demographicAtCoalPoint);
+                        } else {
+                            return Double.NEGATIVE_INFINITY;
+                        }
+
+                    } else {
+                        double numerator = Math.exp(-kChoose2 * intervalArea) - Math.exp(-kChoose2 * normalisationArea);
+                        logL += Math.log(numerator);
+
+                    }
+
+                    // normalisation
+
+                    double normExp = Math.exp(-kChoose2 * normalisationArea);
+
+                    double logDenominator;
+
+                    // the denominator has an irritating tendency to round to zero
+
+                    if (normExp != 1) {
+                        logDenominator = Math.log1p(-normExp);
+                    } else {
+                        logDenominator = handleDenominatorUnderflow(-kChoose2 * normalisationArea);
+                    }
+
+                    logL -= logDenominator;
+
+                }
+                startTime = finishTime;
             }
+            return logL;
+        } else {
+            for (int i = 0; i < n; i++) {
 
-            if(finishTime > 0){
-                throw new RuntimeException("Investigate please");
-            }
+                final double duration = intervals.getInterval(i);
+                final double finishTime = startTime + duration;
 
-            final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
-            final double normalisationArea = demographicFunction.getIntegral(startTime, 0);
-
-            if (intervalArea == 0 && duration > tolerance) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            final int lineageCount = intervals.getLineageCount(i);
-
-            if (lineageCount >= 2) {
+                final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
+                if (intervalArea == 0 && duration != 0) {
+                    return Double.NEGATIVE_INFINITY;
+                }
+                final int lineageCount = intervals.getLineageCount(i);
 
                 final double kChoose2 = Binomial.choose2(lineageCount);
+                // common part
+                logL += -kChoose2 * intervalArea;
 
                 if (intervals.getIntervalType(i) == IntervalType.COALESCENT) {
-
-                    logL += -kChoose2 * intervalArea;
-
                     final double demographicAtCoalPoint = demographicFunction.getPopSize(finishTime);
-
                     if (duration == 0.0 || demographicAtCoalPoint * (intervalArea / duration) >= threshold) {
+                        //                if( duration == 0.0 || demographicAtCoalPoint >= threshold * (duration/intervalArea) ) {
                         logL -= Math.log(demographicAtCoalPoint);
                     } else {
                         return Double.NEGATIVE_INFINITY;
                     }
-
-                } else {
-                    double numerator = Math.exp(-kChoose2 * intervalArea) - Math.exp(-kChoose2 * normalisationArea);
-                    logL += Math.log(numerator);
-
                 }
-
-                // normalisation
-
-                double normExp = Math.exp(-kChoose2 * normalisationArea);
-
-                double logDenominator;
-
-                // the denominator has an irritating tendency to round to zero
-
-                if (normExp != 1) {
-                    logDenominator = Math.log1p(-normExp);
-                } else {
-                    logDenominator = handleDenominatorUnderflow(-kChoose2 * normalisationArea);
-                }
-
-                logL -= logDenominator;
-
+                startTime = finishTime;
             }
-            startTime = finishTime;
+
+            return logL;
         }
-        return logL;
     }
 
     @Override

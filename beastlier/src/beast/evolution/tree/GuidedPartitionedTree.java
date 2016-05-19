@@ -23,9 +23,9 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
+import beastlier.outbreak.ClinicalCase;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
-import com.sun.tools.javac.util.ArrayUtils;
 
 import java.util.*;
 
@@ -159,6 +159,9 @@ public class GuidedPartitionedTree extends PartitionedTree {
                 double currentHeight = node.getHeight();
                 double parentHeight = node.getParent().getHeight();
                 while (currentHeight < parentHeight) {
+                    // going up the branch from the bottom, the arrays list the heights of the next transition (or
+                    // the parent height) and the element number in the interval ending in that height
+
                     currentHeight = tt.getInfectionHeightByNr(ancestralChain.get(currentPositionInChain));
                     if(currentHeight < parentHeight){
                         transitionHeights.add(currentHeight);
@@ -234,6 +237,71 @@ public class GuidedPartitionedTree extends PartitionedTree {
             return transNode;
         }
     }
+
+
+    public void explodeTree(){
+        elementsAsTrees = new HashMap<>();
+        elementsAsTrees.put(-1, new ArrayList<>());
+        for(int i=0; i<getNElements(); i++){
+            elementsAsTrees.put(i, new ArrayList<>());
+        }
+        scanForTreelets((PartitionedTreeNode)getRoot(), elementsAsTrees);
+    }
+
+    private Node scanForTreelets(PartitionedTreeNode node, AbstractMap<Integer, List<Treelet>> elementsAsTrees) {
+
+        double[] changeHeights = (double[]) node.getMetaData("historyHeights");
+        int[] changeElements = (int[]) node.getMetaData("historyElements");
+
+        if(changeHeights.length == 1){
+            //no infections along the branch
+            Node copy;
+            if(node.isLeaf()){
+                copy = new Node(node.getID());
+            } else {
+                copy = new Node();
+                for(int childNo = 0; childNo < node.getChildCount(); childNo++){
+                    node.addChild(scanForTreelets((PartitionedTreeNode)node.getChild(childNo), elementsAsTrees));
+                }
+            }
+            copy.setHeight(node.getHeight());
+            return copy;
+        } else {
+            //the section nearest the child
+            Node copyRoot;
+            if(node.isLeaf()){
+                copyRoot = new Node(node.getID());
+            } else {
+                copyRoot = new Node();
+                for(int childNo = 0; childNo < node.getChildCount(); childNo++){
+                    node.addChild(scanForTreelets((PartitionedTreeNode)node.getChild(childNo), elementsAsTrees));
+                }
+            }
+            copyRoot.setHeight(node.getHeight());
+            Treelet treelet = new Treelet(new Tree(copyRoot), changeHeights[0]-node.getHeight());
+            List<Treelet> elementTreelets = elementsAsTrees.get(node.getPartitionElementNumber());
+            elementTreelets.add(treelet);
+
+            if(changeElements.length > 2){
+                //one or more little segments
+                for(int segmentNo = 1; segmentNo < changeElements.length-2; segmentNo++){
+                    Node segmentEnd = new Node("Transmission_" + getElementString(changeElements[segmentNo-1]));
+                    Treelet treelet1 = new Treelet(new Tree(segmentEnd),
+                            changeHeights[segmentNo] - changeHeights[segmentNo-1]);
+                    elementTreelets = elementsAsTrees.get(changeElements[segmentNo]);
+                    elementTreelets.add(treelet1);
+                }
+            }
+
+            //the section nearest the parent
+            Node transmissionTip = new Node("Transmission_"
+                    + getElementString(changeElements[changeElements.length-2]));
+            transmissionTip.setHeight(changeHeights[changeElements.length]-2);
+            return transmissionTip;
+        }
+
+    }
+
 
     // The bundle is the set of branches that are in the given element at the given height (even if neither node is
     // in it); more efficient to borrow the intersectingEdges trick from operators, which also helps if some subtrees

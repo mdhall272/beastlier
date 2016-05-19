@@ -28,9 +28,7 @@ import beast.evolution.tree.TreeDistribution;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -52,6 +50,8 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
     protected ArrayList<TreeEvent> sortedTreeEvents;
     protected ArrayList<TreeEvent> storedSortedTreeEvents;
+    protected AbstractMap<ClinicalCase, Double> infectionTimesMap;
+    protected AbstractMap<ClinicalCase, Double> storedInfectionTimesMap;
 
     public enum EventType{
         INFECTION,
@@ -85,12 +85,24 @@ public abstract class BetweenHostModel extends TreeDistribution {
         outbreak = outbreakInput.get();
         sortEvents();
         storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
+
+        infectionTimesMap = null;
     }
 
     protected double getInfectionTime(ClinicalCase aCase){
-        return tree.getInfectionTime(aCase);
+        if(infectionTimesMap==null){
+            getInfectionTimesFromTree();
+        }
+        return infectionTimesMap.get(aCase);
     }
     protected abstract double getInfectiousTime(ClinicalCase aCase);
+
+    private void getInfectionTimesFromTree(){
+        infectionTimesMap = new HashMap<>();
+        for(ClinicalCase aCase : outbreak.getCases()){
+            infectionTimesMap.put(aCase, tree.getInfectionTime(aCase));
+        }
+    }
 
     protected class TreeEvent{
 
@@ -165,6 +177,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     }
 
     public void store() {
+        storedInfectionTimesMap = new HashMap<>(infectionTimesMap);
         storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
         typeOfDirt = IS_CLEAN;
         super.store();
@@ -172,6 +185,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
 
 
     public void restore() {
+        infectionTimesMap = storedInfectionTimesMap;
         sortedTreeEvents = storedSortedTreeEvents;
         typeOfDirt = IS_CLEAN;
         super.restore();

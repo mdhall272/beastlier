@@ -213,8 +213,6 @@ public class IndividualSEIR extends BetweenHostModel {
                         }
 
                         transLogProb += -transRate * timeDuringWhichNoInfection;
-
-
                     }
 
                     // ...until the end
@@ -231,12 +229,10 @@ public class IndividualSEIR extends BetweenHostModel {
                         }
                         transLogProb += Math.log(transRate);
                     }
-
                     if (!hasLatentPeriods) {
                         previouslyInfectious.add(thisCase);
                     }
                 }
-
 
             } else if (event.getType() == EventType.INFECTIOUSNESS) {
                 if (event.getTime() < Double.POSITIVE_INFINITY) {
@@ -396,6 +392,7 @@ public class IndividualSEIR extends BetweenHostModel {
 
         if(treeHasChanged || aLatentPeriodHasChanged){
             typeOfDirt = IS_FILTHY;
+            infectionTimesMap = null;
         } else {
             typeOfDirt = answer ? IS_DIRTY : IS_CLEAN;
         }

@@ -33,7 +33,6 @@ import beastlier.outbreak.ClinicalCase;
 import com.google.common.collect.Lists;
 
 import java.io.PrintStream;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +100,12 @@ public class PartitionedTree extends Tree {
     //saves time - tip numbers for each element.
     private ArrayList<ArrayList<Integer>> tipsPerElement = new ArrayList<>();
 
+    protected HashMap<Integer, List<Treelet>> elementsAsTrees;
+    protected HashMap<Integer, List<Treelet>> storedElementsAsTrees;
+
     RealParameter rootBranchLength;
+
+    protected boolean[] treeletsRequiringExtraction;
 
     public PartitionedTree() { };
 
@@ -395,6 +399,17 @@ public class PartitionedTree extends Tree {
         return rootBranchLength.getValue();
     }
 
+    public void setTreeletRequiresExtraction(int index){
+        treeletsRequiringExtraction[index] = true;
+    }
+
+    public boolean treeletRequiresExtraction(int index){
+        return treeletsRequiringExtraction[index];
+    }
+
+    public void allTreeletsRequireExtraction(boolean value){
+        Arrays.fill(treeletsRequiringExtraction, value);
+    }
 
     @Override
     protected final void initArrays() {
@@ -593,7 +608,11 @@ public class PartitionedTree extends Tree {
     /////////////////////////////////////////////////
     @Override
     protected void store() {
-        storedElementEarliestNodes = elementEarliestNodes.clone();
+        if(rules == THIRD_TYPE) {
+            allTreeletsRequireExtraction(false);
+            storedElementsAsTrees = new HashMap<>(elementsAsTrees);
+            storedElementEarliestNodes = elementEarliestNodes.clone();
+        }
         storedInfectors = infectors.clone();
 
         storedRoot = m_storedNodes[root.getNr()];
@@ -622,6 +641,10 @@ public class PartitionedTree extends Tree {
 
     @Override
     public void restore(){
+        if(rules == THIRD_TYPE) {
+            allTreeletsRequireExtraction(false);
+            elementsAsTrees = storedElementsAsTrees;
+        }
         elementEarliestNodes = storedElementEarliestNodes;
         infectors = storedInfectors;
         super.restore();
@@ -1168,7 +1191,10 @@ public class PartitionedTree extends Tree {
                 return result;
             }
         }
+    }
 
+    public List<Treelet> getElementAsTrees(int elementNo){
+        return elementsAsTrees.get(elementNo);
     }
 
     @Override
@@ -1195,6 +1221,9 @@ public class PartitionedTree extends Tree {
             infectors = new int[elementList.size()];
             storedInfectors = new int[elementList.size()];
         }
+        if(rules == THIRD_TYPE) {
+            allTreeletsRequireExtraction(isDirty);
+        }
     }
 
     public List<Node> ancestorsAtHeight(List<PartitionedTreeNode> nodes, double height){
@@ -1219,5 +1248,32 @@ public class PartitionedTree extends Tree {
         List<Node> out = new ArrayList<>();
         out.addAll(ancestors);
         return out;
+    }
+
+    public class Treelet extends Tree {
+
+        private double zeroHeight;
+
+        protected Treelet(Tree tree, double zeroHeight){
+            tree.initAndValidate();
+            assignFrom(tree);
+            this.zeroHeight = zeroHeight;
+        }
+
+        public double getZeroHeight(){
+            return zeroHeight;
+        }
+
+        public void setZeroHeight(double rootBranchLength){
+            this.zeroHeight = zeroHeight;
+        }
+    }
+
+    public void explodeTree(){
+        throw new RuntimeException("Not enough information in this class to integrate a within-host model");
+    }
+
+    public boolean[] identifyChangedTreelets(){
+        throw new RuntimeException("Not enough information in this class to integrate a within-host model");
     }
 }

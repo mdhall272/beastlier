@@ -96,7 +96,7 @@ public class RandomPartition extends PartitionedTree implements StateNodeInitial
                 int elementNo = elementList.indexOf(elementLabel);
 
                 Node elementMRCA = getElementMRCA(elementNo);
-                HashSet<PartitionedTreeNode> caseTips = getTipsInElement(elementNo);
+                List<PartitionedTreeNode> caseTips = getTipsInElement(elementNo);
 
                 for (PartitionedTreeNode caseTip : caseTips) {
                     if (directDescendant(node, elementMRCA) && directDescendant(caseTip, node)) {

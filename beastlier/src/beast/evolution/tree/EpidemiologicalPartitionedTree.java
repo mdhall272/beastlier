@@ -25,12 +25,14 @@ package beast.evolution.tree;
 import beast.core.Citation;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.util.RandomPartition;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 @Citation(value=
         "Hall M, Woolhouse M, Rambaut A, (2015) Epidemic reconstruction in a \n" +
@@ -53,16 +55,12 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     private RealParameter q;
     private Outbreak outbreak;
 
-    private Double[] infectionTimes;
-    private Double[] storedInfectionTimes;
+    private Double[] infectionHeights;
+    private Double[] storedInfectionHeights;
 
     public void initAndValidate(){
 
         outbreak = outbreakInput.get();
-
-
-        //todo limits for the qs?
-
         q = qInput.get();
 
         super.initAndValidate();
@@ -78,10 +76,23 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         // this is a bit of a hack but should make the run start up from a random tree much more often
 
-        infectionTimes = new Double[elementList.size()];
-        storedInfectionTimes = new Double[elementList.size()];
-        Arrays.fill(infectionTimes, null);
-        Arrays.fill(storedInfectionTimes, null);
+        infectionHeights = new Double[elementList.size()];
+        storedInfectionHeights = new Double[elementList.size()];
+        Arrays.fill(infectionHeights, null);
+        Arrays.fill(storedInfectionHeights, null);
+
+        if(rules == Rules.THIRD_TYPE){
+            treeletsRequiringExtraction = new boolean[getNElements()];
+            Arrays.fill(treeletsRequiringExtraction, true);
+            elementsAsTrees = new HashMap<>();
+            explodeTree();
+            storedElementsAsTrees = new HashMap<>(elementsAsTrees);
+        } else {
+            treeletsRequiringExtraction = null;
+            elementsAsTrees = null;
+            storedElementsAsTrees = null;
+        }
+
     }
 
     public double getNodeTime(PartitionedTreeNode node){
@@ -108,7 +119,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
             if(!earliestNode.isPartitionDirty() && (rules==Rules.SECOND_TYPE || !q.isDirty(partitionElementNumber)) &&
                     !(earliestNode.isRoot() && rootBranchLength.isDirty(0))){
-                return infectionTimes[partitionElementNumber];
+                return infectionHeights[partitionElementNumber];
             } else {
 
                 double result;
@@ -129,7 +140,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                                 + q.getValue(partitionElementNumber) * getRootBranchLength();
                     }
                 }
-                infectionTimes[partitionElementNumber] = result;
+                infectionHeights[partitionElementNumber] = result;
 
                 return result;
             }
@@ -141,7 +152,7 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public double getInfectionTime(ClinicalCase aCase){
 
         if(aCase.wasEverInfected()) {
-            return getDate(getInfectionTime(aCase));
+            return getDate(getInfectionHeight(aCase));
         } else {
             return Double.POSITIVE_INFINITY;
         }
@@ -188,6 +199,127 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
                     q.setValue(elementNo, (difference + Randomizer.nextDouble()*(mrcaLength-difference))/mrcaLength);
                 }
             }
+        }
+    }
+
+    public void explodeTree(){
+        if(rules != Rules.THIRD_TYPE){
+            throw new RuntimeException("Partition rules do not support a within-host model");
+        }
+        for (int i = 0; i < getElementList().size(); i++) {
+            if (treeletsRequiringExtraction[i]) {
+                String caseName = getElementString(i);
+
+                ClinicalCase aCase = outbreak.getCaseByID(caseName);
+
+                Node elementRoot = getEarliestNodeInPartition(aCase);
+
+                double extraHeight;
+
+                if (elementRoot.isRoot()) {
+                    extraHeight = getRootBranchLength() * getQ(i);
+                } else {
+                    extraHeight = elementRoot.getLength() * getQ(i);
+                }
+
+                Node newRoot = new Node();
+
+                newRoot.setHeight(0);
+
+                Tree littleTree = new Tree(newRoot);
+
+                if (!elementRoot.isLeaf()) {
+                    for (int j = 0; j < elementRoot.getChildCount(); j++) {
+                        copyPartitionToTreelet(littleTree, (PartitionedTreeNode) elementRoot.getChild(j), newRoot,
+                                aCase);
+                    }
+                }
+
+                //only way I've found to get a tree to recognise how many nodes it has!
+
+                littleTree = new Tree(newRoot);
+                littleTree.getLeafNodeCount();
+                littleTree.getInternalNodeCount();
+
+                double minHeight = 0;
+                for (int nodeNo = 0; nodeNo < littleTree.getNodeCount(); nodeNo++) {
+                    Node node = littleTree.getNode(nodeNo);
+                    if (node.getHeight() < minHeight) {
+                        minHeight = node.getHeight();
+                    }
+                }
+
+                for (int nodeNo = 0; nodeNo < littleTree.getNodeCount(); nodeNo++) {
+                    Node node = littleTree.getNode(nodeNo);
+                    node.setHeight(node.getHeight() - minHeight);
+                }
+
+
+                Treelet treelet = new Treelet(littleTree,
+                        littleTree.getRoot().getHeight() + extraHeight);
+
+                List<Treelet> treeletList = new ArrayList<>();
+                treeletList.add(treelet);
+
+                elementsAsTrees.put(outbreak.getCaseIndex(aCase), treeletList);
+            }
+        }
+    }
+
+    public boolean[] identifyChangedTreelets(){
+        boolean[] out = new boolean[getNElements()];
+
+        RealParameter q = getQ();
+        for (int i = 0; i < q.getDimension(); i++) {
+            if (q.isDirty(i)) {
+                setTreeletRequiresExtraction(i);
+                out[i] = true;
+                int parentPartitionNumber = getAncestorPartitionElement(i);
+                if (parentPartitionNumber != -1) {
+                    setTreeletRequiresExtraction(parentPartitionNumber);
+                    out[parentPartitionNumber] = true;
+                }
+            }
+        }
+
+        for (Node node : getNodesAsArray()) {
+            PartitionedTreeNode castNode = (PartitionedTreeNode) node;
+            if (castNode.isPartitionDirty()) {
+                setTreeletRequiresExtraction(castNode.getPartitionElementNumber());
+                out[castNode.getPartitionElementNumber()] = true;
+            }
+        }
+
+        return out;
+    }
+
+    private void copyPartitionToTreelet(Tree protoTreelet, PartitionedTreeNode oldNode, Node newParent,
+                                        ClinicalCase element){
+
+        if (oldNode.getPartitionElementNumber() == getElementNo(element)) {
+            if (oldNode.isLeaf()) {
+                Node newTip = new Node(getTaxonId(oldNode));
+                protoTreelet.addNode(newTip);
+                newParent.addChild(newTip);
+                newTip.setHeight(newParent.getHeight() - oldNode.getLength());
+            } else {
+                Node newChild = new Node();
+                protoTreelet.addNode(newChild);
+                newParent.addChild(newChild);
+                newChild.setHeight(newParent.getHeight() - oldNode.getLength());
+                for (int i = 0; i < oldNode.getChildCount(); i++) {
+                    PartitionedTreeNode castChild = (PartitionedTreeNode) oldNode.getChild(i);
+                    copyPartitionToTreelet(protoTreelet, castChild, newChild, element);
+                }
+            }
+        } else {
+            // we need a new tip
+            Node transmissionTip = new Node("Transmission_" + getElementString(oldNode.getPartitionElementNumber()));
+            double parentTime = getNodeTime((PartitionedTreeNode)oldNode.getParent());
+            double childTime = getInfectionTime(getNodeCase(oldNode));
+            protoTreelet.addNode(transmissionTip);
+            newParent.addChild(transmissionTip);
+            transmissionTip.setHeight(newParent.getHeight() - (childTime - parentTime) );
         }
     }
 
@@ -292,13 +424,13 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     @Override
     public void store(){
         super.store();
-        storedInfectionTimes = infectionTimes.clone();
+        storedInfectionHeights = infectionHeights.clone();
     }
 
     @Override
     public void restore(){
         super.restore();
-        infectionTimes = storedInfectionTimes;
+        infectionHeights = storedInfectionHeights;
     }
 
     @Override
@@ -315,8 +447,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     public void setEverythingDirty(final boolean isDirty) {
         super.setEverythingDirty(isDirty);
         if(isDirty){
-            infectionTimes = new Double[elementList.size()];
-            storedInfectionTimes = new Double[elementList.size()];
+            infectionHeights = new Double[elementList.size()];
+            storedInfectionHeights = new Double[elementList.size()];
         }
     }
 

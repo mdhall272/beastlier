@@ -32,6 +32,7 @@ import beast.util.Randomizer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -67,8 +68,8 @@ public class ThirdTypeWilsonBaldingA extends TreeOperator{
         double eligibleNodeCount = eligibleNodes.size();
 
         final PartitionedTreeNode iP = (PartitionedTreeNode)i.getParent();
-        ArrayList<PartitionedTreeNode> nodesInSameElement = tree.getNodesInSameElement(iP);
-        ArrayList<PartitionedTreeNode> possibleDestinations = new ArrayList<>();
+        List<PartitionedTreeNode> nodesInSameElement = tree.getNodesInSameElement(iP);
+        List<PartitionedTreeNode> possibleDestinations = new ArrayList<>();
         // we can insert the node above OR BELOW any node in the same partition
         for (PartitionedTreeNode node : nodesInSameElement) {
             possibleDestinations.add(node);

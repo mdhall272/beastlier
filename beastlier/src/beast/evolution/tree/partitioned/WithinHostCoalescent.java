@@ -26,7 +26,9 @@ import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.EpidemiologicalPartitionedTree;
 import beast.evolution.tree.Node;
+import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.evolution.tree.coalescent.*;
 import beast.math.Binomial;
@@ -57,6 +59,7 @@ public class WithinHostCoalescent extends WithinHostModel {
     private double[] storedIndividualWHProbabilities;
 
 
+
     public void initAndValidate(){
         super.initAndValidate();
         popFunction = functionInput.get();
@@ -68,35 +71,19 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     public double calculateLogP() {
 
-        RealParameter q = tree.getQ();
-        for (int i = 0; i < q.getDimension(); i++) {
-            if (q.isDirty(i)) {
-                treeletsRequiringExtraction[i] = true;
-                recalculateTreeletLogP[i] = true;
-                int parentPartitionNumber = tree.getAncestorPartitionElement(i);
-                if (parentPartitionNumber != -1) {
-                    treeletsRequiringExtraction[parentPartitionNumber] = true;
-                    recalculateTreeletLogP[parentPartitionNumber] = true;
-                }
-            }
-        }
 
-        for (Node node : tree.getNodesAsArray()) {
-            PartitionedTreeNode castNode = (PartitionedTreeNode) node;
-            if (castNode.isPartitionDirty()) {
-                treeletsRequiringExtraction[castNode.getPartitionElementNumber()] = true;
-                recalculateTreeletLogP[castNode.getPartitionElementNumber()] = true;
-            }
-        }
 
         // if the population function has changed, then all treelets need probabilities recalculated but (unless
         // something else has changed) no treelets actually need re-extracting
 
         if(((CalculationNode)popFunction).isDirtyCalculation()){
             Arrays.fill(recalculateTreeletLogP, true);
+        } else {
+            //can be selective
+            recalculateTreeletLogP = tree.identifyChangedTreelets();
         }
 
-        explodeTree();
+        tree.explodeTree();
 
         logP = 0;
 
@@ -107,22 +94,24 @@ public class WithinHostCoalescent extends WithinHostModel {
                 String caseName = tree.getElementString(i);
                 ClinicalCase aCase = outbreak.getCaseByID(caseName);
 
-                Treelet treelet = elementsAsTrees.get(aCase);
+                List<PartitionedTree.Treelet> treelets = tree.getElementAsTrees(outbreak.getCaseIndex(aCase));
 
-                if (treelet.getLeafNodeCount() > 1) {
-                    TreeIntervals intervals = new TreeIntervals(treelet);
+                for(PartitionedTree.Treelet treelet : treelets) {
+                    if (treelet.getLeafNodeCount() > 1) {
+                        TreeIntervals intervals = new TreeIntervals(treelet);
 
-                    double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                            treelet.getZeroHeight());
+                        double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
+                                treelet.getZeroHeight());
 
-                    individualWHProbabilities[i] = individualLogP;
+                        individualWHProbabilities[i] = individualLogP;
 
-                    logP += individualLogP;
+                        logP += individualLogP;
 
-                } else {
-                    individualWHProbabilities[i] = 0.0;
+                    } else {
+                        individualWHProbabilities[i] = 0.0;
 
-                    logP += 0.0;
+                        logP += 0.0;
+                    }
                 }
             } else {
                 logP += individualWHProbabilities[i];
@@ -138,7 +127,6 @@ public class WithinHostCoalescent extends WithinHostModel {
     public static double calculateTreeletLogLikelihood(IntervalList intervals, PopulationFunction demographicFunction,
                                                        double threshold, double zeroHeight) {
         double logL = 0.0;
-
         double startTime = -zeroHeight;
         final int n = intervals.getIntervalCount();
 
@@ -206,32 +194,24 @@ public class WithinHostCoalescent extends WithinHostModel {
                     logDenominator = handleDenominatorUnderflow(-kChoose2 * normalisationArea);
                 }
 
-
                 logL -= logDenominator;
 
             }
-
             startTime = finishTime;
-
         }
-
         return logL;
     }
 
     @Override
     public void store() {
-        storedElementsAsTrees = new HashMap<>(elementsAsTrees);
         storedIndividualWHProbabilities = individualWHProbabilities.clone();
-        Arrays.fill(treeletsRequiringExtraction, false);
         Arrays.fill(recalculateTreeletLogP, false);
         super.store();
     }
 
     @Override
     public void restore() {
-        elementsAsTrees = storedElementsAsTrees;
         individualWHProbabilities = storedIndividualWHProbabilities;
-        Arrays.fill(treeletsRequiringExtraction, false);
         Arrays.fill(recalculateTreeletLogP, false);
         super.restore();
     }

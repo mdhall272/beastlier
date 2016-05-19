@@ -33,6 +33,7 @@ import beast.evolution.tree.PartitionedTreeNode;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 
 /**
@@ -129,7 +130,7 @@ public class ThirdTypeExchangeA extends TreeOperator {
         if(parent==null){
             throw new RuntimeException("Can't exchange the root node");
         }
-        ArrayList<PartitionedTreeNode> possibleParentSwaps = tree.getNodesInSameElement(parent);
+        List<PartitionedTreeNode> possibleParentSwaps = tree.getNodesInSameElement(parent);
         for(PartitionedTreeNode newParent : possibleParentSwaps){
             if(!newParent.isLeaf() && newParent!=parent){
                 for(int i=0; i<2; i++){

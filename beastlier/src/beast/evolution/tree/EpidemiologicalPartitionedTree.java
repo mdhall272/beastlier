@@ -104,11 +104,19 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     }
 
     public double getInfectionHeightByNr(int elementNo){
-        return getInfectionHeight(outbreak.getCaseByID(elementList.get(elementNo)));
+        if(elementNo == -1){
+            return Double.POSITIVE_INFINITY;
+        } else {
+            return getInfectionHeight(outbreak.getCaseByID(elementList.get(elementNo)));
+        }
     }
 
     public double getInfectionTimeByNr(int elementNo){
-        return getInfectionTime(outbreak.getCaseByID(elementList.get(elementNo)));
+        if(elementNo == -1){
+            return Double.NEGATIVE_INFINITY;
+        } else {
+            return getInfectionTime(outbreak.getCaseByID(elementList.get(elementNo)));
+        }
     }
 
     public double getInfectionHeight(ClinicalCase aCase){

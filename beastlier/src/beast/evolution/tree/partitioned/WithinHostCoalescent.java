@@ -26,10 +26,7 @@ import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.tree.EpidemiologicalPartitionedTree;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.PartitionedTree;
-import beast.evolution.tree.PartitionedTreeNode;
+import beast.evolution.tree.*;
 import beast.evolution.tree.coalescent.*;
 import beast.math.Binomial;
 import beastlier.outbreak.ClinicalCase;
@@ -51,10 +48,13 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     public Input<PopulationFunction> functionInput = new Input<>("populationFunction", "The within-host coalescent " +
             "process");
+    public Input<PopulationFunction> restOfPopFunctionInput = new Input<>("restOfPopFunction",
+            "Another coalescent process for lineages assigned to no clinical case", null, Input.Validate.OPTIONAL);
     public Input<Boolean> enforceCoalescenceInput = new Input<>("enforceCoalescence", "Whether probabilities are " +
             "calculated under the assumption that all lineages coalesce before the time of infection");
 
     private PopulationFunction popFunction;
+    private PopulationFunction restOfPopFunction;
     protected static double tolerance = 1E-10;
     public boolean[] recalculateTreeletLogP;
     private double[] individualWHProbabilities;
@@ -66,6 +66,7 @@ public class WithinHostCoalescent extends WithinHostModel {
     public void initAndValidate(){
         super.initAndValidate();
         popFunction = functionInput.get();
+        restOfPopFunction = restOfPopFunctionInput.get();
         individualWHProbabilities = new double[tree.getElementList().size()];
         recalculateTreeletLogP = new boolean[tree.getElementList().size()];
         Arrays.fill(recalculateTreeletLogP, true);
@@ -78,16 +79,36 @@ public class WithinHostCoalescent extends WithinHostModel {
         // if the population function has changed, then all treelets need probabilities recalculated but (unless
         // something else has changed) no treelets actually need re-extracting
 
-        if(((CalculationNode)popFunction).isDirtyCalculation()){
+        if(tree instanceof GuidedPartitionedTree){
+            //no efficiency in this routine yet.
             Arrays.fill(recalculateTreeletLogP, true);
+
+            ((GuidedPartitionedTree)tree).updatePartitions();
         } else {
-            //can be selective
-            recalculateTreeletLogP = tree.identifyChangedTreelets();
+
+            if (((CalculationNode) popFunction).isDirtyCalculation()) {
+                Arrays.fill(recalculateTreeletLogP, true);
+            } else {
+                //can be selective
+                recalculateTreeletLogP = tree.identifyChangedTreelets();
+            }
         }
+
+
 
         tree.explodeTree();
 
         logP = 0;
+
+        if(restOfPopFunction != null){
+            PartitionedTree.Treelet restOfPopTreelet = tree.getElementAsTrees(-1).get(0);
+            TreeIntervals intervals = new TreeIntervals(restOfPopTreelet);
+
+            double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
+                    0, false);
+
+            logP += individualLogP;
+        }
 
         for (int i=0; i<tree.getNElements(); i++) {
 
@@ -118,9 +139,6 @@ public class WithinHostCoalescent extends WithinHostModel {
             } else {
                 logP += individualWHProbabilities[i];
             }
-
-
-
         }
 
         return logP;

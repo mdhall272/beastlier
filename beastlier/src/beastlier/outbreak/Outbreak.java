@@ -26,6 +26,7 @@ package beastlier.outbreak;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.evolution.alignment.TaxonSet;
 import beast.evolution.datatype.DataType;
 import com.google.common.collect.Lists;
 

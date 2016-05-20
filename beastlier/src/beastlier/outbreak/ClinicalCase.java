@@ -30,14 +30,15 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 
+import java.util.List;
+
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
 @Description("Base class for epidemiological information about a case in an outbreak")
-public class ClinicalCase extends BEASTObject {
+public class ClinicalCase extends TaxonSet {
 
-    public Input<TaxonSet> taxaInput = new Input<>("TaxonSet", "The taxa taken from this host");
     public Input<RealParameter> endOfInfectiousTimeInput = new Input<>("endOfInfectiousTime", "The time at which" +
             " this host ceased to be infectious", null, Input.Validate.OPTIONAL);
     public Input<Boolean> wasEverInfectedInput = new Input<>("wasEverInfected", "Was this host ever infected?", true,
@@ -45,7 +46,7 @@ public class ClinicalCase extends BEASTObject {
     public Input<Double> indexPriorWeightInput = new Input<>("indexPriorWeight", "The prior weight placed on this " +
             "host being the index infection of the outbreak", 1.0, Input.Validate.OPTIONAL);
 
-    private TaxonSet taxa;
+    private List<Taxon> taxaList;
     private RealParameter endOfInfectiousTime;
     private Boolean wasEverInfected;
     private double indexPriorWeight;
@@ -62,13 +63,9 @@ public class ClinicalCase extends BEASTObject {
         return indexPriorWeight;
     }
 
-    public TaxonSet getTaxa(){
-        return taxa;
-    }
-
     @Override
     public void initAndValidate() {
-        taxa = taxaInput.get();
+        taxonList = taxonsetInput.get();
         endOfInfectiousTime = endOfInfectiousTimeInput.get();
         wasEverInfected = wasEverInfectedInput.get();
         indexPriorWeight = indexPriorWeightInput.get();

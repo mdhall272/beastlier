@@ -146,44 +146,58 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
             castNode.setPartitionElementNumber(elementNo);
 
-            List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
+            if(elementNo!=-1) {
+                List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
 
-            List<Double> transitionHeights = new ArrayList<>();
-            List<Integer> infectorsAlongBranch = new ArrayList<>();
+                List<Double> transitionHeights = new ArrayList<>();
+                List<Integer> infectorsAlongBranch = new ArrayList<>();
 
-            //starting at the end of the branch
+                //starting at the end of the branch
 
 
-            if(!node.isRoot()) {
-                int currentPositionInChain = 0;
-                double currentHeight = node.getHeight();
-                double parentHeight = node.getParent().getHeight();
-                while (currentHeight < parentHeight) {
-                    // going up the branch from the bottom, the arrays list the heights of the next transition (or
-                    // the parent height) and the element number in the interval ending in that height
+                if (!node.isRoot()) {
+                    int currentPositionInChain = 0;
+                    double currentHeight = node.getHeight();
+                    double parentHeight = node.getParent().getHeight();
+                    while (currentHeight < parentHeight) {
+                        // going up the branch from the bottom, the arrays list the heights of the next transition (or
+                        // the parent height) and the element number in the interval ending in that height
 
-                    currentHeight = tt.getInfectionHeightByNr(ancestralChain.get(currentPositionInChain));
-                    if(currentHeight < parentHeight){
-                        transitionHeights.add(currentHeight);
-                        infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
-                        currentPositionInChain++;
-                    } else {
-                        transitionHeights.add(parentHeight);
-                        infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
+                        currentHeight = tt.getInfectionHeightByNr(ancestralChain.get(currentPositionInChain));
+                        if (currentHeight < parentHeight) {
+                            transitionHeights.add(currentHeight);
+                            infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
+                            currentPositionInChain++;
+                        } else {
+                            transitionHeights.add(parentHeight);
+                            infectorsAlongBranch.add(ancestralChain.get(currentPositionInChain));
+                        }
+                    }
+                } else {
+                    //the root branch stretches to infinity
+                    for (int no : ancestralChain) {
+                        infectorsAlongBranch.add(no);
+                        transitionHeights.add(tt.getInfectionHeightByNr(no));
                     }
                 }
-            } else {
-                //the root branch stretches to infinity
-                for(int no : ancestralChain){
-                    infectorsAlongBranch.add(no);
-                    transitionHeights.add(tt.getInfectionHeightByNr(no));
-                }
-            }
-            int[] branchElements = Ints.toArray(infectorsAlongBranch);
-            double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
+                int[] branchElements = Ints.toArray(infectorsAlongBranch);
+                double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
 
-            node.setMetaData("historyElements", branchElements);
-            node.setMetaData("historyHeights", branchTransitionHeights);
+                node.setMetaData("historyElements", branchElements);
+                node.setMetaData("historyHeights", branchTransitionHeights);
+            } else {
+                //we're above the root of the guide tree
+                List<Double> transitionHeights = new ArrayList<>();
+                List<Integer> infectorsAlongBranch = new ArrayList<>();
+                transitionHeights.add(node.isRoot() ? Double.POSITIVE_INFINITY : node.getParent().getHeight());
+                infectorsAlongBranch.add(-1);
+
+                int[] branchElements = Ints.toArray(infectorsAlongBranch);
+                double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
+
+                node.setMetaData("historyElements", branchElements);
+                node.setMetaData("historyHeights", branchTransitionHeights);
+            }
 
         }
         return true;

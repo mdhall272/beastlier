@@ -164,7 +164,7 @@ public class Outbreak extends BEASTObject implements DataType {
 
     public ClinicalCase getCaseByTaxon(String taxon){
         for(ClinicalCase aCase : cases){
-            if(aCase.getTaxa().containsAll(Lists.newArrayList(taxon))){
+            if(aCase.getTaxonSet().containsAll(Lists.newArrayList(taxon))){
                 return aCase;
             }
         }

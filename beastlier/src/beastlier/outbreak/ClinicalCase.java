@@ -46,7 +46,6 @@ public class ClinicalCase extends TaxonSet {
     public Input<Double> indexPriorWeightInput = new Input<>("indexPriorWeight", "The prior weight placed on this " +
             "host being the index infection of the outbreak", 1.0, Input.Validate.OPTIONAL);
 
-    private List<Taxon> taxaList;
     private RealParameter endOfInfectiousTime;
     private Boolean wasEverInfected;
     private double indexPriorWeight;

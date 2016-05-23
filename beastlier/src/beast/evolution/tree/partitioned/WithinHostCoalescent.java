@@ -83,7 +83,9 @@ public class WithinHostCoalescent extends WithinHostModel {
             //no efficiency in this routine yet.
             Arrays.fill(recalculateTreeletLogP, true);
 
-            ((GuidedPartitionedTree)tree).updatePartitions();
+            if(!((GuidedPartitionedTree)tree).updatePartitions()){
+                return Double.NEGATIVE_INFINITY;
+            };
         } else {
 
             if (((CalculationNode) popFunction).isDirtyCalculation()) {

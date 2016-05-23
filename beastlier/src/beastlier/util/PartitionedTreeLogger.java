@@ -103,6 +103,58 @@ public class PartitionedTreeLogger extends BEASTObject implements Loggable {
         }
     }
 
+    public static void debugLog(PartitionedTree tree, int nSample, boolean fancy, PrintStream stream){
+
+        if(fancy){
+            GuidedPartitionedTree epTree = (GuidedPartitionedTree)tree;
+
+            Tree fancyTree = epTree.getFlattenedTree();
+
+            for (Node node : fancyTree.getNodesAsArray()) {
+                PartitionedTreeNode pNode = (PartitionedTreeNode) node;
+                if(pNode.getPartitionElementNumber()==-1){
+                    pNode.metaDataString = tree.getElementLabel()
+                            + "=\""
+                            + "start"
+                            + "\"";
+
+                } else {
+                    pNode.metaDataString = tree.getElementLabel()
+                            + "=\""
+                            + tree.getElementString(pNode.getPartitionElementNumber())
+                            + "\"";
+                }
+            }
+
+            tree.init(stream);
+
+            stream.print("tree STATE_" + nSample + " = ");
+            stream.print(fancyTree.getRoot().toSortedNewick(new int[1], true));
+            stream.print(";");
+
+            tree.close(stream);
+
+        } else {
+
+            for (Node node : tree.getNodesAsArray()) {
+                PartitionedTreeNode pNode = (PartitionedTreeNode) node;
+                pNode.metaDataString = tree.getElementLabel()
+                        + "=\""
+                        + tree.getElementString(pNode.getPartitionElementNumber())
+                        + "\"";
+            }
+
+            tree.init(stream);
+
+            stream.print("tree STATE_" + nSample + " = ");
+            stream.print(tree.getRoot().toSortedNewick(new int[1], true));
+            stream.print(";");
+
+            tree.close(stream);
+        }
+
+    }
+
     @Override
     public void close(PrintStream out) {
         pTree.close(out);

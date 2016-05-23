@@ -39,8 +39,8 @@ import java.util.Map;
  */
 
 public class GuidedSubtreeLeapB extends TreeOperator {
-    public Input<List<GuidedPartitionedTree>> phylogeniesInput = new Input<>("phylogenies", "All the locus " +
-            "phylogenies");
+    public Input<List<GuidedPartitionedTree>> phylogeniesInput = new Input<>("phylogeny", "All the locus " +
+            "phylogenies", new ArrayList<>());
     public Input<Double> sizeInput = new Input<>("size", "");
 
     private List<GuidedPartitionedTree> phylogenies;
@@ -463,7 +463,6 @@ public class GuidedSubtreeLeapB extends TreeOperator {
         return hrAdjust;
 
     }
-
 }
 
 

@@ -23,10 +23,12 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
-import beastlier.outbreak.ClinicalCase;
+import beastlier.util.PartitionedTreeLogger;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -41,6 +43,9 @@ public class GuidedPartitionedTree extends PartitionedTree {
     public Input<EpidemiologicalPartitionedTree> ttInput = new Input<>("tt", "The transmission tree");
 
     private EpidemiologicalPartitionedTree tt;
+
+    final static String elementBranchString = "historyElements";
+    final static String heightBranchString = "historyHeights";
 
     //what must be added to the height in this tree to get the height in the guide tree
     private double heightAdjustment;
@@ -104,13 +109,18 @@ public class GuidedPartitionedTree extends PartitionedTree {
         //in the guide tree, internal nodes are transmissions
 
         PartitionedTreeNode currentNode = tipInGuideTree;
-        while(currentNode != null & currentNode.getHeight() < gtHeight){
+        while(currentNode != null && currentNode.getHeight() < gtHeight){
             currentNode = (PartitionedTreeNode) currentNode.getParent();
         }
 
-        //If the node immediately after this time point is A infecting B, we want to return A
+        //If the node immediately after this time point is A infecting B, we want to return B
         if(currentNode!=null){
-            return currentNode.getPartitionElementNumber();
+            for(Node child : currentNode.getChildren()){
+                PartitionedTreeNode castChild = (PartitionedTreeNode)child;
+                if(castChild.getPartitionElementNumber() != currentNode.getPartitionElementNumber()){
+                    return castChild.getPartitionElementNumber();
+                }
+            }
         }
 
         //if this height is earlier than the root of the guide tree, need to check the length of its root branch
@@ -128,23 +138,39 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
     public boolean updatePartitions(){
 
+        // tips imply that the host was infected at that time
+
+        for(Node tip : getExternalNodes()){
+            PartitionedTreeNode castTip = (PartitionedTreeNode)tip;
+            if(tip.getHeight() > tt.getInfectionHeightByNr(castTip.getPartitionElementNumber()) ){
+                return false;
+            }
+        }
+
         //this is going to be slow if done like this, but it will catch problems.
 
-        for(Node node : getInternalNodes()){
-            PartitionedTreeNode castNode = (PartitionedTreeNode)node;
-            List<Integer> requiredElements = new ArrayList<>();
+        for(Node node : getInternalNodes()) {
 
-            for(Node tip : node.getAllLeafNodes()){
-                PartitionedTreeNode castTip = (PartitionedTreeNode)tip;
+            PartitionedTreeNode castNode = (PartitionedTreeNode) node;
+            Set<Integer> requiredElements = new HashSet<>();
+
+            for (Node tip : node.getAllLeafNodes()) {
+                PartitionedTreeNode castTip = (PartitionedTreeNode) tip;
                 int elementAtNodeHeight = elementAtHeight(castTip, node.getHeight(), false);
                 requiredElements.add(elementAtNodeHeight);
             }
-            if(requiredElements.size()!=1){
+            if (requiredElements.size() != 1) {
                 return false;
             }
-            int elementNo = requiredElements.get(0);
+            int elementNo = requiredElements.iterator().next();
 
             castNode.setPartitionElementNumber(elementNo);
+        }
+
+        for(Node node : getNodesAsArray()){
+
+            PartitionedTreeNode castNode = (PartitionedTreeNode)node;
+            int elementNo = castNode.getPartitionElementNumber();
 
             if(elementNo!=-1) {
                 List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
@@ -183,8 +209,8 @@ public class GuidedPartitionedTree extends PartitionedTree {
                 int[] branchElements = Ints.toArray(infectorsAlongBranch);
                 double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
 
-                node.setMetaData("historyElements", branchElements);
-                node.setMetaData("historyHeights", branchTransitionHeights);
+                node.setMetaData(elementBranchString, branchElements);
+                node.setMetaData(heightBranchString, branchTransitionHeights);
             } else {
                 //we're above the root of the guide tree
                 List<Double> transitionHeights = new ArrayList<>();
@@ -195,8 +221,8 @@ public class GuidedPartitionedTree extends PartitionedTree {
                 int[] branchElements = Ints.toArray(infectorsAlongBranch);
                 double[] branchTransitionHeights = Doubles.toArray(transitionHeights);
 
-                node.setMetaData("historyElements", branchElements);
-                node.setMetaData("historyHeights", branchTransitionHeights);
+                node.setMetaData(elementBranchString, branchElements);
+                node.setMetaData(heightBranchString, branchTransitionHeights);
             }
 
         }
@@ -212,20 +238,24 @@ public class GuidedPartitionedTree extends PartitionedTree {
     //extremely slow.
 
     public PartitionedTree extractAncestralSubtree(int elementNo, HashMap<Node, Node> references){
-
-        List<Integer> ancestralChain = getAncestralChain(elementNo);
-
+        List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
         PartitionedTreeNode root = (PartitionedTreeNode)getRoot();
 
-        return new PartitionedTree(copyDown(root, references, ancestralChain));
+        return new PartitionedTree(copyDown(root, references, null, ancestralChain));
     }
 
     private PartitionedTreeNode copyDown(PartitionedTreeNode oldNode, HashMap<Node, Node> references,
-                                         List<Integer> chain){
+                                         PartitionedTree tree, List<Integer> chain){
         if(chain.contains(oldNode.getPartitionElementNumber())){
             PartitionedTreeNode copyNode = new PartitionedTreeNode();
+            PartitionedTree copyTree;
+            if(tree == null){
+                copyTree = new PartitionedTree(copyNode);
+            } else {
+                copyTree = tree;
+                copyTree.addNode(copyNode);
+            }
             copyNode.height = oldNode.getHeight();
-            copyNode.labelNr = oldNode.getNr();
             copyNode.metaDataString = oldNode.metaDataString;
             copyNode.setParent(null);
             copyNode.setID(oldNode.getID());
@@ -234,7 +264,7 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
             if(!oldNode.isLeaf()){
                 for(int i=0; i<oldNode.getChildCount(); i++){
-                    copyNode.addChild(copyDown((PartitionedTreeNode)oldNode.getChild(i), references, chain));
+                    copyNode.addChild(copyDown((PartitionedTreeNode)oldNode.getChild(i), references, copyTree, chain));
                 }
             }
 
@@ -245,6 +275,7 @@ public class GuidedPartitionedTree extends PartitionedTree {
             double newHeight = thisTreeHeight(tt.getInfectionHeightByNr(infectedElement));
 
             PartitionedTreeNode transNode = new PartitionedTreeNode();
+            tree.addNode(transNode);
             transNode.height = newHeight;
             transNode.setParent(null);
             transNode.setPartitionElementNumber(infectedElement);
@@ -254,51 +285,105 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
 
     public void explodeTree(){
+
+//        try {
+//            PrintStream firstSteam = new PrintStream("tt.nex");
+//
+//            PartitionedTreeLogger.debugLog(tt, 0, false, firstSteam);
+//
+//            PrintStream secondStream = new PrintStream("phy.nex");
+//
+//            PartitionedTreeLogger.debugLog(this, 0, true, secondStream);
+//
+//            PrintStream thirdStream = new PrintStream("pure.nex");
+//
+//
+//            init(thirdStream);
+//            log(0, thirdStream);
+//            close(thirdStream);
+//        }catch(FileNotFoundException e){
+//            e.printStackTrace();
+//        }
+
         elementsAsTrees = new HashMap<>();
         elementsAsTrees.put(-1, new ArrayList<>());
         for(int i=0; i<getNElements(); i++){
             elementsAsTrees.put(i, new ArrayList<>());
         }
-        scanForTreelets((PartitionedTreeNode)getRoot(), elementsAsTrees);
+        scanForTreelets((PartitionedTreeNode)getRoot(), elementsAsTrees, null);
     }
 
-    private Node scanForTreelets(PartitionedTreeNode node, AbstractMap<Integer, List<Treelet>> elementsAsTrees) {
-
-        double[] changeHeights = (double[]) node.getMetaData("historyHeights");
-        int[] changeElements = (int[]) node.getMetaData("historyElements");
+    private Node scanForTreelets(PartitionedTreeNode node, AbstractMap<Integer, List<Treelet>> elementsAsTrees,
+                                 Tree currentTree) {
+        double[] changeHeights = (double[]) node.getMetaData(heightBranchString);
+        int[] changeElements = (int[]) node.getMetaData(elementBranchString);
 
         if(changeHeights.length == 1){
             //no infections along the branch
-            Node copy;
-            if(node.isLeaf()){
-                copy = new Node(node.getID());
-            } else {
-                copy = new Node();
-                for(int childNo = 0; childNo < node.getChildCount(); childNo++){
-                    node.addChild(scanForTreelets((PartitionedTreeNode)node.getChild(childNo), elementsAsTrees));
+            if(currentTree == null){
+                //at the root only
+                Node copyRoot = new Node();
+                Tree protoTreelet = new Tree(copyRoot);
+                copyRoot.setHeight(node.getHeight());
+                for (int childNo = 0; childNo < node.getChildCount(); childNo++) {
+                    Node child = scanForTreelets((PartitionedTreeNode) node.getChild(childNo), elementsAsTrees,
+                            protoTreelet);
+                    copyRoot.addChild(child);
                 }
+                copyRoot.setHeight(node.getHeight());
+                protoTreelet = new Tree(copyRoot);
+                protoTreelet.getLeafNodeCount();
+                protoTreelet.getInternalNodeCount();
+
+                Treelet treelet = new Treelet(protoTreelet, changeHeights[0]-node.getHeight());
+                List<Treelet> elementTreelets = elementsAsTrees.get(node.getPartitionElementNumber());
+                elementTreelets.add(treelet);
+                return null;
+
+            } else {
+                Node copy;
+                if (node.isLeaf()) {
+                    copy = new Node(node.getID());
+                    currentTree.addNode(copy);
+                } else {
+                    copy = new Node();
+                    currentTree.addNode(copy);
+                    for (int childNo = 0; childNo < node.getChildCount(); childNo++) {
+                        Node child = scanForTreelets((PartitionedTreeNode) node.getChild(childNo), elementsAsTrees,
+                                currentTree);
+                        copy.addChild(child);
+                    }
+                }
+                copy.setHeight(node.getHeight());
+                return copy;
             }
-            copy.setHeight(node.getHeight());
-            return copy;
         } else {
             //the section nearest the child
             Node copyRoot;
+            Tree protoTreelet;
             if(node.isLeaf()){
                 copyRoot = new Node(node.getID());
             } else {
                 copyRoot = new Node();
+                protoTreelet = new Tree(copyRoot);
                 for(int childNo = 0; childNo < node.getChildCount(); childNo++){
-                    node.addChild(scanForTreelets((PartitionedTreeNode)node.getChild(childNo), elementsAsTrees));
+                    Node child = scanForTreelets((PartitionedTreeNode)node.getChild(childNo), elementsAsTrees,
+                            protoTreelet);
+                    copyRoot.addChild(child);
                 }
             }
             copyRoot.setHeight(node.getHeight());
-            Treelet treelet = new Treelet(new Tree(copyRoot), changeHeights[0]-node.getHeight());
+            protoTreelet = new Tree(copyRoot);
+            protoTreelet.getLeafNodeCount();
+            protoTreelet.getInternalNodeCount();
+
+            Treelet treelet = new Treelet(protoTreelet, changeHeights[0]-node.getHeight());
             List<Treelet> elementTreelets = elementsAsTrees.get(node.getPartitionElementNumber());
             elementTreelets.add(treelet);
 
             if(changeElements.length > 2){
                 //one or more little segments
-                for(int segmentNo = 1; segmentNo < changeElements.length-2; segmentNo++){
+                for(int segmentNo = 1; segmentNo < changeElements.length-1; segmentNo++){
                     Node segmentEnd = new Node("Transmission_" + getElementString(changeElements[segmentNo-1]));
                     Treelet treelet1 = new Treelet(new Tree(segmentEnd),
                             changeHeights[segmentNo] - changeHeights[segmentNo-1]);
@@ -308,10 +393,16 @@ public class GuidedPartitionedTree extends PartitionedTree {
             }
 
             //the section nearest the parent
-            Node transmissionTip = new Node("Transmission_"
-                    + getElementString(changeElements[changeElements.length-2]));
-            transmissionTip.setHeight(changeHeights[changeElements.length]-2);
-            return transmissionTip;
+            // an infinite dark section above the first infection is of no interest
+            if(currentTree != null) {
+                Node transmissionTip = new Node("Transmission_"
+                        + getElementString(changeElements[changeElements.length - 2]));
+                currentTree.addNode(transmissionTip);
+                transmissionTip.setHeight(changeHeights[changeElements.length - 2]);
+                return transmissionTip;
+            } else {
+                return null;
+            }
         }
 
     }
@@ -323,7 +414,7 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
     public int getBundle(PartitionedTreeNode node, double height, int elementNo, List<PartitionedTreeNode> twigs){
 
-        List<Integer> ancestralChain = getAncestralChain(elementNo);
+        List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
 
         final PartitionedTreeNode parent = (PartitionedTreeNode)node.getParent();
 
@@ -343,8 +434,8 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
         if (node.getHeight() < height) {
             if(parent == null || ancestralChain.contains(parent.getPartitionElementNumber())){
-                int[] branchElements = (int[])node.getMetaData("historyElements");
-                double[] transitionHeights = (double[])node.getMetaData("historyHeights");
+                int[] branchElements = (int[])node.getMetaData(elementBranchString);
+                double[] transitionHeights = (double[])node.getMetaData(heightBranchString);
 
                 double currentHeight = node.getHeight();
                 int currentIndex = -1;
@@ -426,6 +517,103 @@ public class GuidedPartitionedTree extends PartitionedTree {
         }
         return laterNodes;
     }
+
+    public Tree getFlattenedTree() {
+
+        // Create new tree to modify.  Note that copy() doesn't
+        // initialise the node array lists, so initArrays() must
+        // be called manually.
+        Tree flatTree = copy();
+        flatTree.initArrays();
+
+        int nextNodeNr = getNodeCount();
+        PartitionedTreeNode colourChangeNode;
+
+        for (Node node : getNodesAsArray()) {
+
+            int nodeNum = node.getNr();
+
+            Node newNode = flatTree.getNode(nodeNum);
+
+            newNode.setMetaData(elementLabel,
+                    ((PartitionedTreeNode) node).getPartitionElementNumber());
+
+            newNode.metaDataString = String.format("%s=\"%s\"", elementLabel,
+                    getElementString(((PartitionedTreeNode) node).getPartitionElementNumber()));
+
+        }
+
+        PartitionedTreeNode newRoot = null;
+
+        for(Node node : flatTree.getNodesAsArray()){
+
+            PartitionedTreeNode originalNode = (PartitionedTreeNode)getNode(node.getNr());
+
+            int[] elementHistory = (int[])originalNode.getMetaData(elementBranchString);
+            double[] heightHistory = (double[])originalNode.getMetaData(heightBranchString);
+
+            PartitionedTreeNode currentNode = (PartitionedTreeNode)node;
+
+            if(node.isRoot()){
+                for(int eventNo = 0; eventNo < elementHistory.length; eventNo++){
+                    if(eventNo != elementHistory.length-1) {
+                        colourChangeNode = new PartitionedTreeNode();
+                        colourChangeNode.setNr(nextNodeNr);
+                        colourChangeNode.setID(String.valueOf(nextNodeNr));
+                        nextNodeNr++;
+
+                        currentNode.setParent(colourChangeNode);
+                        colourChangeNode.addChild(currentNode);
+
+                        colourChangeNode.setHeight(heightHistory[eventNo]);
+                        colourChangeNode.setMetaData(elementLabel, elementHistory[eventNo+1]);
+                        colourChangeNode.setPartitionElementNumber(elementHistory[eventNo+1]);
+                        currentNode = colourChangeNode;
+                    } else {
+                        newRoot = currentNode;
+                    }
+                }
+            } else if(elementHistory.length>1){
+                //otherwise there is nothing to do
+                for(int eventNo = 0; eventNo < elementHistory.length; eventNo++){
+                    if(eventNo != elementHistory.length-1) {
+                        colourChangeNode = new PartitionedTreeNode();
+                        colourChangeNode.setNr(nextNodeNr);
+                        colourChangeNode.setID(String.valueOf(nextNodeNr));
+                        nextNodeNr++;
+
+                        currentNode.setParent(colourChangeNode);
+                        colourChangeNode.addChild(currentNode);
+
+                        colourChangeNode.setHeight(heightHistory[eventNo]);
+                        colourChangeNode.setMetaData(elementLabel, elementHistory[eventNo+1]);
+                        colourChangeNode.setPartitionElementNumber(elementHistory[eventNo+1]);
+                        currentNode = colourChangeNode;
+                    } else {
+
+                        PartitionedTreeNode parent = (PartitionedTreeNode)flatTree
+                                .getNode(originalNode.getParent().getNr());
+
+                        currentNode.setParent(parent);
+                        parent.removeChild(node);
+                        parent.addChild(currentNode);
+
+                    }
+                }
+            }
+        }
+
+
+        //and once again this seems the only way to do it.
+
+        flatTree = new Tree(newRoot);
+        flatTree.getInternalNodeCount();
+        flatTree.getLeafNodeCount();
+        flatTree.initAndValidate();
+
+        return flatTree;
+    }
+
 }
 
 

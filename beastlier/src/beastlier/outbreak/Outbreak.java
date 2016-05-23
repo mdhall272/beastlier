@@ -26,6 +26,7 @@ package beastlier.outbreak;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.datatype.DataType;
 import com.google.common.collect.Lists;
@@ -39,7 +40,7 @@ import java.util.List;
  */
 
 @Description("An outbreak is a collection of ClinicalCases from the same event")
-public class Outbreak extends BEASTObject implements DataType {
+public class Outbreak extends TaxonSet implements DataType {
 
     public Input<Boolean> hasGeographyInput = new Input<>("hasGeography", "True if hosts have geographical locations",
             false, Input.Validate.OPTIONAL);
@@ -48,29 +49,36 @@ public class Outbreak extends BEASTObject implements DataType {
 
     private Boolean hasGeography;
     private List<ClinicalCase> cases;
-    private List<ClinicalCase> everInfectedCases;
 
     @Override
     public void initAndValidate() {
+
         cases = casesInput.get();
         hasGeography = hasGeographyInput.get();
-        everInfectedCases = new ArrayList<>();
+
+        //The taxonList is the set of cases that were ever infected
+
+        taxonList = new ArrayList<>();
 
         for(ClinicalCase aCase : cases){
             if(aCase.wasEverInfected()){
-                everInfectedCases.add(aCase);
+                taxonList.add(aCase);
             }
             if(hasGeography && !(aCase instanceof GeographicallyLocatedClinicalCase)){
                 throw new IllegalArgumentException("Clinical case "+aCase.getID()+" is not geographically located" +
                         " but a geographical component is specified by outbreak "+getID());
             }
         }
+        taxaNames = new ArrayList<>();
+        for (final Taxon taxon : taxonList) {
+            taxaNames.add(taxon.getID());
+        }
 
     }
 
     @Override
     public int getStateCount() {
-        return everInfectedCases.size();
+        return taxonList.size();
     }
 
     // I assume that nobody in their right mind would want to overlay two or more partition models. A "sequence"
@@ -112,7 +120,7 @@ public class Outbreak extends BEASTObject implements DataType {
 
     @Override
     public boolean[] getStateSet(int state) {
-        boolean[] out = new boolean[everInfectedCases.size()];
+        boolean[] out = new boolean[taxonList.size()];
         Arrays.fill(out, true);
         return out;
     }
@@ -175,8 +183,8 @@ public class Outbreak extends BEASTObject implements DataType {
         return cases;
     }
 
-    public List<ClinicalCase> getEverInfectedCases(){
-        return everInfectedCases;
+    public List<Taxon> getEverInfectedCases(){
+        return taxonList;
     }
 
     public ClinicalCase getCase(int number){
@@ -184,7 +192,7 @@ public class Outbreak extends BEASTObject implements DataType {
     }
 
     public ClinicalCase getEverInfectedCase(int number){
-        return everInfectedCases.get(number);
+        return (ClinicalCase)taxonList.get(number);
     }
 
     public int getCaseIndex(ClinicalCase aCase){
@@ -192,7 +200,7 @@ public class Outbreak extends BEASTObject implements DataType {
     }
 
     public int getInfectedCaseIndex(ClinicalCase aCase){
-        return everInfectedCases.indexOf(aCase);
+        return taxonList.indexOf(aCase);
     }
 
     public boolean hasGeography(){

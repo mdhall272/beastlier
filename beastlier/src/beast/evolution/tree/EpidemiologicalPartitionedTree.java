@@ -25,6 +25,7 @@ package beast.evolution.tree;
 import beast.core.Citation;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.Taxon;
 import beast.util.Randomizer;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
@@ -194,8 +195,9 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
     // we randomly assign cases for which this happens a qi that has a higher height.
 
     private void initialiseQs(){
-        for(ClinicalCase aCase : outbreak.getEverInfectedCases()){
-            int elementNo = getElementNo(aCase);
+        for(Taxon aCase : outbreak.getEverInfectedCases()){
+            ClinicalCase castCase = (ClinicalCase)aCase;
+            int elementNo = getElementNo(castCase);
 
             Node mrca = getElementMRCA(elementNo);
             if(!mrca.isRoot()) {

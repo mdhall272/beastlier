@@ -367,6 +367,9 @@ public class PartitionedTree extends Tree {
      * @return string name of given type
      */
     public String getElementString(int element) {
+        if(element == -1){
+            return "unsampled";
+        }
         if (!traitsProcessed)
             processTraits(m_traitList.get());
 

@@ -97,7 +97,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
         infDistributionPriorElement = ET.SubElement(infWrapperElement, infHyperpriorType)
 
         if infType=="l" or infType=="n":
-            distElement = createNormalBlock(ET, 'distribution', infArgs[0], math.sqrt(float(infArgs[1])))
+            distElement = createNormalBlock(ET, 'distribution', float(infArgs[0]), math.sqrt(float(infArgs[1])))
         if infType=="e":
             distElement = createExponentialBlock(ET, 'distribution', float(infArgs[0]))
         if infType=="g":
@@ -618,7 +618,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
         outFile.write(minidom.parseString(outString).toprettyxml(newl='\n'))
 
 
-def createExponentialBlock(tree, name, mean, idstring,  meanID):
+def createExponentialBlock(tree, name, mean, idstring = None,  meanID = None):
     enclosingElement = tree.Element(name)
     expElement = tree.SubElement(enclosingElement, 'exponentialDistributionModel')
     expElement.append(createParameterBlock(tree, 'mean', meanID, mean, True, 1))
@@ -626,7 +626,7 @@ def createExponentialBlock(tree, name, mean, idstring,  meanID):
         expElement.set('id', idstring)
     return enclosingElement
 
-def createGammaBlock(tree, name, scale, shape, idstring, scaleID, shapeID):
+def createGammaBlock(tree, name, scale, shape, idstring = None, scaleID = None, shapeID = None):
     enclosingElement = tree.Element(name)
     gammaElement = tree.SubElement(enclosingElement,'gammaDistributionModel')
     gammaElement.append(createParameterBlock(tree, 'shape', shapeID, shape, True, 1))

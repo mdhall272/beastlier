@@ -57,7 +57,7 @@ public class ThirdTypeSubtreeSlideB extends TreeOperator {
         if(!(treeInput.get() instanceof PartitionedTree)){
             throw new RuntimeException("This operator is designed for partitioned trees only");
         }
-        if(!(((PartitionedTree) treeInput.get()).rules== PartitionedTree.Rules.THIRD_TYPE)){
+        if(!(((PartitionedTree) treeInput.get()).rules== PartitionedTree.Rules.DIDELOT)){
             throw new RuntimeException("This operator is designed for trees with partition rules of the third type");
         }
         size = sizeInput.get();

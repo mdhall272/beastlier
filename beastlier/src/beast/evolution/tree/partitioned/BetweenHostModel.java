@@ -27,7 +27,10 @@ import beast.evolution.tree.EpidemiologicalPartitionedTree;
 import beast.evolution.tree.TreeDistribution;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
+import beastlier.util.PartitionedTreeLogger;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -64,6 +67,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     public double calculateLogP(){
 
         if(typeOfDirt == IS_FILTHY) {
+            infectionTimesMap = null;
             sortEvents();
         }
 
@@ -87,6 +91,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
         storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
 
         infectionTimesMap = null;
+        storedInfectionTimesMap = null;
     }
 
     protected double getInfectionTime(ClinicalCase aCase){
@@ -144,10 +149,17 @@ public abstract class BetweenHostModel extends TreeDistribution {
     }
 
     protected void sortEvents(){
+//
+//        try {
+//            PrintStream firstSteam = new PrintStream("ttg.nex");
+//
+//            PartitionedTreeLogger.debugLog(tree, 0, false, firstSteam);
+//        } catch (FileNotFoundException e){
+//            e.printStackTrace();
+//        }
 
         ArrayList<TreeEvent> out = new ArrayList<>();
         for(ClinicalCase aCase : outbreak.getCases()){
-
             double infectionTime = Double.POSITIVE_INFINITY;
 
             if(aCase.wasEverInfected()){

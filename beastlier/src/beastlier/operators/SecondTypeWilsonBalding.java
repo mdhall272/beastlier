@@ -40,7 +40,7 @@ public class SecondTypeWilsonBalding extends WilsonBalding {
         if(!(treeInput.get() instanceof PartitionedTree)){
             throw new RuntimeException("This operator is designed for partitioned trees only");
         }
-        if(!(((PartitionedTree) treeInput.get()).rules == PartitionedTree.Rules.SECOND_TYPE)){
+        if(!(((PartitionedTree) treeInput.get()).rules == PartitionedTree.Rules.COTTAM)){
             throw new RuntimeException("This operator is designed for trees with partition rules of the second type");
         }
     }

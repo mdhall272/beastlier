@@ -37,8 +37,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static beast.evolution.tree.PartitionedTree.Rules.SECOND_TYPE;
-import static beast.evolution.tree.PartitionedTree.Rules.THIRD_TYPE;
+import static beast.evolution.tree.PartitionedTree.Rules.COTTAM;
+import static beast.evolution.tree.PartitionedTree.Rules.DIDELOT;
 import static beast.evolution.tree.PartitionedTree.Rules.UNRESTRICTED;
 
 /**
@@ -88,7 +88,7 @@ public class PartitionedTree extends Tree {
     protected TraitSet elementTraitSet;
     protected List<String> elementList;
 
-    public enum Rules {SECOND_TYPE, THIRD_TYPE, UNRESTRICTED};
+    public enum Rules {COTTAM, DIDELOT, UNRESTRICTED};
 
     public Rules rules;
 
@@ -100,12 +100,12 @@ public class PartitionedTree extends Tree {
     //saves time - tip numbers for each element.
     private ArrayList<ArrayList<Integer>> tipsPerElement = new ArrayList<>();
 
-    protected HashMap<Integer, List<Treelet>> elementsAsTrees;
-    protected HashMap<Integer, List<Treelet>> storedElementsAsTrees;
+//    protected HashMap<Integer, List<Treelet>> elementsAsTrees;
+//    protected HashMap<Integer, List<Treelet>> storedElementsAsTrees;
 
     RealParameter rootBranchLength;
 
-    protected boolean[] treeletsRequiringExtraction;
+    protected boolean[] intervalsRequireRecalculation;
 
     public PartitionedTree() { };
 
@@ -122,10 +122,10 @@ public class PartitionedTree extends Tree {
 
         switch(rulesInput.get()){
             case "second":
-                rules = SECOND_TYPE;
+                rules = COTTAM;
                 break;
             case "third":
-                rules = THIRD_TYPE;
+                rules = DIDELOT;
                 break;
             case "unrestricted":
                 rules = UNRESTRICTED;
@@ -202,7 +202,7 @@ public class PartitionedTree extends Tree {
             processTraits(m_traitList.get());
         }
 
-        if(rules == SECOND_TYPE){
+        if(rules == COTTAM){
             for(int i=0; i<elementList.size(); i++){
                if(getTipsInElement(i).size() > 1){
                    throw new IllegalArgumentException("As currently implemented rules of the second type require one" +
@@ -403,15 +403,15 @@ public class PartitionedTree extends Tree {
     }
 
     public void setTreeletRequiresExtraction(int index){
-        treeletsRequiringExtraction[index] = true;
+        intervalsRequireRecalculation[index] = true;
     }
 
     public boolean treeletRequiresExtraction(int index){
-        return treeletsRequiringExtraction[index];
+        return intervalsRequireRecalculation[index];
     }
 
     public void allTreeletsRequireExtraction(boolean value){
-        Arrays.fill(treeletsRequiringExtraction, value);
+        Arrays.fill(intervalsRequireRecalculation, value);
     }
 
     @Override
@@ -547,7 +547,7 @@ public class PartitionedTree extends Tree {
     public boolean isValid() {
         if(rules == UNRESTRICTED){
             return true;
-        } else if(rules==THIRD_TYPE) {
+        } else if(rules== DIDELOT) {
 
             for (Node node : getInternalNodes()) {
                 PartitionedTreeNode castNode = (PartitionedTreeNode) node;
@@ -611,9 +611,9 @@ public class PartitionedTree extends Tree {
     /////////////////////////////////////////////////
     @Override
     protected void store() {
-        if(rules == THIRD_TYPE) {
+        if(rules == DIDELOT) {
             allTreeletsRequireExtraction(false);
-            storedElementsAsTrees = new HashMap<>(elementsAsTrees);
+//            storedElementsAsTrees = new HashMap<>(elementsAsTrees);
             storedElementEarliestNodes = elementEarliestNodes.clone();
         }
         storedInfectors = infectors.clone();
@@ -644,9 +644,9 @@ public class PartitionedTree extends Tree {
 
     @Override
     public void restore(){
-        if(rules == THIRD_TYPE) {
+        if(rules == DIDELOT) {
             allTreeletsRequireExtraction(false);
-            elementsAsTrees = storedElementsAsTrees;
+//            elementsAsTrees = storedElementsAsTrees;
         }
         elementEarliestNodes = storedElementEarliestNodes;
         infectors = storedInfectors;
@@ -901,7 +901,7 @@ public class PartitionedTree extends Tree {
     }
 
     public int getTipNumber(int elementNo){
-        if(rules != SECOND_TYPE){
+        if(rules != COTTAM){
             throw new RuntimeException("Possible to have multiple tips per host in this model");
         }
 
@@ -1196,9 +1196,9 @@ public class PartitionedTree extends Tree {
         }
     }
 
-    public List<Treelet> getElementAsTrees(int elementNo){
-        return elementsAsTrees.get(elementNo);
-    }
+//    public List<Treelet> getElementAsTrees(int elementNo){
+//        return elementsAsTrees.get(elementNo);
+//    }
 
     @Override
     public void setEverythingDirty(final boolean isDirty) {
@@ -1224,7 +1224,7 @@ public class PartitionedTree extends Tree {
             infectors = new int[elementList.size()];
             storedInfectors = new int[elementList.size()];
         }
-        if(rules == THIRD_TYPE) {
+        if(rules == DIDELOT) {
             allTreeletsRequireExtraction(isDirty);
         }
     }
@@ -1252,31 +1252,55 @@ public class PartitionedTree extends Tree {
         out.addAll(ancestors);
         return out;
     }
-
-    public class Treelet extends Tree {
-
-        private double zeroHeight;
-
-        protected Treelet(Tree tree, double zeroHeight){
-            tree.initAndValidate();
-            assignFrom(tree);
-            this.zeroHeight = zeroHeight;
-        }
-
-        public double getZeroHeight(){
-            return zeroHeight;
-        }
-
-        public void setZeroHeight(double rootBranchLength){
-            this.zeroHeight = zeroHeight;
-        }
-    }
-
-    public void explodeTree(){
-        throw new RuntimeException("Not enough information in this class to integrate a within-host model");
-    }
-
+//
+//    public class Treelet extends Tree {
+//
+//        private double zeroHeight;
+//
+//        protected Treelet(Tree tree, double zeroHeight){
+//            tree.initAndValidate();
+//            assignFrom(tree);
+//            this.zeroHeight = zeroHeight;
+//        }
+//
+//        public double getZeroHeight(){
+//            return zeroHeight;
+//        }
+//
+//        public void setZeroHeight(double rootBranchLength){
+//            this.zeroHeight = zeroHeight;
+//        }
+//    }
+//
+//    public void explodeTree(){
+//        throw new RuntimeException("Not enough information in this class to integrate a within-host model");
+//    }
+//
     public boolean[] identifyChangedTreelets(){
         throw new RuntimeException("Not enough information in this class to integrate a within-host model");
     }
+
+    public int countNodesInPartition(int elementNo, boolean internalOnly, boolean forWithinHostPhylogeny){
+        //if forWithinHostPhylogeny is true then the extra nodes created by splitting the tree are counted; this
+        //only works in a superclass
+        if(forWithinHostPhylogeny){
+            throw new RuntimeException("Not enough information in this class to integrate a within-host model");
+        }
+        int count = 0;
+        for(Node node : getNodesAsArray()){
+            PartitionedTreeNode castNode = (PartitionedTreeNode)node;
+            if(castNode.getPartitionElementNumber() == elementNo && (!internalOnly || !castNode.isLeaf())){
+                count++;
+            }
+        }
+
+        return count;
+
+    }
+
+
+    public Tree getFlattenedTree(){
+        throw new RuntimeException("Not implemented");
+    }
+
 }

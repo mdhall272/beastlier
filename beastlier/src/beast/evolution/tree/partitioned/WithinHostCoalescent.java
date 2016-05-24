@@ -52,6 +52,8 @@ public class WithinHostCoalescent extends WithinHostModel {
             "Another coalescent process for lineages assigned to no clinical case", null, Input.Validate.OPTIONAL);
     public Input<Boolean> enforceCoalescenceInput = new Input<>("enforceCoalescence", "Whether probabilities are " +
             "calculated under the assumption that all lineages coalesce before the time of infection");
+    public Input<ForestIntervals> forestIntervalsInput = new Input<>("forestIntervals", "The tree intervals by" +
+            " connected component");
 
     private PopulationFunction popFunction;
     private PopulationFunction restOfPopFunction;
@@ -60,6 +62,7 @@ public class WithinHostCoalescent extends WithinHostModel {
     private double[] individualWHProbabilities;
     private double[] storedIndividualWHProbabilities;
     private boolean enforceCoalescence;
+    private ForestIntervals forestIntervals;
 
 
 
@@ -71,6 +74,7 @@ public class WithinHostCoalescent extends WithinHostModel {
         recalculateTreeletLogP = new boolean[tree.getElementList().size()];
         Arrays.fill(recalculateTreeletLogP, true);
         enforceCoalescence = enforceCoalescenceInput.get();
+        forestIntervals = forestIntervalsInput.get();
     }
 
 
@@ -85,7 +89,7 @@ public class WithinHostCoalescent extends WithinHostModel {
 
             if(!((GuidedPartitionedTree)tree).updatePartitions()){
                 return Double.NEGATIVE_INFINITY;
-            };
+            }
         } else {
 
             if (((CalculationNode) popFunction).isDirtyCalculation()) {
@@ -96,18 +100,13 @@ public class WithinHostCoalescent extends WithinHostModel {
             }
         }
 
-
-
-        tree.explodeTree();
-
         logP = 0;
 
         if(restOfPopFunction != null){
-            PartitionedTree.Treelet restOfPopTreelet = tree.getElementAsTrees(-1).get(0);
-            TreeIntervals intervals = new TreeIntervals(restOfPopTreelet);
+            ForestIntervals.PartitionIntervals intervals = forestIntervals.getIntervals(-1);
 
             double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                    0, false);
+                    intervals.getTotalLength(), false);
 
             logP += individualLogP;
         }
@@ -116,28 +115,15 @@ public class WithinHostCoalescent extends WithinHostModel {
 
             if(recalculateTreeletLogP[i]) {
 
-                String caseName = tree.getElementString(i);
-                ClinicalCase aCase = outbreak.getCaseByID(caseName);
+                ForestIntervals.PartitionIntervals intervals = forestIntervals.getIntervals(i);
 
-                List<PartitionedTree.Treelet> treelets = tree.getElementAsTrees(outbreak.getCaseIndex(aCase));
+                double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
+                        intervals.getTotalLength(), enforceCoalescence);
 
-                for(PartitionedTree.Treelet treelet : treelets) {
-                    if (treelet.getLeafNodeCount() > 1) {
-                        TreeIntervals intervals = new TreeIntervals(treelet);
+                individualWHProbabilities[i] = individualLogP;
 
-                        double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                                treelet.getZeroHeight(), enforceCoalescence);
+                logP += individualLogP;
 
-                        individualWHProbabilities[i] = individualLogP;
-
-                        logP += individualLogP;
-
-                    } else {
-                        individualWHProbabilities[i] = 0.0;
-
-                        logP += 0.0;
-                    }
-                }
             } else {
                 logP += individualWHProbabilities[i];
             }
@@ -145,6 +131,8 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         return logP;
     }
+
+    //the end of the last interval is now time zero
 
     public static double calculateTreeletLogLikelihood(IntervalList intervals, PopulationFunction demographicFunction,
                                                        double threshold, double zeroHeight,
@@ -155,9 +143,10 @@ public class WithinHostCoalescent extends WithinHostModel {
 
         if(enforceCoalescence) {
 
-            //TreeIntervals sets up a first zero-length interval with a lineage count of zero - skip this one
+            //The last interval should _not_ have its probability calculated if you're conditioning on coalescence
+            //because the probability of that interval will be 0
 
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n-1; i++) {
 
                 // time zero corresponds to the date of first infection
 

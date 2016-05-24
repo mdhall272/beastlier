@@ -47,7 +47,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
     private double size;
 
     public void initAndValidate(){
-        if(((PartitionedTree)treeInput.get()).getRules() != PartitionedTree.Rules.SECOND_TYPE){
+        if(((PartitionedTree)treeInput.get()).getRules() != PartitionedTree.Rules.COTTAM){
             throw new IllegalArgumentException("The tree must be partitioned according to second-type rules");
         }
 

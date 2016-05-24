@@ -23,7 +23,6 @@
 package beastlier.operators;
 
 import beast.core.Input;
-import beast.evolution.datatype.IntegerData;
 import beast.evolution.operators.TreeOperator;
 import beast.evolution.tree.*;
 import beast.util.Randomizer;
@@ -51,7 +50,7 @@ public class GuidedSubtreeLeapA extends TreeOperator {
 
     public void initAndValidate(){
         tt = ttInput.get();
-        if(tt.getRules() != PartitionedTree.Rules.SECOND_TYPE){
+        if(tt.getRules() != PartitionedTree.Rules.COTTAM){
             throw new IllegalArgumentException("The guide tree must be partitioned according to second-type rules");
         }
         if(!(treeInput.get() instanceof GuidedPartitionedTree)){

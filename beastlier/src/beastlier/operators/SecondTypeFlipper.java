@@ -27,8 +27,6 @@ import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.PartitionedTreeNode;
 import beast.util.Randomizer;
 
-import java.util.ArrayList;
-
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
@@ -39,7 +37,7 @@ public class SecondTypeFlipper extends TreeOperator {
         if(!(treeInput.get() instanceof PartitionedTree)){
             throw new RuntimeException("This operator is designed for partitioned trees only");
         }
-        if(!(((PartitionedTree) treeInput.get()).rules == PartitionedTree.Rules.SECOND_TYPE)){
+        if(!(((PartitionedTree) treeInput.get()).rules == PartitionedTree.Rules.COTTAM)){
             throw new RuntimeException("This operator is designed for trees with partition rules of the second type");
         }
     }

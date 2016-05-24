@@ -106,9 +106,11 @@ public class PartitionedTreeLogger extends BEASTObject implements Loggable {
     public static void debugLog(PartitionedTree tree, int nSample, boolean fancy, PrintStream stream){
 
         if(fancy){
-            GuidedPartitionedTree epTree = (GuidedPartitionedTree)tree;
 
-            Tree fancyTree = epTree.getFlattenedTree();
+
+
+
+            Tree fancyTree = tree.getFlattenedTree();
 
             for (Node node : fancyTree.getNodesAsArray()) {
                 PartitionedTreeNode pNode = (PartitionedTreeNode) node;

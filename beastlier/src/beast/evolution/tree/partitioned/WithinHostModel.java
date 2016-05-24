@@ -24,13 +24,7 @@ package beast.evolution.tree.partitioned;
 
 import beast.core.Input;
 import beast.evolution.tree.*;
-import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.Outbreak;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -56,7 +50,7 @@ public abstract class WithinHostModel extends TreeDistribution {
         tree = (PartitionedTree) treeInput.get();
         outbreak = outbreakInput.get();
 
-        if(tree.getRules() == PartitionedTree.Rules.SECOND_TYPE){
+        if(tree.getRules() == PartitionedTree.Rules.COTTAM){
             throw new IllegalArgumentException("Trees must be partitioned by third-type rules to have a within-" +
                     "host model");
         }

@@ -30,8 +30,10 @@ import beastlier.durations.FixedValueDurationCategory;
 import beastlier.geography.SpatialKernel;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
+import beastlier.util.PartitionedTreeLogger;
 import org.apache.commons.math.FunctionEvaluationException;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,10 +131,11 @@ public class IndividualSEIR extends BetweenHostModel {
     public double evaluateLogP(){
 
 //        try {
-//            tree.log(0, new PrintStream("test.nex"));
-//        }catch(Exception e){
-//            e.printStackTrace();
+//            PrintStream firstSteam = new PrintStream("tt.nex");
 //
+//            PartitionedTreeLogger.debugLog(tree, 0, false, firstSteam);
+//        } catch (FileNotFoundException e){
+//            e.printStackTrace();
 //        }
 
         double transLogProb = 0;
@@ -392,7 +395,6 @@ public class IndividualSEIR extends BetweenHostModel {
 
         if(treeHasChanged || aLatentPeriodHasChanged){
             typeOfDirt = IS_FILTHY;
-            infectionTimesMap = null;
         } else {
             typeOfDirt = answer ? IS_DIRTY : IS_CLEAN;
         }

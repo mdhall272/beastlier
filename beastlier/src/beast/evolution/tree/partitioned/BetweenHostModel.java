@@ -189,7 +189,7 @@ public abstract class BetweenHostModel extends TreeDistribution {
     }
 
     public void store() {
-        storedInfectionTimesMap = new HashMap<>(infectionTimesMap);
+        storedInfectionTimesMap = infectionTimesMap == null ? null : new HashMap<>(infectionTimesMap);
         storedSortedTreeEvents = new ArrayList<>(sortedTreeEvents);
         typeOfDirt = IS_CLEAN;
         super.store();

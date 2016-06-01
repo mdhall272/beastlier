@@ -31,7 +31,9 @@ import beast.evolution.tree.coalescent.*;
 import beast.math.Binomial;
 import beastlier.outbreak.ClinicalCase;
 import beast.util.BigDecimalUtils;
+import beastlier.util.PartitionedTreeLogger;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -80,6 +82,9 @@ public class WithinHostCoalescent extends WithinHostModel {
 
     public double calculateLogP() {
 
+
+//
+
         // if the population function has changed, then all treelets need probabilities recalculated but (unless
         // something else has changed) no treelets actually need re-extracting
 
@@ -100,13 +105,22 @@ public class WithinHostCoalescent extends WithinHostModel {
             }
         }
 
+        try {
+            PrintStream secondStream = new PrintStream("phy.nex");
+
+            PartitionedTreeLogger.debugLog(tree, 0, true, secondStream);
+
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+
         logP = 0;
 
         if(restOfPopFunction != null){
             ForestIntervals.PartitionIntervals intervals = forestIntervals.getIntervals(-1);
 
             double individualLogP = calculateTreeletLogLikelihood(intervals, popFunction, 0,
-                    intervals.getTotalLength(), false);
+                    0, false);
 
             logP += individualLogP;
         }
@@ -218,28 +232,31 @@ public class WithinHostCoalescent extends WithinHostModel {
             for (int i = 0; i < n; i++) {
 
                 final double duration = intervals.getInterval(i);
-                final double finishTime = startTime + duration;
+                if(duration < Double.POSITIVE_INFINITY) {
 
-                final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
-                if (intervalArea == 0 && duration != 0) {
-                    return Double.NEGATIVE_INFINITY;
-                }
-                final int lineageCount = intervals.getLineageCount(i);
+                    final double finishTime = startTime + duration;
 
-                final double kChoose2 = Binomial.choose2(lineageCount);
-                // common part
-                logL += -kChoose2 * intervalArea;
-
-                if (intervals.getIntervalType(i) == IntervalType.COALESCENT) {
-                    final double demographicAtCoalPoint = demographicFunction.getPopSize(finishTime);
-                    if (duration == 0.0 || demographicAtCoalPoint * (intervalArea / duration) >= threshold) {
-                        //                if( duration == 0.0 || demographicAtCoalPoint >= threshold * (duration/intervalArea) ) {
-                        logL -= Math.log(demographicAtCoalPoint);
-                    } else {
+                    final double intervalArea = demographicFunction.getIntegral(startTime, finishTime);
+                    if (intervalArea == 0 && duration != 0) {
                         return Double.NEGATIVE_INFINITY;
                     }
+                    final int lineageCount = intervals.getLineageCount(i);
+
+                    final double kChoose2 = Binomial.choose2(lineageCount);
+                    // common part
+                    logL += -kChoose2 * intervalArea;
+
+                    if (intervals.getIntervalType(i) == IntervalType.COALESCENT) {
+                        final double demographicAtCoalPoint = demographicFunction.getPopSize(finishTime);
+                        if (duration == 0.0 || demographicAtCoalPoint * (intervalArea / duration) >= threshold) {
+                            //                if( duration == 0.0 || demographicAtCoalPoint >= threshold * (duration/intervalArea) ) {
+                            logL -= Math.log(demographicAtCoalPoint);
+                        } else {
+                            return Double.NEGATIVE_INFINITY;
+                        }
+                    }
+                    startTime = finishTime;
                 }
-                startTime = finishTime;
             }
 
             return logL;

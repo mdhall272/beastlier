@@ -107,9 +107,6 @@ public class PartitionedTreeLogger extends BEASTObject implements Loggable {
 
         if(fancy){
 
-
-
-
             Tree fancyTree = tree.getFlattenedTree();
 
             for (Node node : fancyTree.getNodesAsArray()) {

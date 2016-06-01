@@ -233,10 +233,10 @@ public class GuidedPartitionedTree extends PartitionedTree {
         return super.somethingIsDirty() || tt.somethingIsDirty();
     }
 
-    //extracts the subtree taking place in and element and all its ancestors in the transmission tree. Probably
+    //extracts the subtree taking place in the transmission tree from here upwards to the root. Probably
     //extremely slow.
 
-    public PartitionedTree extractAncestralSubtree(int elementNo, HashMap<Node, Node> references){
+    public PartitionedTree extractAncestralCorridor(int elementNo, HashMap<Node, Node> references){
         List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
         PartitionedTreeNode root = (PartitionedTreeNode)getRoot();
 
@@ -245,7 +245,20 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
     private PartitionedTreeNode copyDown(PartitionedTreeNode oldNode, HashMap<Node, Node> references,
                                          PartitionedTree tree, List<Integer> chain){
-        if(chain.contains(oldNode.getPartitionElementNumber())){
+        double heightInGuideTree = guideTreeHeight(oldNode.getHeight());
+
+        //there is only one partition element that this can be in
+
+        Iterator<Integer> chainIt = chain.iterator();
+        int currentElt = chainIt.next();
+
+        while(tt.getInfectionHeightByNr(currentElt) < heightInGuideTree){
+            currentElt = chainIt.next();
+        }
+
+        int nodeElt = oldNode.getPartitionElementNumber();
+
+        if(currentElt == nodeElt){
             PartitionedTreeNode copyNode = new PartitionedTreeNode();
             PartitionedTree copyTree;
             if(tree == null){
@@ -269,8 +282,18 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
             return copyNode;
         } else {
+            int infectedElement;
+
+            if (chain.contains(nodeElt)) {
+                //this happens if this node is in a host that's not in the chain
+                infectedElement = nodeElt;
+            } else {
+                //the host is in the chain, but tranmission occurred to another host before this time
+                infectedElement = currentElt;
+            }
+
             //put in a new tip to represent the point at which an infection went outside the chain
-            int infectedElement = oldNode.getPartitionElementNumber();
+
             double newHeight = thisTreeHeight(tt.getInfectionHeightByNr(infectedElement));
 
             PartitionedTreeNode transNode = new PartitionedTreeNode();

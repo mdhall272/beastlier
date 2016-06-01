@@ -94,8 +94,8 @@ public class PartitionedTree extends Tree {
 
     private int[] elementEarliestNodes;
     private int[] storedElementEarliestNodes;
-    private int[] infectors;
-    private int[] storedInfectors;
+    private Integer[] infectors;
+    private Integer[] storedInfectors;
 
     //saves time - tip numbers for each element.
     private ArrayList<ArrayList<Integer>> tipsPerElement = new ArrayList<>();
@@ -204,12 +204,11 @@ public class PartitionedTree extends Tree {
 
         if(rules == COTTAM){
             for(int i=0; i<elementList.size(); i++){
-               if(getTipsInElement(i).size() > 1){
-                   throw new IllegalArgumentException("As currently implemented rules of the second type require one" +
-                           " and only one tip per partition element");
-               }
-
-           }
+                if(getTipsInElement(i).size() > 1){
+                    throw new IllegalArgumentException("As currently implemented Cottam rules require one" +
+                            " and only one tip per partition element");
+                }
+            }
         }
 
         // Ensure tree is compatible with traits.
@@ -220,16 +219,21 @@ public class PartitionedTree extends Tree {
         storedElementEarliestNodes = new int[elementList.size()];
         Arrays.fill(elementEarliestNodes, -1);
         Arrays.fill(storedElementEarliestNodes, -1);
-        infectors = new int[elementList.size()];
-        storedInfectors = new int[elementList.size()];
+        infectors = new Integer[elementList.size()];
+        storedInfectors = new Integer[elementList.size()];
 
-        for(int i=0; i<getNElements(); i++){
+        for(int i=0; i<getNElements(); i++) {
             tipsPerElement.add(new ArrayList<>());
         }
 
         for(Node tip : getExternalNodes()){
             PartitionedTreeNode castTip = (PartitionedTreeNode) tip;
             tipsPerElement.get(castTip.getPartitionElementNumber()).add(castTip.getNr());
+        }
+        if(rules != UNRESTRICTED) {
+            for (int i = 0; i < getNElements(); i++) {
+                infectors[i] = getAncestorPartitionElement(i);
+            }
         }
     }
 
@@ -1114,6 +1118,10 @@ public class PartitionedTree extends Tree {
         List<Integer> out = new ArrayList<>();
         out.add(elementNo);
 
+        if(elementNo == -1){
+            return out;
+        }
+
         //any tip will do
         PartitionedTreeNode currentNode = getTipsInElement(elementNo).get(0);
 
@@ -1132,6 +1140,7 @@ public class PartitionedTree extends Tree {
 
         return out;
     }
+
 
 
     /////////////////////////////////////////////////
@@ -1182,7 +1191,9 @@ public class PartitionedTree extends Tree {
 
         PartitionedTreeNode elementMRCA = getEarliestNodeInPartition(elementNo);
         PartitionedTreeNode parent = (PartitionedTreeNode) elementMRCA.getParent();
-        if(!elementMRCA.isPartitionDirty() && (parent==null || !parent.isPartitionDirty())){
+        if(infectors[elementNo] != null &&
+                !elementMRCA.isPartitionDirty() &&
+                (parent==null || !parent.isPartitionDirty())){
             return infectors[elementNo];
         } else {
             if (parent == null) {
@@ -1221,8 +1232,8 @@ public class PartitionedTree extends Tree {
         storedElementEarliestNodes = new int[elementList.size()];
         Arrays.fill(storedElementEarliestNodes, -1);
         if(isDirty) {
-            infectors = new int[elementList.size()];
-            storedInfectors = new int[elementList.size()];
+            infectors = new Integer[elementList.size()];
+            storedInfectors = new Integer[elementList.size()];
         }
         if(rules == DIDELOT) {
             allTreeletsRequireExtraction(isDirty);
@@ -1252,7 +1263,7 @@ public class PartitionedTree extends Tree {
         out.addAll(ancestors);
         return out;
     }
-//
+    //
 //    public class Treelet extends Tree {
 //
 //        private double zeroHeight;

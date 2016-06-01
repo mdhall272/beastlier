@@ -67,7 +67,7 @@ public class GuidedSubtreeLeapA extends TreeOperator {
         int endOfChain = Randomizer.nextInt(tt.getNElements());
         HashMap<Node, Node> references = new HashMap<>();
         GuidedPartitionedTree originalTree = (GuidedPartitionedTree)treeInput.get();
-        Tree prunedSubtree = originalTree.extractAncestralSubtree(endOfChain, references);
+        Tree prunedSubtree = originalTree.extractAncestralCorridor(endOfChain, references);
 
         //todo are heights actually recalculated?
         double differenceInRootHeights = originalTree.getRoot().getHeight() - prunedSubtree.getRoot().getHeight();

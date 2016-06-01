@@ -26,7 +26,10 @@ import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.evolution.tree.*;
 import beast.util.HeapSort;
+import beastlier.util.PartitionedTreeLogger;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.AbstractMap;
 import java.util.HashMap;
 
@@ -62,7 +65,7 @@ public class ForestIntervals extends CalculationNode {
 
     }
 
-    //at present this should only ever be _called_ if it's changed, so can recalculate
+    //at present this should only ever be _called_ if it's changed, so can recalculate every time
     //todo do better than that
 
     public PartitionIntervals getIntervals(int elementNo){
@@ -72,9 +75,6 @@ public class ForestIntervals extends CalculationNode {
 
         return pi;
     }
-
-
-
 
     public class PartitionIntervals extends TreeIntervals{
 
@@ -87,8 +87,11 @@ public class ForestIntervals extends CalculationNode {
         private PartitionIntervals(PartitionedTree tree, int elementNo){
             this.elementNo = elementNo;
             this.tree = tree;
+
             initAndValidate();
         }
+
+        public void initAndValidate(){}
 
         public int getSampleCount() {
             //the number of coalescences, apparently

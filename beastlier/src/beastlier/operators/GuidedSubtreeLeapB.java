@@ -26,7 +26,10 @@ import beast.core.Input;
 import beast.evolution.operators.TreeOperator;
 import beast.evolution.tree.*;
 import beast.util.Randomizer;
+import beastlier.util.PartitionedTreeLogger;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +74,20 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
         EpidemiologicalPartitionedTree tTree = (EpidemiologicalPartitionedTree)treeInput.get();
         double logq;
+
+
+        try {
+            PrintStream firstSteam = new PrintStream("tt.nex");
+
+            PartitionedTreeLogger.debugLog(tTree, 0, false, firstSteam);
+
+            PrintStream secondStream = new PrintStream("phy.nex");
+
+            PartitionedTreeLogger.debugLog(phylogenies.get(0), 0, true, secondStream);
+
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
 
         final double delta = getDelta();
 
@@ -128,7 +145,6 @@ public class GuidedSubtreeLeapB extends TreeOperator {
             adjustment = unhookRehook(node, j, newHeight);
         }
 
-        parent.setHeight(newHeight);
 
         if (parent.getParent() != null && newHeight > parent.getParent().getHeight()) {
             throw new IllegalArgumentException("height error");
@@ -257,6 +273,15 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
     private double unhookRehook(PartitionedTreeNode i, PartitionedTreeNode j, double newTTheight){
 
+        try {
+            PartitionedTreeLogger.debugLog((PartitionedTree)treeInput.get(), 0, false, new PrintStream("tt_before.nex"));
+            for (PartitionedTree phyl : phylogenies) {
+                PartitionedTreeLogger.debugLog(phyl, 0, true, new PrintStream("phyl_before.nex"));
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+
         final EpidemiologicalPartitionedTree tt =  (EpidemiologicalPartitionedTree)treeInput.get();
 
         // get its parent - this is the node we will prune/graft
@@ -265,7 +290,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
         // get the node's sibling
         final PartitionedTreeNode iS = (PartitionedTreeNode)getOtherChild(iP, i);
 
-        // and its grand parent
+        // and its grandparent
         final PartitionedTreeNode iG = (PartitionedTreeNode)iP.getParent();
 
         final PartitionedTreeNode jP = (PartitionedTreeNode)j.getParent();
@@ -276,6 +301,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
             // if the parent of the original node is the root then the sibling becomes
             // the root.
             iP.removeChild(iS);
+            iS.setParent(null);
             treeInput.get().setRoot(iS);
 
         } else {
@@ -283,6 +309,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
             iP.removeChild(iS);
             iG.removeChild(iP);
             iG.addChild(iS);
+            iS.setParent(iG);
         }
 
         //the parent's subtree is gone, act like it's not there
@@ -335,27 +362,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
                 }
 
                 hrAdjust -= Math.log(tree.getBundle((PartitionedTreeNode)tree.getRoot(), height, currentBranchElement,
-                        null));
-            }
-
-            for(PartitionedTreeNode hook : hooks){
-                PartitionedTreeNode hookParent = (PartitionedTreeNode)hook.getParent();
-                if(hookParent != null){
-                    heightsToCheck.add(hookParent.getHeight());
-                    PartitionedTreeNode hookSibling = (PartitionedTreeNode)getOtherChild(hookParent, hook);
-                    PartitionedTreeNode hookGrandparent = (PartitionedTreeNode)hookParent.getParent();
-                    if(hookGrandparent != null){
-                        hookParent.removeChild(hookSibling);
-                        hookGrandparent.removeChild(hookParent);
-                        hookGrandparent.addChild(hookSibling);
-                    } else {
-                        hookParent.removeChild(hookSibling);
-                        tree.setRoot(hookSibling);
-                    }
-                } else {
-                    //Actually, I'm reasonably sure this never happens so long as every element is present on every
-                    //tree. Assume that for now.
-                }
+                        new ArrayList<>()));
             }
 
             //need to find the bundles before reattaching anything
@@ -378,7 +385,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
                 List<PartitionedTreeNode> bundle = new ArrayList<>();
 
-                hrAdjust += Math.log(tree.getBundle((PartitionedTreeNode)tree.getRoot(), extension,
+                hrAdjust += Math.log(tree.getBundle((PartitionedTreeNode)tree.getRoot(), newHeight,
                         currentBranchElement, bundle));
 
                 bundlesForHooks.put(hook, bundle);
@@ -436,10 +443,14 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
             // add destination edge to the parent of node
             iP.addChild(j);
+            j.setParent(iP);
 
             // and add the parent of i as a child of the former parent of j
             jP.addChild(iP);
+            iP.setParent(jP);
         }
+
+        iP.setHeight(newTTheight);
 
         //now it's back
         if(i.getPartitionElementNumber() == iP.getPartitionElementNumber()) {
@@ -459,6 +470,16 @@ public class GuidedSubtreeLeapB extends TreeOperator {
         for(GuidedPartitionedTree tree : phylogenies){
             tree.updatePartitions();
         }
+
+        try {
+            PartitionedTreeLogger.debugLog((PartitionedTree)treeInput.get(), 0, false, new PrintStream("tt_after.nex"));
+            for (PartitionedTree phyl : phylogenies) {
+                PartitionedTreeLogger.debugLog(phyl, 0, true, new PrintStream("phyl_after.nex"));
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+
 
         return hrAdjust;
 

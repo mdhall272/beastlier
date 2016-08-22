@@ -31,7 +31,7 @@ import beast.util.Randomizer;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class SecondTypeFlipper extends TreeOperator {
+public class CottamFlipper extends TreeOperator {
 
     public void initAndValidate() {
         if(!(treeInput.get() instanceof PartitionedTree)){

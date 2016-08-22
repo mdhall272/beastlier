@@ -26,11 +26,12 @@ import beast.core.Input;
 import beast.evolution.operators.TreeOperator;
 import beast.evolution.tree.*;
 import beast.util.Randomizer;
+import beastlier.util.PartitionedTreeLogger;
+import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.util.*;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -62,12 +63,39 @@ public class GuidedSubtreeLeapA extends TreeOperator {
 
     public double proposal() {
 
+        try {
+            PartitionedTreeLogger.debugLog(tt, 0, false, new PrintStream("tt_before.nex"));
+
+            PartitionedTreeLogger.debugLog((PartitionedTree)treeInput.get(), 0, true, new PrintStream("phyl_before.nex"));
+
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+
+
         //this move works only within the transmission chain leading to some clinical case
 
         int endOfChain = Randomizer.nextInt(tt.getNElements());
         HashMap<Node, Node> references = new HashMap<>();
         GuidedPartitionedTree originalTree = (GuidedPartitionedTree)treeInput.get();
-        Tree prunedSubtree = originalTree.extractAncestralCorridor(endOfChain, references);
+        PartitionedTree prunedSubtree = originalTree.extractAncestralCorridor(endOfChain, references);
+
+
+        //*screams into paper bag*
+        prunedSubtree.getInternalNodeCount();
+        prunedSubtree.getLeafNodeCount();
+
+        prunedSubtree = new PartitionedTree(prunedSubtree.getRoot());
+
+        try {
+            PrintStream ps = new PrintStream("phyl_pruned.nex");
+            prunedSubtree.init(ps);
+            prunedSubtree.log(0, ps);
+            prunedSubtree.close(ps);
+
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
 
         //todo are heights actually recalculated?
         double differenceInRootHeights = originalTree.getRoot().getHeight() - prunedSubtree.getRoot().getHeight();
@@ -100,7 +128,7 @@ public class GuidedSubtreeLeapA extends TreeOperator {
         final Node grandParent = parent.getParent();
 
         final Map<Node, Double> destinations = getDestinations(node, parent, sibling, delta);
-        final List<Node> destinationNodes = new ArrayList<>(destinations.keySet());
+        List<Node> destinationNodes = Lists.newArrayList(destinations.keySet());
 
         // pick uniformly from this list
         int r = Randomizer.nextInt(destinations.size());
@@ -108,7 +136,9 @@ public class GuidedSubtreeLeapA extends TreeOperator {
         double forwardProbability = 1.0 / destinations.size();
 
         final Node j = destinationNodes.get(r);
+
         final double newHeight = destinations.get(j);
+
 
         final Node jParent = j.getParent();
 
@@ -191,17 +221,22 @@ public class GuidedSubtreeLeapA extends TreeOperator {
             throw new IllegalArgumentException("height error");
         }
 
+
+
         final Map<Node, Double> reverseDestinations = getDestinations(node, parent, getOtherChild(parent, node), delta);
+
         double reverseProbability = 1.0 / reverseDestinations.size();
 
         // hastings ratio = reverse Prob / forward Prob
         logq = Math.log(reverseProbability) - Math.log(forwardProbability);
+
+
         return logq;
     }
 
     private Map<Node, Double> getDestinations(Node node, Node parent, Node sibling, double delta) {
 
-        final Map<Node, Double> destinations = new HashMap<>();
+        final Map<Node, Double> destinations = new LinkedHashMap<>();
 
         // get the parent's height
         final double height = parent.getHeight();

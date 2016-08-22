@@ -35,7 +35,7 @@ import java.util.ArrayList;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class ThirdTypeInfectionBranchOperator extends TreeOperator{
+public class DidelotInfectionBranchOperator extends TreeOperator{
 
     public void initAndValidate() {
         if(!(treeInput.get() instanceof PartitionedTree)){

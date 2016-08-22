@@ -39,7 +39,7 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class ThirdTypeSubtreeSlideB extends TreeOperator {
+public class DidelotSubtreeSlideB extends TreeOperator {
 
     final public Input<Double> sizeInput = new Input<>("size", "size of the slide, default 1.0", 1.0);
     final public Input<Boolean> gaussianInput = new Input<>("gaussian", "Gaussian (=true=default) or uniform delta",

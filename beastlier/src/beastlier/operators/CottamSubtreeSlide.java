@@ -38,7 +38,7 @@ import java.util.List;
  * The base operator was clearly not intended to be subclassed...
  */
 
-public class SecondTypeSubtreeSlide extends SubtreeSlide {
+public class CottamSubtreeSlide extends SubtreeSlide {
 
     double size;
     double limit;

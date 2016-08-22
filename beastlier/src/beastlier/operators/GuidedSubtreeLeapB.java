@@ -30,10 +30,7 @@ import beastlier.util.PartitionedTreeLogger;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -74,20 +71,6 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
         EpidemiologicalPartitionedTree tTree = (EpidemiologicalPartitionedTree)treeInput.get();
         double logq;
-
-
-        try {
-            PrintStream firstSteam = new PrintStream("tt.nex");
-
-            PartitionedTreeLogger.debugLog(tTree, 0, false, firstSteam);
-
-            PrintStream secondStream = new PrintStream("phy.nex");
-
-            PartitionedTreeLogger.debugLog(phylogenies.get(0), 0, true, secondStream);
-
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
-        }
 
         final double delta = getDelta();
 
@@ -171,14 +154,29 @@ public class GuidedSubtreeLeapB extends TreeOperator {
     private Map<PartitionedTreeNode, Double> getDestinations(PartitionedTreeNode node, PartitionedTreeNode parent,
                                                  PartitionedTreeNode sibling, double delta) {
 
-        final Map<PartitionedTreeNode, Double> destinations = new HashMap<PartitionedTreeNode, Double>();
+        final Map<PartitionedTreeNode, Double> destinations = new LinkedHashMap<>();
 
         // get the parent's height
         final double height = parent.getHeight();
 
         final double heightBelow = height - delta;
 
-        if (heightBelow > node.getHeight()) {
+        double minHeight = node.getHeight();
+        //some of the phylogenies might impose a larger minimum height
+        for(GuidedPartitionedTree tree : phylogenies){
+            List<PartitionedTreeNode> hooks = tree.getHooks(node.getPartitionElementNumber(),
+                    tree.thisTreeHeight(parent.getHeight()));
+            for(PartitionedTreeNode hookEnd : hooks){
+                if(hookEnd.isRoot()){
+                    throw new RuntimeException("Something you thought impossible has happened");
+                }
+                if(hookEnd.getLength() < node.getLength()){
+                    minHeight = parent.getHeight() - hookEnd.getLength();
+                }
+            }
+        }
+
+        if (heightBelow > minHeight) {
             // the destination height below the parent is compatible with the node
             // see if there are any destinations on the sibling's branch
             final List<PartitionedTreeNode> edges = new ArrayList<PartitionedTreeNode>();
@@ -302,7 +300,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
             // the root.
             iP.removeChild(iS);
             iS.setParent(null);
-            treeInput.get().setRoot(iS);
+            tt.setRoot(iS);
 
         } else {
             // remove the parent of node by connecting its sibling to its grandparent.
@@ -310,6 +308,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
             iG.removeChild(iP);
             iG.addChild(iS);
             iS.setParent(iG);
+            iP.setParent(null);
         }
 
         //the parent's subtree is gone, act like it's not there
@@ -343,8 +342,10 @@ public class GuidedSubtreeLeapB extends TreeOperator {
                         hookParent.removeChild(hookSibling);
                         hookGrandparent.removeChild(hookParent);
                         hookGrandparent.addChild(hookSibling);
+                        hookSibling.setParent(hookGrandparent);
                     } else {
                         hookParent.removeChild(hookSibling);
+                        hookSibling.setParent(null);
                         tree.setRoot(hookSibling);
                     }
                 } else {
@@ -352,6 +353,8 @@ public class GuidedSubtreeLeapB extends TreeOperator {
                     //tree. Assume that for now.
                 }
             }
+
+            tree.updatePartitions();
 
             //this adjusts the HR for the number of places the hook could have been if the move was reversed
 
@@ -367,8 +370,11 @@ public class GuidedSubtreeLeapB extends TreeOperator {
 
             //need to find the bundles before reattaching anything
 
-            Map<PartitionedTreeNode, List<PartitionedTreeNode>> bundlesForHooks = new HashMap<>();
-            Map<PartitionedTreeNode, Double> newHeights = new HashMap<>();
+            Map<PartitionedTreeNode, List<PartitionedTreeNode>> bundlesForHooks = new LinkedHashMap<>();
+            Map<PartitionedTreeNode, Double> newHeights = new LinkedHashMap<>(
+
+
+            );
             for(PartitionedTreeNode hook : hooks){
                 PartitionedTreeNode hookParent = (PartitionedTreeNode)hook.getParent();
                 double extension = hookParent.getHeight() - tree.thisTreeHeight(iP.getHeight());
@@ -404,11 +410,15 @@ public class GuidedSubtreeLeapB extends TreeOperator {
                     if(newParent != null){
                         newParent.removeChild(newChild);
                         newParent.addChild(hookParent);
+                        hookParent.setParent(newParent);
                         hookParent.addChild(newChild);
+                        newChild.setParent(hookParent);
                         hookParent.setHeight(newHeight);
                     } else {
                         hookParent.addChild(newChild);
+                        newChild.setParent(hookParent);
                         tree.setRoot(hookParent);
+                        hookParent.setParent(null);
                     }
 
                     //The bundle may need to change because of the reinsertion; the branch at that height may have
@@ -427,10 +437,7 @@ public class GuidedSubtreeLeapB extends TreeOperator {
                 } else {
                     //again, shouldn't happen
                 }
-
             }
-
-
         }
 
         if (jP == null) {

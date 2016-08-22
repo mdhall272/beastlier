@@ -38,7 +38,7 @@ import java.util.ArrayList;
  */
 @Description("Implements branch exchange operations consistent with node partitions, also changing the transmission" +
         "beast/evolution/tree")
-public class ThirdTypeExchangeB extends TreeOperator {
+public class DidelotExchangeB extends TreeOperator {
 
 
     @Override

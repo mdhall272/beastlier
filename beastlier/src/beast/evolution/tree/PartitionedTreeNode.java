@@ -111,7 +111,6 @@ public class PartitionedTreeNode extends Node {
         node.setParent(null);
         node.ID = ID;
         node.partitionElementNumber = partitionElementNumber;
-
         if (getLeft()!=null) {
             node.setLeft(getLeft().copy());
             node.getLeft().setParent(node);

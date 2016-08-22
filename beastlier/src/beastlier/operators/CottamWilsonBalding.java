@@ -33,7 +33,7 @@ import beast.util.Randomizer;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class SecondTypeWilsonBalding extends WilsonBalding {
+public class CottamWilsonBalding extends WilsonBalding {
 
     @Override
     public void initAndValidate() {

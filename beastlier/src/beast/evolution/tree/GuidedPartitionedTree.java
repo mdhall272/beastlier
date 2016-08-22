@@ -23,6 +23,7 @@
 package beast.evolution.tree;
 
 import beast.core.Input;
+import beast.util.ExtraTreeUtils;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
@@ -108,18 +109,13 @@ public class GuidedPartitionedTree extends PartitionedTree {
         //in the guide tree, internal nodes are transmissions
 
         PartitionedTreeNode currentNode = tipInGuideTree;
-        while(currentNode != null && currentNode.getHeight() < gtHeight){
+        while(currentNode.getParent() != null && currentNode.getParent().getHeight() < gtHeight){
             currentNode = (PartitionedTreeNode) currentNode.getParent();
         }
 
         //If the node immediately after this time point is A infecting B, we want to return B
-        if(currentNode!=null){
-            for(Node child : currentNode.getChildren()){
-                PartitionedTreeNode castChild = (PartitionedTreeNode)child;
-                if(castChild.getPartitionElementNumber() != currentNode.getPartitionElementNumber()){
-                    return castChild.getPartitionElementNumber();
-                }
-            }
+        if(currentNode.getParent()!=null){
+            return currentNode.getPartitionElementNumber();
         }
 
         //if this height is earlier than the root of the guide tree, need to check the length of its root branch
@@ -149,6 +145,10 @@ public class GuidedPartitionedTree extends PartitionedTree {
         //this is going to be slow if done like this, but it will catch problems.
 
         for(Node node : getInternalNodes()) {
+
+            if(node.getNr()==102){
+                System.out.println();
+            }
 
             PartitionedTreeNode castNode = (PartitionedTreeNode) node;
             Set<Integer> requiredElements = new HashSet<>();
@@ -240,11 +240,15 @@ public class GuidedPartitionedTree extends PartitionedTree {
         List<Integer> ancestralChain = tt.getAncestralChain(elementNo);
         PartitionedTreeNode root = (PartitionedTreeNode)getRoot();
 
-        return new PartitionedTree(copyDown(root, references, null, ancestralChain));
+        PartitionedTreeNode copyRoot = copyDown(root, references, ancestralChain);
+
+        ExtraTreeUtils.renumberNodes(copyRoot);
+
+        return new PartitionedTree(copyRoot);
     }
 
     private PartitionedTreeNode copyDown(PartitionedTreeNode oldNode, HashMap<Node, Node> references,
-                                         PartitionedTree tree, List<Integer> chain){
+                                         List<Integer> chain){
         double heightInGuideTree = guideTreeHeight(oldNode.getHeight());
 
         //there is only one partition element that this can be in
@@ -260,23 +264,18 @@ public class GuidedPartitionedTree extends PartitionedTree {
 
         if(currentElt == nodeElt){
             PartitionedTreeNode copyNode = new PartitionedTreeNode();
-            PartitionedTree copyTree;
-            if(tree == null){
-                copyTree = new PartitionedTree(copyNode);
-            } else {
-                copyTree = tree;
-                copyTree.addNode(copyNode);
-            }
+
             copyNode.height = oldNode.getHeight();
             copyNode.metaDataString = oldNode.metaDataString;
             copyNode.setParent(null);
             copyNode.setID(oldNode.getID());
+
             copyNode.setPartitionElementNumber(oldNode.getPartitionElementNumber());
             references.put(copyNode, oldNode);
 
             if(!oldNode.isLeaf()){
                 for(int i=0; i<oldNode.getChildCount(); i++){
-                    copyNode.addChild(copyDown((PartitionedTreeNode)oldNode.getChild(i), references, copyTree, chain));
+                    copyNode.addChild(copyDown((PartitionedTreeNode)oldNode.getChild(i), references, chain));
                 }
             }
 
@@ -297,10 +296,12 @@ public class GuidedPartitionedTree extends PartitionedTree {
             double newHeight = thisTreeHeight(tt.getInfectionHeightByNr(infectedElement));
 
             PartitionedTreeNode transNode = new PartitionedTreeNode();
-            tree.addNode(transNode);
             transNode.height = newHeight;
             transNode.setParent(null);
             transNode.setPartitionElementNumber(infectedElement);
+            String tip = chain.contains(nodeElt) ? "To_"+infectedElement : "Continued_"+infectedElement;
+
+            transNode.setID(tip);
             return transNode;
         }
     }
@@ -546,6 +547,7 @@ public class GuidedPartitionedTree extends PartitionedTree {
         // initialise the node array lists, so initArrays() must
         // be called manually.
         Tree flatTree = copy();
+
         flatTree.initArrays();
 
         int nextNodeNr = getNodeCount();

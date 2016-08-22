@@ -37,7 +37,7 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class ThirdTypeWilsonBaldingA extends TreeOperator{
+public class DidelotWilsonBaldingA extends TreeOperator{
 
     @Override
     public void initAndValidate() {

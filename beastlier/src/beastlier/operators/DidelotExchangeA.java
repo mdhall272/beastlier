@@ -40,7 +40,7 @@ import java.util.List;
  */
 @Description("Implements branch exchange operations consistent with node partitions, such that the transmission beast.evolution.tree" +
         "is unchanged")
-public class ThirdTypeExchangeA extends TreeOperator {
+public class DidelotExchangeA extends TreeOperator {
 
     @Override
     public void initAndValidate() {

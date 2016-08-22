@@ -31,7 +31,7 @@ import beast.evolution.tree.PartitionedTreeNode;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class SecondTypeExchange extends Exchange {
+public class CottamExchange extends Exchange {
 
     @Override
     public void initAndValidate() {

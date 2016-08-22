@@ -55,9 +55,9 @@ public class PartitionedTree extends Tree {
             "elementLabel",
             "Label for partition elements (default 'host')", "host");
 
-//  todo Comment this out until you figure out how it works
-//    public Input<TraitSet> elementTraitInput = new Input<>(
-//            "elementTrait", "Element trait set.  Used only by BEAUti.");
+    public Input<TraitSet> elementTraitInput = new Input<>(
+            "elementTrait",
+            "Element trait set.  Used only by BEAUti.");
 
 //  todo Comment _this_ out until a point where the a version with elements not containing tips is happening
 //    public Input<String> elementTraitValuesInput = new Input<>(
@@ -250,13 +250,11 @@ public class PartitionedTree extends Tree {
             }
         }
 
-        //  todo when implementing BEAUTi
-        //
-        // Use explicitly-identified type trait set if available.
-        // Seems dumb, but needed for BEAUti as ListInputEditors
-        // muck things up...
-//        if (elementTraitInput.get() != null)
-//            elementTraitSet = elementTraitInput.get();
+
+
+        if (elementTraitInput.get() != null) {
+            elementTraitSet = elementTraitInput.get();
+        }
 
         // Construct type list.
         if(elementTraitSet == null) {
@@ -346,10 +344,9 @@ public class PartitionedTree extends Tree {
             m_traitList.get().remove(elementTraitSet);
         }
 
-        // More BEAUTi business
-//        if (traitSet != null) {
-//            elementTraitInput.setValue(traitSet, this);
-//        }
+        if (traitSet != null) {
+           elementTraitInput.setValue(traitSet, this);
+        }
 
         elementTraitSet = traitSet;
     }

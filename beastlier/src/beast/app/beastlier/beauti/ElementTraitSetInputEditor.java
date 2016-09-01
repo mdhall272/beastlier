@@ -17,16 +17,19 @@
 package beast.app.beastlier.beauti;
 
 import beast.app.beauti.BeautiDoc;
-import beast.app.beauti.GuessPatternDialog;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
+import beast.core.parameter.Parameter;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.likelihood.TreeLikelihood;
+import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.TraitSet;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 /**
  * BEAUti input editor for BEASTLIER partition element traits.
@@ -36,6 +39,8 @@ public class ElementTraitSetInputEditor extends InputEditor.Base {
     ElementTraitTableModel tableModel;
     TraitSet traitSet;
     TaxonSet taxonSet;
+
+    PartitionedTree tree;
 
     public ElementTraitSetInputEditor(BeautiDoc doc) {
         super(doc);
@@ -47,7 +52,8 @@ public class ElementTraitSetInputEditor extends InputEditor.Base {
     }
 
     @Override
-    public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
+    public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption,
+                     boolean bAddButtons) {
 
         traitSet = (TraitSet)input.get();
         taxonSet = traitSet.taxaInput.get();
@@ -195,4 +201,17 @@ public class ElementTraitSetInputEditor extends InputEditor.Base {
             }
         }
     }
+
+    private static String getParameterString(Parameter.Base param) {
+
+        String str = "";
+        for (Object value : (List<Object>) param.valuesInput.get()) {
+            if (str.length()>0)
+                str += " ";
+            str += value;
+        }
+
+        return str;
+    }
+
 }

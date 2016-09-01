@@ -23,6 +23,7 @@
 
 package beast.evolution.tree;
 
+import beast.app.beauti.BeautiDoc;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
@@ -256,32 +257,29 @@ public class PartitionedTree extends Tree {
             elementTraitSet = elementTraitInput.get();
         }
 
-        // Construct type list.
-        if(elementTraitSet == null) {
-            // You can't get away with this for partitioned trees. todo There may be a better way than this, though.
-            throw new RuntimeException("No TraitSet for partition elements specified");
 
-//            if (getTaxonset() != null) {
-//                TraitSet dummyTraitSet = new TraitSet();
-//
-//                StringBuilder sb = new StringBuilder();
-//                for (int i=0; i<getTaxonset().getTaxonCount(); i++) {
-//                    if (i>0)
-//                        sb.append(",\n");
-//                    sb.append(getTaxonset().getTaxonId(i)).append("=NOT_SET");
-//                }
-//                try {
-//                    dummyTraitSet.initByName(
-//                            "traitname", "type",
-//                            "taxa", getTaxonset(),
-//                            "value", sb.toString());
-//                    dummyTraitSet.setID("typeTraitSet.t:"
-//                            + BeautiDoc.parsePartition(getID()));
-//                    setElementTrait(dummyTraitSet);
-//                } catch (Exception ex) {
-//                    System.out.println("Error setting default type trait.");
-//                }
-//            }
+        if (elementTraitSet == null) {
+            if (getTaxonset() != null) {
+                TraitSet dummyTraitSet = new TraitSet();
+
+                StringBuilder sb = new StringBuilder();
+                for (int i=0; i<getTaxonset().getTaxonCount(); i++) {
+                    if (i>0)
+                        sb.append(",\n");
+                    sb.append(getTaxonset().getTaxonId(i)).append("=NOT_SET");
+                }
+                try {
+                    dummyTraitSet.initByName(
+                            "traitname", "type",
+                            "taxa", getTaxonset(),
+                            "value", sb.toString());
+                    dummyTraitSet.setID("typeTraitSet.t:"
+                            + BeautiDoc.parsePartition(getID()));
+                    setElementTrait(dummyTraitSet);
+                } catch (Exception ex) {
+                    System.out.println("Error setting default element trait.");
+                }
+            }
         }
 
         if (elementTraitSet != null) {

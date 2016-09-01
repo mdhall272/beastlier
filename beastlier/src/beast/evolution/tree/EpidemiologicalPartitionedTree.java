@@ -66,13 +66,8 @@ public class EpidemiologicalPartitionedTree extends PartitionedTree {
 
         super.initAndValidate();
 
-        if(q != null && q.getDimension() != elementList.size()){
-            throw new IllegalArgumentException("q has the wrong dimension");
-        }
-
         if((rules == Rules.DIDELOT && q==null) || (rules == Rules.COTTAM && q!=null)){
-            throw new IllegalArgumentException("The q parameters should be present if and only if the rules are of" +
-                    " the third type");
+            throw new IllegalArgumentException("The q parameters should be present if and only under Didelot rules");
         }
 
         // this is a bit of a hack but should make the run start up from a random tree much more often

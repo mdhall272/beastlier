@@ -23,6 +23,7 @@ import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
+import beastlier.outbreak.Outbreak;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -43,7 +44,7 @@ public class OutbreakInputEditor extends InputEditor.Base {
 
     @Override
     public Class<?> type() {
-        return TraitSet.class;
+        return Outbreak.class;
     }
 
     @Override

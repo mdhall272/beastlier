@@ -22,7 +22,6 @@ import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.parameter.Parameter;
 import beast.evolution.alignment.TaxonSet;
-import beast.evolution.likelihood.TreeLikelihood;
 import beast.evolution.tree.PartitionedTree;
 import beast.evolution.tree.TraitSet;
 

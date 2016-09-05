@@ -175,15 +175,6 @@ public class GuessPatternDialogBEASTLIER extends JPanel {
         gbc_format.gridx = 1;
         gbc_format.gridy = 10;
 
-        lblFile = new JLabel("file");
-        GridBagConstraints gbc_lblFile = new GridBagConstraints();
-        gbc_lblFile.gridwidth = 2;
-        gbc_lblFile.insets = new Insets(0, 0, 5, 5);
-        gbc_lblFile.gridx = 2;
-        gbc_lblFile.gridy = 10;
-        guessPanel.add(lblFile, gbc_lblFile);
-
-
         combo_2.addActionListener(e -> {
             @SuppressWarnings("unchecked")
             JComboBox<String> combo = (JComboBox<String>) e.getSource();
@@ -192,6 +183,14 @@ public class GuessPatternDialogBEASTLIER extends JPanel {
             updateFields();
         });
         guessPanel.add(combo_2, gbc_format);
+
+        lblFile = new JLabel("file");
+        GridBagConstraints gbc_lblFile = new GridBagConstraints();
+        gbc_lblFile.gridwidth = 2;
+        gbc_lblFile.insets = new Insets(0, 0, 5, 5);
+        gbc_lblFile.gridx = 2;
+        gbc_lblFile.gridy = 10;
+        guessPanel.add(lblFile, gbc_lblFile);
 
         btnBrowse = new JButton("Browse");
         btnBrowse.addActionListener(e -> {

@@ -10,6 +10,7 @@
     :beast.evolution.sitemodel
     :beast.evolution.substitutionmodel
     :beast.evolution.likelihood
+    :beast.evolution.tree.partitioned
     :beast.evolution
     :beast.math.distributions
     :beastlier.outbreak'
@@ -112,9 +113,10 @@
             />
 
         <panel spec='BeautiPanelConfig' panelname="Case Data" tiptext="Load or input epidemiological data for each clinical case and noninfected susceptible"
-               path='state/stateNode/outbreak'
+               path='state/stateNode[type="beast.evolution.tree.EpidemiologicalPartitionedTree"]/outbreak'
                hasPartitions="none" icon='2.png.x' forceExpansion='TRUE'
                isVisible='true'
+               type="beastlier.outbreak.Outbreak"
         />
 
 		<panel spec='BeautiPanelConfig' panelname="Tip Dates" tiptext="Specify times at which taxa were sampled"
@@ -168,7 +170,7 @@
                 <taxonset spec='beast.evolution.alignment.TaxonSet'>
                     <alignment idref='data'/>
                 </taxonset>
-                <outbreak spec='beastlier.outbreak.Outbreak'/>
+                <outbreak spec='beastlier.outbreak.Outbreak' id="outbreak"/>
             </plugin>
 
             <!-- Tree likelihood -->
@@ -204,6 +206,15 @@
                 <distr spec="beast.math.distributions.Uniform" lower='0' upper='1'/>
             </prior>
 
+            <!-- default WH tree prior -->
+            <plugin id="WH.CoalescentConstant.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+                <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
+                <populationFunction spec="ConstantPopulation" id='ConstantPopulation.t:$(n)'>
+                     <parameter name="popSize" id="popSize.t:$(n)" value='0.3' estimate='true'/>
+                 </populationFunction>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+            </plugin>
 
 
             <!-- Parameter operators -->
@@ -223,6 +234,8 @@
 ]]>
 
 			<connect method="beast.app.beauti.SiteModelInputEditor.customConnector"/>
+
+            <connect srcID='WH.CoalescentConstant.t:$(n)' targetID='prior' inputName='distribution' if="isInitializing"/>
 
             <connect srcID='Tree.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n))'/>
             <connect srcID='mutationRate.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
@@ -278,9 +291,9 @@
             <connect srcID='rootTypeLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
 
         </partitiontemplate>
-
+        <mergepoint id='withinHostTreePriorTemplates'/>
         <mergepoint id='substModelTemplates'/>
-		<mergepoint id='mttClockModelTemplates'/>
+		<mergepoint id='clockModelTemplates'/>
         <mergepoint id='parametricDistributions'/>
     </beauticonfig>
 

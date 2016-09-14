@@ -1,4 +1,4 @@
-Host_ID,End_date,Latitude,Longitude
+Case_ID,End_date,Latitude,Longitude
 Location_0_0_0,46.42583374,0.1,0.1
 Location_0_0_1,41.11773492,0.1,0.1
 Location_0_1_0,30.94926114,0.1,0.3

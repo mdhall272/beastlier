@@ -63,6 +63,7 @@ public class OutbreakInputEditor extends ListInputEditor {
     boolean m_hasGeography = false;
     Object[][] tableData;
     JTable table;
+    Box boxVert;
 
     public OutbreakInputEditor(BeautiDoc doc) {
         super(doc);
@@ -103,7 +104,7 @@ public class OutbreakInputEditor extends ListInputEditor {
 
         JButton loadHelp = new JButton("Help");
 
-        Box boxVert = Box.createVerticalBox();
+        boxVert = Box.createVerticalBox();
 
         Box loadRow = Box.createHorizontalBox();
 
@@ -146,7 +147,6 @@ public class OutbreakInputEditor extends ListInputEditor {
                     textFileDelimiter = ",";
             }
             try {
-                String fileName = txtFile.getText();
                 BufferedReader fin = new BufferedReader(new FileReader(txtFile.getText()));
                 //the header
                 String header = fin.readLine();
@@ -223,8 +223,13 @@ public class OutbreakInputEditor extends ListInputEditor {
                     clinicalCaseList.add(aCase);
                 }
                 fin.close();
-                outbreak.setInputValue("clinicalCase", clinicalCaseList);
+                List cases = (List<ClinicalCase>)outbreak.getInputValue("clinicalCase");
+                cases.clear();
+                cases.addAll(clinicalCaseList);
                 outbreak.setInputValue("hasGeography", latCol!=-1 && longCol!=-1);
+                if(scrollPane != null) {
+                    boxVert.remove(scrollPane);
+                }
                 refreshPanel();
 
             } catch (Exception e2) {
@@ -240,7 +245,7 @@ public class OutbreakInputEditor extends ListInputEditor {
 
         JCheckBox geographyCheck =  new JCheckBox("Cases have spatial (lat/long) coordinates");
         geographyCheck.addActionListener(e -> {
-            m_hasGeography = geographyCheck.isEnabled();
+            m_hasGeography = geographyCheck.isSelected();
         });
 
         JButton goButton = new JButton("Go");
@@ -249,11 +254,10 @@ public class OutbreakInputEditor extends ListInputEditor {
             String textDelimiter = ",";
 
             try {
-                outbreak = new Outbreak();
                 String ids = inputField.getText();
                 String[] splitIds = ids.split(textDelimiter);
 
-                ArrayList<ClinicalCase> clinicalCaseList = new ArrayList<ClinicalCase>();
+                ArrayList<ClinicalCase> clinicalCaseList = new ArrayList<>();
 
                 for(String id : splitIds) {
                     ClinicalCase aCase;
@@ -265,9 +269,15 @@ public class OutbreakInputEditor extends ListInputEditor {
                         aCase.setID(id);;
                     }
                     aCase.setInputValue("wasEverInfected", true);
+                    clinicalCaseList.add(aCase);
                 }
-                outbreak.setInputValue("clinicalCase", clinicalCaseList);
+                List cases = (List<ClinicalCase>)outbreak.getInputValue("clinicalCase");
+                cases.clear();
+                cases.addAll(clinicalCaseList);
                 outbreak.setInputValue("hasGeography", m_hasGeography);
+                if(scrollPane != null) {
+                    boxVert.remove(scrollPane);
+                }
                 refreshPanel();
 
             } catch (Exception e2) {
@@ -285,6 +295,7 @@ public class OutbreakInputEditor extends ListInputEditor {
         boxVert.add(stringRow);
 
         if(outbreak.getCases().size()>0){
+
             boxVert.add(createListBox());
         }
 
@@ -343,8 +354,7 @@ public class OutbreakInputEditor extends ListInputEditor {
 
             @Override
             public boolean isCellEditable(EventObject anEvent) {
-                return table.getSelectedColumn() != 0
-                        && (boolean)tableData[table.getSelectedRow()][1];
+                return table.getSelectedColumn() != 0;
             }
 
             @Override
@@ -355,7 +365,7 @@ public class OutbreakInputEditor extends ListInputEditor {
                 }
                 m_iRow = rowNr;
                 m_iCol = colNr;
-                m_textField.setText((String) value);
+                m_textField.setText(value.toString());
                 return m_textField;
             }
 
@@ -388,6 +398,9 @@ public class OutbreakInputEditor extends ListInputEditor {
             try {
                 int row = table.getSelectedRow();
                 tableData[row][1] = checkBox.isSelected();
+                if(!checkBox.isSelected()){
+                    tableData[row][2] = "NA";
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -408,36 +421,36 @@ public class OutbreakInputEditor extends ListInputEditor {
 
     /* synchronise table with data from traitSet BEASTObject */
     private void convertOutbreakToTableData() {
-        if(m_hasGeography) {
-            for (int i = 0; i < tableData.length; i++) {
-                tableData[i][0] = outbreak.getCases().get(i).getID();
-                tableData[i][1] = outbreak.getCases().get(i).getInputValue("wasEverInfected");
-                if((boolean)outbreak.getCases().get(i).getInputValue("wasEverInfected")) {
-                    RealParameter eoitParameter = (RealParameter)outbreak.getCases().get(i)
-                            .getInputValue("endOfInfectiousTime");
-                    tableData[i][2] = ((List)eoitParameter.getInputValue("value")).get(0);
+
+        for (int i = 0; i < tableData.length; i++) {
+            tableData[i][0] = outbreak.getCases().get(i).getID();
+            tableData[i][1] = outbreak.getCases().get(i).getInputValue("wasEverInfected");
+            if((boolean)outbreak.getCases().get(i).getInputValue("wasEverInfected")) {
+                RealParameter eoitParameter = (RealParameter)outbreak.getCases().get(i)
+                        .getInputValue("endOfInfectiousTime");
+                if(eoitParameter != null) {
+                    tableData[i][2] = ((List) eoitParameter.getInputValue("value")).get(0);
                 } else {
-                    tableData[i][2] = "NA";
+                    tableData[i][2] = 0;
                 }
-                RealParameter latParameter = (RealParameter)outbreak.getCases().get(i)
-                        .getInputValue("latitude");
-                tableData[i][3] = ((List)latParameter.getInputValue("value")).get(0);
-
-                RealParameter longParameter = (RealParameter)outbreak.getCases().get(i)
-                        .getInputValue("longitude");
-                tableData[i][4] = ((List)longParameter.getInputValue("value")).get(0);
-
+            } else {
+                tableData[i][2] = "NA";
             }
-        } else {
-            for (int i = 0; i < tableData.length; i++) {
-                tableData[i][0] = outbreak.getCases().get(i).getID();
-                tableData[i][1] = outbreak.getCases().get(i).getInputValue("wasEverInfected");
-                if((boolean)outbreak.getCases().get(i).getInputValue("wasEverInfected")) {
-                    RealParameter eoitParameter = (RealParameter)outbreak.getCases().get(i)
-                            .getInputValue("endOfInfectiousTime");
-                    tableData[i][2] = ((List)eoitParameter.getInputValue("value")).get(0);
+            if(m_hasGeography) {
+                RealParameter longParameter = (RealParameter) outbreak.getCases().get(i)
+                        .getInputValue("longitude");
+                if(longParameter != null) {
+                    tableData[i][3] = ((List) longParameter.getInputValue("value")).get(0);
                 } else {
-                    tableData[i][2] = "NA";
+                    tableData[i][3] = 0;
+                }
+
+                RealParameter latParameter = (RealParameter) outbreak.getCases().get(i)
+                        .getInputValue("latitude");
+                if(latParameter != null) {
+                    tableData[i][4] = ((List) latParameter.getInputValue("value")).get(0);
+                } else {
+                    tableData[i][4] = 0;
                 }
             }
         }
@@ -459,10 +472,27 @@ public class OutbreakInputEditor extends ListInputEditor {
             for (int i = 0; i < tableData.length; i++) {
                 outbreak.getCase(i).setInputValue("wasEverInfected", tableData[i][1]);
                 if((boolean)tableData[i][1]) {
-                    outbreak.getCase(i).setInputValue("endOfInfectiousDate", tableData[i][2]);
+                    RealParameter eoitParam = (RealParameter)outbreak.getCase(i).getInputValue("endOfInfectiousTime");
+                    if(eoitParam == null){
+                        eoitParam = new RealParameter();
+                        outbreak.getCase(i).setInputValue("endOfInfectiousTime", eoitParam);
+                    }
+                    eoitParam.setInputValue("value", tableData[i][2]);
                 }
-                outbreak.getCase(i).setInputValue("longitude", tableData[i][3]);
-                outbreak.getCase(i).setInputValue("latitude", tableData[i][4]);
+                if(m_hasGeography) {
+                    RealParameter latParam = (RealParameter)outbreak.getCase(i).getInputValue("latitude");
+                    RealParameter longParam = (RealParameter)outbreak.getCase(i).getInputValue("longitude");
+                    if(latParam == null){
+                        latParam = new RealParameter();
+                        outbreak.getCase(i).setInputValue("latitude", latParam);
+                    }
+                    if(longParam == null){
+                        longParam = new RealParameter();
+                        outbreak.getCase(i).setInputValue("longitude", longParam);
+                    }
+                    longParam.setInputValue("value", tableData[i][3]);
+                    latParam.setInputValue("value", tableData[i][4]);
+                }
             }
         } catch(Exception e){
             e.printStackTrace();

@@ -8,8 +8,9 @@ import org.apache.commons.math.distribution.ContinuousDistribution;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 /*
 If a _very_ informative gamma prior is put on latent periods, the run may have trouble starting up because it needs
-short latent periods to find a starting state. This minor modification fixes this by using a gamma distribution whose
-log pdf is calculated directly rather than as the logarithm of a calculated pdf.
+short latent periods to find a starting state and the pdf of those periods will round to zero. This minor modification
+fixes this by using a gamma distribution whose log pdf is calculated directly rather than as the logarithm of a
+calculated pdf.
 */
 
 @Description("Gamma distribution. for x>0  g(x;alpha,beta) = 1/Gamma(alpha) beta^alpha} x^{alpha - 1} e^{-\frac{x}{beta}}" +

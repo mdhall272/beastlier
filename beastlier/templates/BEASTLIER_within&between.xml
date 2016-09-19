@@ -37,7 +37,9 @@
                           beast.evolution.sitemodel.SiteModel.substModel,
                           beast.evolution.tree.coalescent.ExponentialGrowth,
                           beast.evolution.tree.coalescent.ConstantPopulation,
+                          beast.evolution.tree.coalescent.LogisticGrowthN0,
                           beast.evolution.tree.coalescent.Coalescent,
+                          beast.evolution.tree.partitioned.WithinHostCoalescent,
                           beast.core.State.stateNode,
                           beast.evolution.tree.EpidemiologicalPartitionedTree'
            collapsedPlugins='beast.core.MCMC.logger'
@@ -45,6 +47,12 @@
                             beast.core.MCMC.operatorschedule,
                             beast.evolution.tree.coalescent.Coalescent.treeIntervals,
                             beast.evolution.tree.coalescent.Coalescent.tree,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.forestIntervals,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.restOfPopFunction,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.enforceCoalescence,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.outbreak,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.tree,
+                            beast.evolution.tree.partitioned.WithinHostCoalescent.treeIntervals,
                             beast.core.MCMC.state,
                             beast.core.MCMC.distribution,
                             beast.core.MCMC.init,
@@ -167,6 +175,7 @@
 
             <plugin spec='beast.evolution.tree.EpidemiologicalPartitionedTree' id='Tree.t:$(n)' estimate='true'>
                 <q id="q" spec="parameter.RealParameter" dimension="2" value="0.999" upper="1" lower="0"/>
+                <rootBranchLength id="rootBranchLength" dimension="1" value="14" estimate="false"/>
                 <taxonset spec='beast.evolution.alignment.TaxonSet'>
                     <alignment idref='data'/>
                 </taxonset>
@@ -207,15 +216,61 @@
             </prior>
 
             <!-- default WH tree prior -->
-            <plugin id="WH.CoalescentConstant.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+            <distribution id="WHCoalescentLogisticH2015.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
                 <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
-                <populationFunction spec="ConstantPopulation" id='ConstantPopulation.t:$(n)'>
-                     <parameter name="popSize" id="popSize.t:$(n)" value='0.3' estimate='true'/>
-                 </populationFunction>
+                <populationFunction spec="beast.evolution.tree.coalescent.LogisticGrowthN0" id="H2015LogisticGrowthN0.t:$(n)">
+                    <parameter name="popSize" id="lhPopSize.t:$(n)" value='0.1' estimate='false'/>
+                    <parameter name="growthRate" id="lhGrowthRate.t:$(n)" value='1' estimate='true'/>
+                    <parameter name="t50" id="lhT50.t:$(n)" value='-4' estimate='true' upper="0"/>
+                </populationFunction>
                 <tree idref="Tree.t:$(n)"/>
                 <outbreak idref="outbreak"/>
-            </plugin>
+            </distribution>
 
+            <operator id='lhT50Scaler.t:$(n)' spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lhT50.t:$(n)"/>
+            <operator id="lhGrowthRateScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lhGrowthRate.t:$(n)"/>
+
+            <prior id='lhRatioPrior.t:$(n)' x='@logistic.ratio.t:$(n)'>
+                <distr spec="InverseGamma">
+                    <parameter name="alpha" value='1' estimate="false"/>
+                    <parameter name="beta" value='50' estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior id='lhT50Prior.t:$(n)' x='@minusT50.t:$(n)'>
+                <distr spec="Gamma">
+                    <parameter name="alpha" value='10' estimate="false"/>
+                    <parameter name="beta" value='0.5' estimate="false"/>
+                </distr>
+            </prior>
+
+            <Negative id="minusT50.t:$(n)" spec="beast.core.util.Negative">
+                <arg idref="lhT50.t:$(n)"/>
+            </Negative>
+            <Sum id="logistic.ratio.t:$(n)" spec="beast.core.util.Sum">
+                <CompoundValuable name="arg" spec="beast.core.parameter.CompoundValuable">
+                    <var spec="parameter.RealParameter" value="1.0"/>
+                    <ExponentialFunction name="var" spec="beast.core.util.ExponentialFunction">
+                        <Product name="arg" spec="beast.core.util.Product">
+                            <CompoundValuable name="arg" spec="beast.core.parameter.CompoundValuable">
+                                <var idref="minusT50.t:$(n)"/>
+                                <var idref="lhGrowthRate.t:$(n)"/>
+                            </CompoundValuable>
+                        </Product>
+                    </ExponentialFunction>
+                </CompoundValuable>
+            </Sum>  
+
+            <!-- default BH tree prior -->
+
+            <distribution id="BHMIndSeir.t:$(n)" spec="beast.evolution.tree.partitioned.IndividualSEIR" kernel="@kernel" baseTransmissionRate="@baseTransRate.t:simSeqs_X_1_slow" latentInput="@latentCategory" infectiousInput="@infectiousCategory">
+                <Normal name="initialInfectionTimePrior">
+                    <parameter estimate="false" name="mean">0</parameter>
+                    <parameter estimate="false" name="sigma">4</parameter>
+                </Normal>
+                <tree idref="Tree.t:simSeqs_X_1_slow"/>
+                <outbreak idref="outbreak"/>
+            </distribution>
 
             <!-- Parameter operators -->
             
@@ -235,7 +290,7 @@
 
 			<connect method="beast.app.beauti.SiteModelInputEditor.customConnector"/>
 
-            <connect srcID='WH.CoalescentConstant.t:$(n)' targetID='prior' inputName='distribution' if="isInitializing"/>
+            <connect srcID='WHCoalescentLogisticH2015.t:$(n)' targetID='prior' inputName='distribution' if="isInitializing"/>
 
             <connect srcID='Tree.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n))'/>
             <connect srcID='mutationRate.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>

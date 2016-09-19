@@ -49,7 +49,7 @@ import java.util.List;
 public class WithinHostCoalescent extends WithinHostModel {
 
     public Input<PopulationFunction> functionInput = new Input<>("populationFunction", "The within-host coalescent " +
-            "process");
+            "process", Input.Validate.REQUIRED);
     public Input<PopulationFunction> restOfPopFunctionInput = new Input<>("restOfPopFunction",
             "Another coalescent process for lineages assigned to no clinical case", null, Input.Validate.OPTIONAL);
     public Input<Boolean> enforceCoalescenceInput = new Input<>("enforceCoalescence", "Whether probabilities are " +

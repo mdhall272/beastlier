@@ -155,7 +155,7 @@ public class ElementTraitSetInputEditor extends InputEditor.Base {
                     return typeTraitSet.taxaInput.get().getTaxonId(rowIndex);
                 case 1:
                     // Type:
-                    return typeTraitSet.getStringValue(rowIndex);
+                    return typeTraitSet.getStringValue(typeTraitSet.taxaInput.get().getTaxonId(rowIndex));
                 default:
                     return null;
             }

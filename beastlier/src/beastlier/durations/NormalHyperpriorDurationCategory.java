@@ -46,13 +46,8 @@ public class NormalHyperpriorDurationCategory extends DurationCategory {
 
     @Override
     public void initAndValidate() {
-        super.initAndValidate();
         distribution = distributionInput.get();
         hasProbability = true;
-    }
-
-    public List<ClinicalCase> getCases(){
-        return cases;
     }
 
     //todo posterior distribution of these parameters
@@ -60,10 +55,6 @@ public class NormalHyperpriorDurationCategory extends DurationCategory {
     public double getLogProbability(Function values){
 
         int count = values.getDimension();
-
-        if(count != cases.size()){
-            throw new RuntimeException("Querying the probability of a set of durations of the wrong dimension");
-        }
 
         double mu_0 = distribution.getMu();
         double lambda_0 = distribution.getLambda();

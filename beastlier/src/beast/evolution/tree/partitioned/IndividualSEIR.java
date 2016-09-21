@@ -28,6 +28,7 @@ import beast.math.distributions.ParametricDistribution;
 import beastlier.durations.DurationCategory;
 import beastlier.durations.FixedValueDurationCategory;
 import beastlier.geography.SpatialKernel;
+import beastlier.outbreak.CategorySet;
 import beastlier.outbreak.ClinicalCase;
 import beastlier.outbreak.GeographicallyLocatedClinicalCase;
 import beastlier.util.PartitionedTreeLogger;
@@ -35,9 +36,11 @@ import org.apache.commons.math.FunctionEvaluationException;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -55,6 +58,11 @@ public class IndividualSEIR extends BetweenHostModel {
             "transmission rate");
     public Input<ParametricDistribution> initialInfectionTimePriorInput = new Input<>("initialInfectionTimePrior",
             "The prior distribution for the time of the index infection", null, Input.Validate.OPTIONAL);
+    public Input<CategorySet> infectiousCategorySetInput = new Input<>("infectiousCategorySet", "Assignment of " +
+            "clinical cases to distributions of infectious periods");
+    public Input<CategorySet> latentCategorySetInput = new Input<>("latentcategorySet", "Assignment of clinical " +
+            "cases to distributions of periods");
+
 
     private SpatialKernel kernel;
     private RealParameter baseTransmissionRate;
@@ -63,46 +71,51 @@ public class IndividualSEIR extends BetweenHostModel {
     private boolean hasGeography;
     private List<DurationCategory> latentCategories;
     private List<DurationCategory> infectiousCategories;
+    private Map<ClinicalCase, DurationCategory> latentCategoriesMap;
+    private Map<ClinicalCase, DurationCategory> infectiousCategoriesMap;
 
     public void initAndValidate(){
+        super.initAndValidate();
+
         kernel = kernelInput.get();
 
         hasGeography = kernel != null;
 
         hasLatentPeriods = true;
 
-
         baseTransmissionRate = baseTransmissionRateInput.get();
         initialInfectionTimePrior = initialInfectionTimePriorInput.get();
 
         latentCategories = latentInput.get();
 
+        CategorySet latentCategorySet = latentCategorySetInput.get();
+
         for(DurationCategory category : latentCategories){
             if(category.hasProbability()){
                 throw new RuntimeException("Latent periods in this model are identical");
             }
+        }
 
-            for(ClinicalCase aCase : category.getCases()){
-                for(DurationCategory anotherCategory : latentCategories){
-                    if(category != anotherCategory){
-                        if(anotherCategory.getCases().contains(aCase)){
-                            throw new RuntimeException("A clinical case is in two latent period categories");
-                        }
-                    }
+        latentCategoriesMap = new HashMap<>();
+
+        for(ClinicalCase aCase : outbreak.getCases()){
+            for(DurationCategory category : latentCategories){
+                if(category.getID().equals(latentCategorySet.getCategoryName(aCase.getID()))){
+                    latentCategoriesMap.put(aCase, category);
                 }
             }
         }
 
         infectiousCategories = infectiousInput.get();
 
-        for(DurationCategory category : infectiousCategories){
-            for(ClinicalCase aCase : category.getCases()){
-                for(DurationCategory anotherCategory : infectiousCategories){
-                    if(category != anotherCategory){
-                        if(anotherCategory.getCases().contains(aCase)){
-                            throw new RuntimeException("A clinical case is in two infectious period categories");
-                        }
-                    }
+        CategorySet infectiousCategorySet = infectiousCategorySetInput.get();
+
+        infectiousCategoriesMap = new HashMap<>();
+
+        for(ClinicalCase aCase : outbreak.getCases()){
+            for(DurationCategory category : infectiousCategories){
+                if(category.getID().equals(infectiousCategorySet.getCategoryName(aCase.getID()))){
+                    infectiousCategoriesMap.put(aCase, category);
                 }
             }
         }
@@ -257,7 +270,13 @@ public class IndividualSEIR extends BetweenHostModel {
 
         for(DurationCategory category : infectiousCategories){
             if(category.hasProbability()) {
-                List<ClinicalCase> relevantCases = category.getCases();
+                List<ClinicalCase> relevantCases = new ArrayList<>();
+
+                for(ClinicalCase aCase : outbreak.getCases()){
+                    if(getInfectiousCategory(aCase)==category){
+                        relevantCases.add(aCase);
+                    }
+                }
 
                 Double[] infectiousPeriods = new Double[relevantCases.size()];
 
@@ -299,21 +318,11 @@ public class IndividualSEIR extends BetweenHostModel {
     }
 
     public DurationCategory getLatentCategory(ClinicalCase aCase){
-        for(DurationCategory category : latentCategories){
-            if(category.getCases().contains(aCase)){
-                return category;
-            }
-        }
-        throw new RuntimeException("Can't find a latent period category for case "+aCase.getID());
+        return latentCategoriesMap.get(aCase);
     }
 
     public DurationCategory getInfectiousCategory(ClinicalCase aCase){
-        for(DurationCategory category : infectiousCategories){
-            if(category.getCases().contains(aCase)){
-                return category;
-            }
-        }
-        throw new RuntimeException("Can't find an infectious period category for case "+aCase.getID());
+        return infectiousCategoriesMap.get(aCase);
     }
 
     public void init(final PrintStream out){

@@ -41,7 +41,6 @@ public class IndividualPriorDurationCategory extends DurationCategory {
 
     @Override
     public void initAndValidate() {
-        super.initAndValidate();
         distribution = distributionInput.get();
         hasProbability = true;
     }
@@ -49,10 +48,6 @@ public class IndividualPriorDurationCategory extends DurationCategory {
 
 
     public double getLogProbability(Function values){
-        if(values.getDimension() != cases.size()){
-            throw new RuntimeException("Querying the probability of a set of durations of the wrong dimension");
-        }
-
         return distribution.calcLogP(values);
     }
 

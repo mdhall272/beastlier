@@ -36,24 +36,10 @@ import java.util.List;
         "same prior distribution")
 public abstract class DurationCategory extends CalculationNode {
 
-    public Input<List<ClinicalCase>> casesInput = new Input<>("clinicalCase", "A clinical case in this category",
-            new ArrayList<>());
-
-    protected List<ClinicalCase> cases;
-
     protected boolean hasProbability;
 
     public boolean hasProbability(){
         return hasProbability;
-    }
-
-    @Override
-    public void initAndValidate() {
-        cases = casesInput.get();
-    }
-
-    public List<ClinicalCase> getCases(){
-        return cases;
     }
 
     // No probability calculations in the base version;

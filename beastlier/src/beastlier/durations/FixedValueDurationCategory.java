@@ -39,7 +39,6 @@ public class FixedValueDurationCategory extends DurationCategory {
     private RealParameter value;
 
     public void initAndValidate(){
-        super.initAndValidate();
         value = valueInput.get();
         hasProbability = false;
     }

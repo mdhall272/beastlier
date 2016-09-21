@@ -40,6 +40,7 @@
                           beast.evolution.tree.coalescent.LogisticGrowthN0,
                           beast.evolution.tree.coalescent.Coalescent,
                           beast.evolution.tree.partitioned.WithinHostCoalescent,
+                          beast.evolution.tree.partitioned.IndividualSEIR,
                           beast.core.State.stateNode,
                           beast.evolution.tree.EpidemiologicalPartitionedTree'
            collapsedPlugins='beast.core.MCMC.logger'
@@ -53,6 +54,10 @@
                             beast.evolution.tree.partitioned.WithinHostCoalescent.outbreak,
                             beast.evolution.tree.partitioned.WithinHostCoalescent.tree,
                             beast.evolution.tree.partitioned.WithinHostCoalescent.treeIntervals,
+                            beast.evolution.tree.partitioned.IndividualSEIR.outbreak,
+                            beast.evolution.tree.partitioned.IndividualSEIR.tree,
+                            beast.evolution.tree.partitioned.IndividualSEIR.infectiousCategorySet,
+                            beast.evolution.tree.partitioned.IndividualSEIR.latentCategorySet,
                             beast.core.MCMC.state,
                             beast.core.MCMC.distribution,
                             beast.core.MCMC.init,
@@ -139,6 +144,18 @@
                isVisible='true'
         />
 
+        <panel spec='BeautiPanelConfig' panelname="Latent periods" tiptext="Specify the category of latent period to which each case belongs"
+               path='distribution/distribution[id="prior"]/distribution[type="beast.evolution.tree.partitioned.IndividualSEIR"]/latentCategorySet'
+               hasPartitions="none" icon='2.png.x' forceExpansion='TRUE_START_COLLAPSED'
+               isVisible='false'
+        />
+
+        <panel spec='BeautiPanelConfig' panelname="Infectious periods" tiptext="Specify the category of infectious period to which each case belongs"
+               path='distribution/distribution[id="prior"]/distribution[type="beast.evolution.tree.partitioned.IndividualSEIR"]/infectiousCategorySet'
+               hasPartitions="none" icon='2.png.x' forceExpansion='TRUE_START_COLLAPSED'
+               isVisible='false'
+        />
+
         <panel spec='BeautiPanelConfig' panelname="Site Model" tiptext="Site model and substitution model specifications"
             path='siteModel'
             hasPartitions="SiteModel" icon='3.png.x' forceExpansion='TRUE'
@@ -171,11 +188,11 @@
         <partitiontemplate id='DidelotPartitionTemplate' spec='beast.app.beauti.BeautiSubTemplate' class='beast.evolution.likelihood.TreeLikelihood' mainid='mcmc'>
 <![CDATA[
 
-            <!-- Multi type tree -->
+            <!-- Partitioned tree -->
 
             <plugin spec='beast.evolution.tree.EpidemiologicalPartitionedTree' id='Tree.t:$(n)' estimate='true'>
                 <q id="q" spec="parameter.RealParameter" dimension="2" value="0.999" upper="1" lower="0"/>
-                <rootBranchLength id="rootBranchLength" dimension="1" value="14" estimate="false"/>
+                <rootBranchLength id="rootBranchLength" spec="parameter.RealParameter" dimension="1" value="14" estimate="false"/>
                 <taxonset spec='beast.evolution.alignment.TaxonSet'>
                     <alignment idref='data'/>
                 </taxonset>
@@ -263,13 +280,31 @@
 
             <!-- default BH tree prior -->
 
-            <distribution id="BHMIndSeir.t:$(n)" spec="beast.evolution.tree.partitioned.IndividualSEIR" kernel="@kernel" baseTransmissionRate="@baseTransRate.t:simSeqs_X_1_slow" latentInput="@latentCategory" infectiousInput="@infectiousCategory">
-                <Normal name="initialInfectionTimePrior">
+            <distribution id="BHMIndSeir.t:$(n)" spec="beast.evolution.tree.partitioned.IndividualSEIR">
+                <baseTransmissionRate id="baseTransRate.t:simSeqs_X_1_slow" spec="parameter.RealParameter" value="0.05" estimate="true"/>
+                <initialInfectionTimePrior spec="beast.math.distributions.Normal">
                     <parameter estimate="false" name="mean">0</parameter>
                     <parameter estimate="false" name="sigma">4</parameter>
-                </Normal>
+                </initialInfectionTimePrior>
                 <tree idref="Tree.t:simSeqs_X_1_slow"/>
                 <outbreak idref="outbreak"/>
+                <latent spec="beastlier.durations.FixedValueDurationDistribution" id="latentCategory.t:$(n)">
+                    <length spec="parameter.RealParameter" id="latentPeriod" value="0.001" estimate="true"/>
+                </latent>
+                <latentCategorySet spec="beastlier.outbreak.CategorySet" durationName="latentPeriod" outbreak="@outbreak">
+                    <durationDistribution idref="latentCategory.t:$(n)"/>
+                </latentCategorySet>
+                <infectious spec="beastlier.durations.NormalHyperpriorDurationDistribution" id="infectiousCategory.t:$(n)">
+                    <NormalGamma id="infectiousDist" spec="beast.math.distributions.NormalGamma">
+                        <mu spec="parameter.RealParameter" value="10"/>
+                        <lambda spec="parameter.RealParameter" value="0.01"/>
+                        <alpha spec="parameter.RealParameter" value="1"/>
+                        <beta spec="parameter.RealParameter" value="1"/>
+                    </NormalGamma>
+                </infectious>
+                <infectiousCategorySet spec="beastlier.outbreak.CategorySet" durationName="infectiousPeriod" outbreak="@outbreak">
+                    <durationDistribution idref="infectiousCategory.t:$(n)"/>
+                </infectiousCategorySet>
             </distribution>
 
             <!-- Parameter operators -->
@@ -291,6 +326,7 @@
 			<connect method="beast.app.beauti.SiteModelInputEditor.customConnector"/>
 
             <connect srcID='WHCoalescentLogisticH2015.t:$(n)' targetID='prior' inputName='distribution' if="isInitializing"/>
+            <connect srcID='BHMIndSeir.t:$(n)' targetID='prior' inputName='distribution' if="isInitializing"/>
 
             <connect srcID='Tree.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n))'/>
             <connect srcID='mutationRate.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>

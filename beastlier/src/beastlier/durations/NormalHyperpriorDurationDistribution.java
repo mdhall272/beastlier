@@ -27,9 +27,6 @@ import beast.core.Function;
 import beast.core.Input;
 import beast.math.GammaFunction;
 import beast.math.distributions.NormalGamma;
-import beastlier.outbreak.*;
-
-import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
@@ -37,7 +34,7 @@ import java.util.List;
 
 @Description("A group of clinical cases whose latent or infectious periods are assumed to be drawn from the same" +
         " unknown normal distribution")
-public class NormalHyperpriorDurationCategory extends DurationCategory {
+public class NormalHyperpriorDurationDistribution extends DurationDistribution {
 
     public Input<NormalGamma> distributionInput = new Input<>("NormalGamma", "The normal-gamma distribution " +
             "determining the hyperprior");

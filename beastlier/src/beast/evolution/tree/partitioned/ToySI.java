@@ -25,14 +25,10 @@ package beast.evolution.tree.partitioned;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.ParametricDistribution;
-import beastlier.durations.DurationCategory;
 import beastlier.outbreak.ClinicalCase;
-import beastlier.outbreak.GeographicallyLocatedClinicalCase;
-import org.apache.commons.math.FunctionEvaluationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>

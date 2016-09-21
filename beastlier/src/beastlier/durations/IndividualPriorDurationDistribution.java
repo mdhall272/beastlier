@@ -1,5 +1,5 @@
 /*
-* File DurationCategory.java
+* File IndividualPriorDurationCategory.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -22,29 +22,33 @@
 */
 package beastlier.durations;
 
-import beast.core.*;
-import beastlier.outbreak.ClinicalCase;
-
-import java.util.ArrayList;
-import java.util.List;
+import beast.core.Description;
+import beast.core.Function;
+import beast.core.Input;
+import beast.math.distributions.ParametricDistribution;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-@Description("A group of clinical cases whose latent or infectious periods have something in common (e.g. have the" +
-        "same prior distribution")
-public abstract class DurationCategory extends CalculationNode {
+@Description("A group of clinical cases whose latent or infectious periods each have the same prior distribution")
+public class IndividualPriorDurationDistribution extends DurationDistribution {
 
-    protected boolean hasProbability;
+    public Input<ParametricDistribution> distributionInput = new Input<>("distribution", "The prior distribution for" +
+            " the length of this duration (latent or infectious period) for all clinical cases in this category");
 
-    public boolean hasProbability(){
-        return hasProbability;
+    private ParametricDistribution distribution;
+
+    @Override
+    public void initAndValidate() {
+        distribution = distributionInput.get();
+        hasProbability = true;
     }
 
-    // No probability calculations in the base version;
+
 
     public double getLogProbability(Function values){
-        return 1;
+        return distribution.calcLogP(values);
     }
+
 }

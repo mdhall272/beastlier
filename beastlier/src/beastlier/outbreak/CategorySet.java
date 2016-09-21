@@ -24,8 +24,12 @@ package beastlier.outbreak;
 
 import beast.core.BEASTObject;
 import beast.core.Input;
+import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
+import beastlier.durations.DurationDistribution;
+import beastlier.durations.FixedValueDurationDistribution;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,53 +40,96 @@ import java.util.Map;
 
 public class CategorySet extends BEASTObject {
 
-    final public Input<String> categoryNameInput = new Input<>("categoryName", "name of the category, used as " +
-            "metadata name for the outbreak.", Input.Validate.REQUIRED);
+    final public Input<String> durationNameInput = new Input<>("durationName", "name of the duration (i.e. latent," +
+            "infectious), used as metadata name for the outbreak.", Input.Validate.REQUIRED);
     final public Input<String> categoriesInput = new Input<>("value", "categories encoded as case=value pairs " +
-            "separated by commas", Input.Validate.REQUIRED);
-    final public Input<Outbreak> outbreakInput = new Input<>("taxa", "contains list of ClinicalCases to map " +
+            "separated by commas");
+    final public Input<Outbreak> outbreakInput = new Input<>("outbreak", "outbreak of ClinicalCases to map " +
             "categories to", Input.Validate.REQUIRED);
+    final public Input<List<DurationDistribution>> distributionsInput =  new Input<>("durationDistribution",
+            "List of distributions", new ArrayList<>(), Input.Validate.REQUIRED);
 
     /**
      * String values of categories in order of cases in outbreak*
      */
-    protected String[] caseValues;
-    protected String[] values;
 
-    Map<String, Integer> map;
+    Map<String, DurationDistribution> map;
 
     public void initAndValidate() {
+        List<DurationDistribution> durationDistributions = distributionsInput.get();
+
         map = new HashMap<>();
-        List<String> labels = outbreakInput.get().asStringList();
-        String[] categories = categoriesInput.get().split(",");
-        caseValues = new String[labels.size()];
 
-        for (String category : categories) {
-            category = category.replaceAll("\\s+", " ");
-            String[] strs = category.split("=");
-            if (strs.length != 2) {
-                throw new IllegalArgumentException("could not parse category: " + category);
-            }
-            String caseID = normalize(strs[0]);
-            int caseNr = labels.indexOf(caseID);
-            if (caseNr < 0) {
-                throw new IllegalArgumentException("Case (" + caseID + ") is not a known case. Spelling error " +
-                        "perhaps?");
-            }
-            caseValues[caseNr] = normalize(strs[1]);
-            map.put(caseID, caseNr);
+        List<ClinicalCase> cases = outbreakInput.get().casesInput.get();
 
+        ArrayList<DurationDistribution> toRemove = new ArrayList<>();
+
+        if(cases.size() > 0) {
+            if (categoriesInput.get() == null) {
+                // since distributionsInput should be specified, give every case the first distribution
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < outbreakInput.get().casesInput.get().size(); i++) {
+                    if (i > 0) {
+                        sb.append(",\n");
+                    }
+                    sb.append(outbreakInput.get().getCase(i).getID());
+                    sb.append("=");
+                    sb.append(distributionsInput.get().get(0).getID());
+                }
+
+                setInputValue("value", sb.toString());
+            }
+
+
+            String[] categories = categoriesInput.get().split(",");
+            for (String category : categories) {
+                category = category.replaceAll("\\s+", " ");
+                String[] strs = category.split("=");
+                if (strs.length != 2) {
+                    throw new IllegalArgumentException("could not parse category: " + category);
+                }
+                String caseID = normalize(strs[0]);
+                String distributionID = normalize(strs[1]);
+                for (DurationDistribution dd : durationDistributions) {
+                    if (distributionID.equals(dd.getID())) {
+                        map.put(caseID, dd);
+                    }
+                }
+                if(!map.containsKey(caseID)){
+                    FixedValueDurationDistribution newD = new FixedValueDurationDistribution();
+                    newD.setID(normalize(distributionID));
+                    RealParameter newDRP = new RealParameter();
+                    newDRP.setInputValue("value", 1.0);
+                    newD.setInputValue("length", newDRP);
+                    durationDistributions.add(newD);
+                    map.put(caseID, newD);
+                }
+            }
+            // sanity check: did we cover all taxa?
+
+
+            for(ClinicalCase aCase1 : cases) {
+                if (map.get(aCase1.getID()) == null) {
+                    throw new IllegalArgumentException("no category specified for " + aCase1.getID());
+                }
+            }
+
+            for(DurationDistribution dd : durationDistributions){
+                if(!map.containsValue(dd)){
+                    toRemove.add(dd);
+                }
+            }
+
+
+            for (ClinicalCase aCase : cases) {
+                Log.info.println(aCase.getID() + " = " + map.get(aCase.getID()));
+            }
         }
+        // clean up
 
-        // sanity check: did we cover all taxa?
-        for (int i = 0; i < labels.size(); i++) {
-            if (caseValues[i] == null) {
-                throw new IllegalArgumentException("no category specified for " + labels.get(i));
-            }
-        }
-
-        for (int i = 0; i < labels.size(); i++) {
-            Log.info.println(labels.get(i) + " = " + caseValues[i]);
+        if(toRemove.size()>0){
+            durationDistributions.removeAll(toRemove);
         }
 
     }
@@ -90,13 +137,17 @@ public class CategorySet extends BEASTObject {
     /**
      * some getters and setters *
      */
-    public String getCategoryName() {
-        return categoryNameInput.get();
+    public String getDistributionName() {
+        return durationNameInput.get();
+    }
+
+    public DurationDistribution getDistribution(String caseID){
+        return map.get(caseID);
     }
 
 
-    public String getCategoryName(String caseID){
-        return caseValues[map.get(caseID)];
+    public String getDistributionName(String caseID){
+        return getDistribution(caseID).getID();
     }
 
     /**
@@ -111,6 +162,5 @@ public class CategorySet extends BEASTObject {
         }
         return str;
     }
-
 
 }

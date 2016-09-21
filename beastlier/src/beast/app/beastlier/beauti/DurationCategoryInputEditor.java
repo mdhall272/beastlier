@@ -23,15 +23,15 @@
 package beast.app.beastlier.beauti;
 
 import beast.app.beauti.BeautiDoc;
-import beast.app.draw.ListInputEditor;
+import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.parameter.Parameter;
-import beast.evolution.tree.TraitSet;
-import beastlier.durations.DurationCategory;
+import beastlier.outbreak.CategorySet;
+import beastlier.outbreak.Outbreak;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,9 +39,11 @@ import java.util.List;
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-public class DurationCategoryInputEditor extends ListInputEditor {
+public class DurationCategoryInputEditor extends InputEditor.Base {
 
-    List<DurationCategory> categories;
+    DurationCategoryTableModel tableModel;
+    CategorySet categories;
+    Outbreak outbreak;
 
     public DurationCategoryInputEditor(BeautiDoc doc) {
         super(doc);
@@ -49,32 +51,44 @@ public class DurationCategoryInputEditor extends ListInputEditor {
 
 
     @Override
-    public Class<?> baseType(){
-        return DurationCategory.class;
+    public Class<?> type(){
+        return CategorySet.class;
     }
 
     public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption,
                      boolean bAddButtons) {
 
-        categories = (ArrayList<DurationCategory>)input.get();
+        categories = (CategorySet)input.get();
+        categories.initAndValidate();
+        outbreak = categories.outbreakInput.get();
+
+        tableModel = new DurationCategoryTableModel(categories);
+        JTable table = new JTable(tableModel);
+
+
+        Box boxVert = Box.createVerticalBox();
+
+        Box boxHoriz = Box.createHorizontalBox();
+        boxHoriz.add(Box.createHorizontalGlue());
+        boxVert.add(boxHoriz);
+        boxVert.add(new JScrollPane(table));
+
+        add(boxVert);
 
 
     }
 
     class DurationCategoryTableModel extends AbstractTableModel {
 
-        List<DurationCategory> categories;
+        CategorySet categories;
 
-        public DurationCategoryTableModel(List<DurationCategory> categories) {
+        public DurationCategoryTableModel(CategorySet categories) {
             this.categories = categories;
         }
 
         @Override
         public int getRowCount() {
-            int count = 0;
-            for(DurationCategory category : categories){
-                count += category.getCases().size();
-            }
+            return outbreak.getCases().size();
         }
 
         @Override
@@ -89,11 +103,11 @@ public class DurationCategoryInputEditor extends ListInputEditor {
 
             switch(columnIndex) {
                 case 0:
-                    // Taxon name:
-                    return typeTraitSet.taxaInput.get().getTaxonId(rowIndex);
+                    // Case name:
+                    return outbreak.getCase(rowIndex);
                 case 1:
                     // Type:
-                    return typeTraitSet.getStringValue(rowIndex);
+                    return categories.getDistribution(outbreak.getCase(rowIndex).getID());
                 default:
                     return null;
             }
@@ -106,21 +120,21 @@ public class DurationCategoryInputEditor extends ListInputEditor {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            String taxon = taxonSet.getTaxonId(rowIndex);
-            String traitString = traitSet.traitsInput.get();
-            int startIdx = traitString.indexOf(taxon + "=");
-            int endIdx = traitString.indexOf(",", startIdx);
+            String caseId = categories.outbreakInput.get().getCase(rowIndex).getID();
+            String catString = categories.categoriesInput.get();
+            int startIdx = catString.indexOf(caseId + "=");
+            int endIdx = catString.indexOf(",", startIdx);
 
-            String newTraitString = traitString.substring(0, startIdx);
-            newTraitString += taxon + "=" + (String)aValue;
+            String newCatString = catString.substring(0, startIdx);
+            newCatString += caseId + "=" + aValue;
             if (endIdx>=0)
-                newTraitString += traitString.substring(endIdx);
+                newCatString += catString.substring(endIdx);
 
-            traitSet.traitsInput.setValue(newTraitString, traitSet);
+            categories.categoriesInput.setValue(newCatString, categories);
             try {
-                traitSet.initAndValidate();
+                categories.initAndValidate();
             } catch (Exception ex) {
-                System.err.println("Error setting type trait value.");
+                System.err.println("Error setting duration distribution value.");
             }
 
             fireTableCellUpdated(rowIndex, columnIndex);
@@ -132,7 +146,7 @@ public class DurationCategoryInputEditor extends ListInputEditor {
                 case 0:
                     return "Name";
                 case 1:
-                    return "CaseID";
+                    return "Duration Distribution ID";
                 default:
                     return null;
             }

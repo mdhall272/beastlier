@@ -1,5 +1,5 @@
 /*
-* File IndividualPriorDurationCategory.java
+* File FixedValueDurationCategory.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -23,32 +23,35 @@
 package beastlier.durations;
 
 import beast.core.Description;
-import beast.core.Function;
 import beast.core.Input;
-import beast.math.distributions.ParametricDistribution;
+import beast.core.parameter.RealParameter;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-@Description("A group of clinical cases whose latent or infectious periods each have the same prior distribution")
-public class IndividualPriorDurationCategory extends DurationCategory {
+@Description("A group of clinical cases whose latent or infectious periods are identical")
+public class FixedValueDurationDistribution extends DurationDistribution {
 
-    public Input<ParametricDistribution> distributionInput = new Input<>("distribution", "The prior distribution for" +
-            " the length of this duration (latent or infectious period) for all clinical cases in this category");
+    public Input<RealParameter> valueInput = new Input<>("length", "The fixed value of this duration across all " +
+            "clinical cases in the category");
 
-    private ParametricDistribution distribution;
+    private RealParameter value;
+
+    public void initAndValidate(){
+        value = valueInput.get();
+        hasProbability = false;
+    }
+
+    public double getValue(){
+        return value.getValue();
+    }
 
     @Override
-    public void initAndValidate() {
-        distribution = distributionInput.get();
-        hasProbability = true;
+    public boolean requiresRecalculation() {
+        return valueInput.isDirty();
     }
 
 
-
-    public double getLogProbability(Function values){
-        return distribution.calcLogP(values);
-    }
 
 }

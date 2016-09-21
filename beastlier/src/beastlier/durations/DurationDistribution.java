@@ -1,5 +1,5 @@
 /*
-* File FixedValueDurationCategory.java
+* File DurationCategory.java
 *
 * Copyright (C) 2016 Matthew Hall mdhall@ic.ac.uk
 *
@@ -22,36 +22,29 @@
 */
 package beastlier.durations;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
+import beast.core.*;
+import beastlier.outbreak.ClinicalCase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Matthew Hall <mdhall@ic.ac.uk>
  */
 
-@Description("A group of clinical cases whose latent or infectious periods are identical")
-public class FixedValueDurationCategory extends DurationCategory {
+@Description("A group of clinical cases whose latent or infectious periods have something in common (e.g. have the" +
+        "same prior distribution")
+public abstract class DurationDistribution extends CalculationNode {
 
-    public Input<RealParameter> valueInput = new Input<>("length", "The fixed value of this duration across all " +
-            "clinical cases in the category");
+    protected boolean hasProbability;
 
-    private RealParameter value;
-
-    public void initAndValidate(){
-        value = valueInput.get();
-        hasProbability = false;
+    public boolean hasProbability(){
+        return hasProbability;
     }
 
-    public double getValue(){
-        return value.getValue();
+    // No probability calculations in the base version;
+
+    public double getLogProbability(Function values){
+        return 1;
     }
-
-    @Override
-    public boolean requiresRecalculation() {
-        return valueInput.isDirty();
-    }
-
-
-
 }

@@ -203,6 +203,10 @@ public abstract class BetweenHostModel extends TreeDistribution {
         super.restore();
     }
 
+    public boolean canSetXx(Object o){
+        return !(o instanceof WithinHostModel);
+    }
+
     @Override
     protected boolean requiresRecalculation() {
         return treeInput.get().somethingIsDirty();

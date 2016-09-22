@@ -56,4 +56,8 @@ public abstract class WithinHostModel extends TreeDistribution {
         }
     }
 
+    public boolean canSetXx(Object o){
+        return !(o instanceof BetweenHostModel);
+    }
+
 }

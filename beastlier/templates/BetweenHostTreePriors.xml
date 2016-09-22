@@ -1,0 +1,81 @@
+<beast version='2.0'
+       namespace='beast.app.beauti:
+       beast.core:
+       beast.evolution.branchratemodel:
+       beast.evolution.speciation:
+       beast.evolution.tree.coalescent:
+       beast.core.util:
+       beast.evolution.nuc:
+       beast.evolution.operators:
+       beast.evolution.sitemodel:
+       beast.evolution.substitutionmodel:
+       beast.evolution.likelihood:
+       beast.evolution.tree.partitioned:
+       beast.evolution:
+       beast.math.distributions'>
+
+    <!-- tree priors -->
+    <mergewith point='betweenHostTreePriorTemplates'>
+        <!-- Yule -->
+ 
+
+        <!-- Coalescent for Constant population -->
+        <subtemplate id='IndividualSEIRBetweenHostModel' class='beast.evolution.tree.partitioned.IndividualSEIR'
+                     mainid='BHMIndSeir.t:$(n)'>
+            <![CDATA[
+
+            <distribution id="BHMIndSeir.t:$(n)" spec="beast.evolution.tree.partitioned.IndividualSEIR">
+                <baseTransmissionRate id="baseTransRate.t:$(n)" spec="parameter.RealParameter" value="0.05" estimate="true"/>
+                <initialInfectionTimePrior spec="beast.math.distributions.Normal">
+                    <parameter estimate="false" name="mean">0</parameter>
+                    <parameter estimate="false" name="sigma">4</parameter>
+                </initialInfectionTimePrior>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+                <latent spec="beastlier.durations.FixedValueDurationDistribution" id="latentCategory.t:$(n)">
+                    <length spec="parameter.RealParameter" id="latentPeriod" value="0.001" estimate="true"/>
+                </latent>
+                <latentCategorySet spec="beastlier.outbreak.CategorySet" durationName="latentPeriod" outbreak="@outbreak">
+                    <durationDistribution idref="latentCategory.t:$(n)"/>
+                </latentCategorySet>
+                <infectious spec="beastlier.durations.NormalHyperpriorDurationDistribution" id="infectiousCategory.t:$(n)">
+                    <NormalGamma id="infectiousDist" spec="beast.math.distributions.NormalGamma">
+                        <mu spec="parameter.RealParameter" value="10"/>
+                        <lambda spec="parameter.RealParameter" value="0.01"/>
+                        <alpha spec="parameter.RealParameter" value="1"/>
+                        <beta spec="parameter.RealParameter" value="1"/>
+                    </NormalGamma>
+                </infectious>
+                <infectiousCategorySet spec="beastlier.outbreak.CategorySet" durationName="infectiousPeriod" outbreak="@outbreak">
+                    <durationDistribution idref="infectiousCategory.t:$(n)"/>
+                </infectiousCategorySet>
+            </distribution>
+  		    <operator id='BaseRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@baseTransRate.t:$(n)"/>
+	        <prior id='BaseRatePrior.t:$(n)' x='@baseTransRate.t:$(n)'><distr spec="OneOnX"/></prior>
+]]>
+            <connect srcID='BHMIndSeir.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BHMIndSeir.t:$(n)) and Tree.t:$(n)/estimate=true'>Individual-based SEIR between-host tree prior
+            </connect>
+            <connect srcID='BaseRatePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BHMIndSeir.t:$(n)) and inposterior(baseTransRate.t:$(n)) and baseTransRate.t:$(n)/estimate=true'>
+                Base transmission rate of SEIR model t:$(n)
+            </connect>
+
+            <connect srcID='baseTransRate.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BHMIndSeir.t:$(n)) and inposterior(baseTransRate.t:$(n)) and baseTransRate.t:$(n)/estimate=true'/>
+
+            <connect srcID='BaseRateScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BHMIndSeir.t:$(n)) and inposterior(baseTransRate.t:$(n)) and baseTransRate.t:$(n)/estimate=true'>
+                Scale base transmission rate of SEIR model t:$(n)
+            </connect>
+
+            <connect srcID='baseTransRate.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BHMIndSeir.t:$(n)) and inposterior(baseTransRate.t:$(n)) and baseTransRate.t:$(n)/estimate=true'/>
+            <connect srcID='BHMIndSeir.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BHMIndSeir.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+        </subtemplate>
+
+    </mergewith>
+</beast>
+
+

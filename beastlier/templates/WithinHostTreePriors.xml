@@ -1,0 +1,313 @@
+<beast version='2.0'
+       namespace='beast.app.beauti:
+       beast.core:
+       beast.evolution.branchratemodel:
+       beast.evolution.speciation:
+       beast.evolution.tree.coalescent:
+       beast.core.util:
+       beast.evolution.nuc:
+       beast.evolution.operators:
+       beast.evolution.sitemodel:
+       beast.evolution.substitutionmodel:
+       beast.evolution.likelihood:
+       beast.evolution.tree.partitioned:
+       beast.evolution:
+       beast.math.distributions'>
+
+    <!-- tree priors -->
+    <mergewith point='withinHostTreePriorTemplates'>
+        <!-- Yule -->
+ 
+
+        <!-- Coalescent for Constant population -->
+        <subtemplate id='CoalescentConstantWithinHostModel' class='beast.evolution.tree.partitioned.WithinHostCoalescent'
+                     mainid='WHCoalescentConstant.t:$(n)'>
+            <![CDATA[
+            <distribution id="WHCoalescentConstant.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+                <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
+                <populationFunction spec="ConstantPopulation" id='ConstantPopulation.t:$(n)'>
+                     <parameter name="popSize" id="popSize.t:$(n)" value='0.3' estimate='true'/>
+                 </populationFunction>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+            </distribution>
+
+  		    <operator id='PopSizeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@popSize.t:$(n)"/>
+	        <prior id='PopSizePrior.t:$(n)' x='@popSize.t:$(n)'><distr spec="OneOnX"/></prior>
+]]>
+            <connect srcID='WHCoalescentConstant.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and Tree.t:$(n)/estimate=true'>Coalescent prior with
+                constant rate on tree t:$(n)
+            </connect>
+            <connect srcID='PopSizePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and inposterior(popSize.t:$(n)) and popSize.t:$(n)/estimate=true'>
+                Coalescent population size parameter of partition t:$(n)
+            </connect>
+
+            <connect srcID='popSize.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and inposterior(popSize.t:$(n)) and popSize.t:$(n)/estimate=true'/>
+
+            <connect srcID='PopSizeScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and inposterior(popSize.t:$(n)) and popSize.t:$(n)/estimate=true'>
+                Scale population size of Coalescent prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='popSize.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and inposterior(popSize.t:$(n)) and popSize.t:$(n)/estimate=true'/>
+            <connect srcID='CoalescentConstant.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentConstant.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+        </subtemplate>
+
+
+        <!-- Coalescent for Exponential population -->
+        <subtemplate id='CoalescentExponentialWithinHostModel' class='beast.evolution.tree.partitioned.WithinHostCoalescent'
+                     mainid='WHCoalescentExponential.t:$(n)'>
+            <![CDATA[
+            <distribution id="WHCoalescentExponential.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+                <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
+                <populationFunction spec="ExponentialGrowth" id="ExponentialGrowth.t:$(n)">
+                    <parameter name="popSize" id="ePopSize.t:$(n)" value='0.3' estimate='true'/>
+                    <parameter name="growthRate" id="eGrowthRate.t:$(n)" value='3e-4' estimate='true'/>
+                </populationFunction>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+            </distribution>
+
+  		    <operator id='ePopSizeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@ePopSize.t:$(n)"/>
+	        <operator id="eGrowthRateRandomWalk.t:$(n)" spec="RealRandomWalkOperator" windowSize='1' weight="3" parameter="@eGrowthRate.t:$(n)"/>
+
+	        <prior id='ePopSizePrior.t:$(n)' x='@ePopSize.t:$(n)'><distr spec="OneOnX"/></prior>
+	        <prior id='eGrowthRatePrior.t:$(n)' x='@eGrowthRate.t:$(n)'><distr spec="LaplaceDistribution"><parameter name="mu" value='0.001' estimate="false"/><parameter name="scale" value='30.701135' estimate="false"/></distr></prior>
+
+]]>
+
+            <connect srcID='WHCoalescentExponential.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and Tree.t:$(n)/estimate=true'>Coalescent prior with
+                exponential rate on tree t:$(n)
+            </connect>
+            <connect srcID='ePopSizePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(ePopSize.t:$(n)) and ePopSize.t:$(n)/estimate=true'>
+                Coalescent population size parameter of partition t:$(n)
+            </connect>
+            <connect srcID='eGrowthRatePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(eGrowthRate.t:$(n)) and eGrowthRate.t:$(n)/estimate=true'>
+                Coalescent growth rate of partition t:$(n)
+            </connect>
+
+            <connect srcID='ePopSize.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(ePopSize.t:$(n))  and ePopSize.t:$(n)/estimate=true'/>
+            <connect srcID='eGrowthRate.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(eGrowthRate.t:$(n)) and eGrowthRate.t:$(n)/estimate=true'/>
+
+            <connect srcID='ePopSizeScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(ePopSize.t:$(n))  and ePopSize.t:$(n)/estimate=true'>
+                Scale population size of Coalescent prior of tree t:$(n)
+            </connect>
+            <connect srcID='eGrowthRateRandomWalk.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(eGrowthRate.t:$(n)) and eGrowthRate.t:$(n)/estimate=true'>
+                Scale growth rate of Coalescent prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='WHCoalescentExponential.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='ePopSize.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(ePopSize.t:$(n)) and ePopSize.t:$(n)/estimate=true'/>
+            <connect srcID='eGrowthRate.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentExponential.t:$(n)) and inposterior(eGrowthRate.t:$(n)) and eGrowthRate.t:$(n)/estimate=true'/>
+        </subtemplate>
+
+
+        <!-- Coalescent for Logistic population -->
+        <subtemplate id='CoalescentLogisticWithinHostModel' class='beast.evolution.tree.partitioned.WithinHostCoalescent'
+                     mainid='WHCoalescentLogistic.t:$(n)'>
+            <![CDATA[
+            <distribution id="WHCoalescentLogistic.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+                <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
+                <populationFunction spec="beast.evolution.tree.coalescent.LogisticGrowthN0" id="LogisticGrowthN0.t:$(n)">
+                    <parameter name="popSize" id="lPopSize.t:$(n)" value='0.3' estimate='true'/>
+                    <parameter name="growthRate" id="lGrowthRate.t:$(n)" value='3e-4' estimate='true'/>
+                    <parameter name="t50" id="lT50.t:$(n)" value='3e-4' estimate='true'/>
+                </populationFunction>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+            </distribution>
+
+            <operator id='lT50RandomWalk.t:$(n)' spec="RealRandomWalkOperator" windowSize='1' weight="3" parameter="@lT50.t:$(n)"/>
+            <operator id="lGrowthRateScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lGrowthRate.t:$(n)"/>
+            <operator id="lPopSizeScaler.t:$n" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lPopSize.t:$(n)"/>
+
+            <prior id='lGrowthRatePrior.t:$(n)' x='@lGrowthRate.t:$(n)'>
+                <distr spec="Gamma">
+                    <parameter name="alpha" value='1' estimate="false"/>
+                    <parameter name="beta" value='1' estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior id='lPopSizePrior.t:$(n)' x='@lPopSize.t:$(n)'>
+                <distr spec="Gamma">
+                    <parameter name="alpha" value='2' estimate="false"/>
+                    <parameter name="beta" value='0.5' estimate="false"/>
+                </distr>
+            </prior>
+
+
+            <prior id='lT50Prior.t:$(n)' x='@lT50.t:$(n)'>
+                <distr spec="Normal">
+                    <parameter name="mean" value='0' estimate="false"/>
+                    <parameter name="sigma" value='1' estimate="false"/>
+                </distr>
+            </prior>
+
+]]>
+
+            <connect srcID='WHCoalescentLogistic.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and Tree.t:$(n)/estimate=true'>Coalescent prior with
+                logistic growth on tree t:$(n)
+            </connect>
+            <connect srcID='lPopSizePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lPopSize.t:$(n)) and lPopSize.t:$(n)/estimate=true'>
+                Coalescent population size at point of infection parameter of partition t:$(n)
+            </connect>
+            <connect srcID='lGrowthRatePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lGrowthRate.t:$(n)) and lGrowthRate.t:$(n)/estimate=true'>
+                Coalescent growth rate of partition t:$(n)
+            </connect>
+            <connect srcID='lT50Prior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lT50.t:$(n)) and lT50.t:$(n)/estimate=true'>
+                Time at which population size is half of asymptote t:$(n)
+            </connect>
+
+
+            <connect srcID='lPopSize.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lPopSize.t:$(n))  and lPopSize.t:$(n)/estimate=true'/>
+            <connect srcID='lGrowthRate.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lGrowthRate.t:$(n)) and lGrowthRate.t:$(n)/estimate=true'/>
+            <connect srcID='lT50.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lT50.t:$(n)) and lT50.t:$(n)/estimate=true'/>
+
+            <connect srcID='lPopSizeScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lPopSize.t:$(n))  and lPopSize.t:$(n)/estimate=true'>
+                Scale population size of Coalescent prior of tree t:$(n)
+            </connect>
+            <connect srcID='lGrowthRateScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lGrowthRate.t:$(n)) and lGrowthRate.t:$(n)/estimate=true'>
+                Scale growth rate of Coalescent prior of tree t:$(n)
+            </connect>
+            <connect srcID='lT50RandomWalk.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lT50.t:$(n)) and lT50.t:$(n)/estimate=true'>
+                Scale growth rate of Coalescent prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='WHCoalescentLogistic.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='lPopSize.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lPopSize.t:$(n)) and lPopSize.t:$(n)/estimate=true'/>
+            <connect srcID='lGrowthRate.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lGrowthRate.t:$(n)) and lGrowthRate.t:$(n)/estimate=true'/>
+            <connect srcID='lT50.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and inposterior(lT50.t:$(n)) and lT50.t:$(n)/estimate=true'/>
+        </subtemplate>
+
+        <subtemplate id='CoalescentLogisticWithinHostModelHall' class='beast.evolution.tree.partitioned.WithinHostCoalescent'
+                     mainid='WHCoalescentLogisticH2015.t:$(n)'>
+            <![CDATA[
+            <distribution id="WHCoalescentLogisticH2015.t:$(n)" spec="beast.evolution.tree.partitioned.WithinHostCoalescent" enforceCoalescence="true">
+                <forestIntervals spec='ForestIntervals' id='ForestIntervals.t:$(n)' tree='@Tree.t:$(n)' darkAreas="false"/>
+                <populationFunction spec="beast.evolution.tree.coalescent.LogisticGrowthN0" id="H2015LogisticGrowthN0.t:$(n)">
+                    <parameter name="popSize" id="lhPopSize.t:$(n)" value='0.1' estimate='false'/>
+                    <parameter name="growthRate" id="lhGrowthRate.t:$(n)" value='1' estimate='true'/>
+                    <parameter name="t50" id="lhT50.t:$(n)" value='-4' estimate='true' upper="0"/>
+                </populationFunction>
+                <tree idref="Tree.t:$(n)"/>
+                <outbreak idref="outbreak"/>
+            </distribution>
+
+            <operator id='lhT50Scaler.t:$(n)' spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lhT50.t:$(n)"/>
+            <operator id="lhGrowthRateScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@lhGrowthRate.t:$(n)"/>
+
+            <prior id='lhRatioPrior.t:$(n)' x='@logistic.ratio.t:$(n)'>
+                <distr spec="InverseGamma">
+                    <parameter name="alpha" value='1' estimate="false"/>
+                    <parameter name="beta" value='50' estimate="false"/>
+                </distr>
+            </prior>
+
+            <prior id='lhT50Prior.t:$(n)' x='@minusT50.t:$(n)'>
+                <distr spec="Gamma">
+                    <parameter name="alpha" value='10' estimate="false"/>
+                    <parameter name="beta" value='0.5' estimate="false"/>
+                </distr>
+            </prior>
+
+            <Negative id="minusT50.t:$(n)" spec="beast.core.util.Negative">
+                <arg idref="lhT50.t:$(n)"/>
+            </Negative>
+            <Sum id="logistic.ratio.t:$(n)" spec="beast.core.util.Sum">
+                <CompoundValuable name="arg" spec="beast.core.parameter.CompoundValuable">
+                    <var spec="parameter.RealParameter" value="1.0"/>
+                    <ExponentialFunction name="var" spec="beast.core.util.ExponentialFunction">
+                        <Product name="arg" spec="beast.core.util.Product">
+                            <CompoundValuable name="arg" spec="beast.core.parameter.CompoundValuable">
+                                <var idref="minusT50.t:$(n)"/>
+                                <var idref="lhGrowthRate.t:$(n)"/>
+                            </CompoundValuable>
+                        </Product>
+                    </ExponentialFunction>
+                </CompoundValuable>
+            </Sum>  
+            ]]>
+
+
+
+            <connect srcID='WHCoalescentLogisticH2015.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and Tree.t:$(n)/estimate=true'>Coalescent prior with
+                logistic growth on tree t:$(n)
+            </connect>
+
+            <connect srcID='minusT50.t:$(n)' targetID='beast' inputName='Negative'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n))'>
+            </connect>
+            <connect srcID='logistic.ratio.t:$(n)' targetID='beast' inputName='Sum'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n))'>
+            </connect>
+
+
+            <connect srcID='lhT50Prior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhT50.t:$(n)) and lhT50.t:$(n)/estimate=true'>
+                Time at which population size is half of asymptote with respect to infection at time 0 t:$(n)
+            </connect>
+
+            <connect srcID='lhRatioPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhGrowthRate.t:$(n)) and lhGrowthRate.t:$(n)/estimate=true'>
+                Ratio of final asymptotic effective population size to effective population size at infection - t:$(n)
+            </connect>
+
+
+            <connect srcID='lhGrowthRate.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhGrowthRate.t:$(n)) and lhGrowthRate.t:$(n)/estimate=true'/>
+            <connect srcID='lhT50.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhT50.t:$(n)) and lhT50.t:$(n)/estimate=true'/>
+
+            <connect srcID='lhGrowthRateScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhGrowthRate.t:$(n)) and lhGrowthRate.t:$(n)/estimate=true'>
+                Scale growth rate of Coalescent prior of tree t:$(n)
+            </connect>
+            <connect srcID='lhT50Scaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhT50.t:$(n)) and lhT50.t:$(n)/estimate=true'>
+                Scale growth rate of Coalescent prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='WHCoalescentLogisticH2015.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogistic.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='lhGrowthRate.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhGrowthRate.t:$(n)) and lhGrowthRate.t:$(n)/estimate=true'/>
+            <connect srcID='lhT50.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(WHCoalescentLogisticH2015.t:$(n)) and inposterior(lhT50.t:$(n)) and lhT50.t:$(n)/estimate=true'/>
+        </subtemplate>
+
+
+
+    </mergewith>
+</beast>
+
+

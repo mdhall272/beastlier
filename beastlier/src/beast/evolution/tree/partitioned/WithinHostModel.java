@@ -56,6 +56,8 @@ public abstract class WithinHostModel extends TreeDistribution {
         }
     }
 
+    // stop BEAUTi from giving between host models as combo box options
+
     public boolean canSetXx(Object o){
         return !(o instanceof BetweenHostModel);
     }

@@ -812,8 +812,8 @@ def main():
         if necessaryHeader not in headers:
             raise Exception("File "+epiFileName+" does not have required column named "+necessaryHeader)
 
-    hasLongitude = "Longitude" in headers
-    hasLatitude = "Latitude" in headers
+    hasLongitude = "Longitude" in headers or "longitude" in headers
+    hasLatitude = "Latitude" in headers or "latitude" in headers
 
     if hasLatitude != hasLongitude:
         raise Exception("File "+epiFileName+" has a column for only one spatial dimension")

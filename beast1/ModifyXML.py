@@ -495,22 +495,22 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
         if latType=="n":
             latDistributionPriorElement = createNestedReferenceBlock(ET, "normalPrior", "parameter",
                                                                      latCategoryName+".latPeriod")
-            latDistributionPriorElement.set("mean", latArgs[0])
+            latDistributionPriorElement.set("mean", str(latArgs[0]))
             latDistributionPriorElement.set("stdev", str(math.sqrt(float(latArgs[1]))))
         if latType=="l":
             latDistributionPriorElement = createNestedReferenceBlock(ET, "logNormalPrior", "parameter",
                                                                      latCategoryName+".latPeriod")
-            latDistributionPriorElement.set("mean", latArgs[0])
+            latDistributionPriorElement.set("mean", str(latArgs[0]))
             latDistributionPriorElement.set("stdev", str(math.sqrt(float(latArgs[1]))))
         if latType=="e":
             latDistributionPriorElement = createNestedReferenceBlock(ET, "exponentialPrior", "parameter",
                                                                      latCategoryName+".latPeriod")
-            latDistributionPriorElement.set("rate", latArgs[0])
+            latDistributionPriorElement.set("rate", str(latArgs[0]))
         if latType=="g":
             latDistributionPriorElement = createNestedReferenceBlock(ET, "gammaPrior", "parameter",
                                                                      latCategoryName+".latPeriod")
-            latDistributionPriorElement.set("shape", latArgs[0])
-            latDistributionPriorElement.set("scale", latArgs[1])
+            latDistributionPriorElement.set("shape", str(latArgs[0]))
+            latDistributionPriorElement.set("scale", str(latArgs[1]))
 
     priorBlock.append(latDistributionPriorElement)
 

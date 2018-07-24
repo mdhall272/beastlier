@@ -456,11 +456,11 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
     mcmcBlock.set('operatorAnalysis', fileNameRoot+".ops.txt")
     if(chainLength!=None):
         mcmcBlock.set('chainLength', str(chainLength))
-    posteriorBlock = mcmcBlock.find('posterior')
+    jointBlock = mcmcBlock.find('joint')
 
     # Priors
 
-    priorBlock = posteriorBlock.find('prior')
+    priorBlock = jointBlock.find('prior')
     for element in list(priorBlock):
         if element.tag in coalescentLikelihoodNames:
             priorBlock.remove(element)
@@ -512,12 +512,12 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
             latDistributionPriorElement.set("shape", str(latArgs[0]))
             latDistributionPriorElement.set("scale", str(latArgs[1]))
 
-    priorBlock.append(latDistributionPriorElement)
+        priorBlock.append(latDistributionPriorElement)
 
     priorBlock.append(createReferenceBlock(ET, 'caseToCaseTransmissionLikelihood', 'c2cTransLikelihood'))
 
     if fixedPT:
-        likelihoodBlock = posteriorBlock.find('prior')
+        likelihoodBlock = jointBlock.find('prior')
         for irrelevant in list(likelihoodBlock):
             likelihoodBlock.remove(irrelevant)
 
@@ -589,7 +589,7 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
     networkLogBlock.set('overwrite', 'true')
 
     networkLogBlock.append(createReferenceBlock(ET, "withinCaseCoalescent", "withinCaseCoalescent"))
-    mcmcBlock.insert(mcmcBlock.getchildren().index(posteriorBlock)+4, networkLogBlock)
+    mcmcBlock.insert(mcmcBlock.getchildren().index(jointBlock)+4, networkLogBlock)
 
     treeLogBlock = mcmcBlock.find('logTree')
 

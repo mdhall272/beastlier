@@ -348,8 +348,8 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
     logisticElement = ET.SubElement(demoModelWrapper, 'logisticGrowthN0')
     logisticElement.set('units', 'days')
     logisticElement.append(createParameterBlock(ET, 'populationSize', 'logistic.startingNe', 0.1, True, 1))
-    logisticElement.append(createParameterBlock(ET, 'growthRate', 'logistic.growthRate', 1, False, 1))
-    logisticElement.append(createParameterBlock(ET, 't50', 'logistic.t50', -4, False, 1))
+    logisticElement.append(createParameterBlock(ET, 'growthRate', 'logistic.growthRate', 1, True, 1))
+    logisticElement.append(createParameterBlockWithMax(ET, 't50', 'logistic.t50', -4, 0, False, 1))
     c2cTreeElement.append(demoModelWrapper)
     minusStatistic = ET.SubElement(c2cTreeElement, 'negativeStatistic')
     minusStatistic.set('id', 'minusT50')
@@ -532,7 +532,6 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
 
                 block.append(createScreenLogColumnBlock(ET, 'parameter', 'trans_rate', 'transmission_rate', 6, 12))
 
-
                 if kernel != 'x':
                     block.append(createScreenLogColumnBlock(ET, 'parameter', 'kernel.alpha', 'kernel.alpha', 4, 12))
                     if kernel == "l":
@@ -559,7 +558,6 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                 else:
                     oldSampleEvery = block.get("logEvery")
 
-
                 if kernel != 'x':
                     block.append(createReferenceBlock(ET, 'parameter', 'kernel.alpha'))
                     if kernel == "l":
@@ -574,9 +572,6 @@ def modifyXML(epiFileName, taxaFileName, outputFileName, beautiFileName, fileNam
                 block.append(createReferenceBlock(ET, 'parameter', 'logistic.ratio'))
                 block.append(createReferenceBlock(ET, 'productStatistic', 'logistic.t50'))
                 block.append(createReferenceBlock(ET, 'parameter', 'logistic.growthRate'))
-
-
-
 
     networkLogBlock = ET.Element('log')
     networkLogBlock.set('id', 'networkLog')
